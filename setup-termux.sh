@@ -1,7 +1,7 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # ALTRA Helper: إعداد تلقائي على أندرويد (Termux)
 set -e
-BASE="https://danial56hd-wq.github.io/ALTRA-DAWNLOADER"
+BASE="${ALTRA_BASE:-https://danial56hd-wq.github.io/ALTRA-DAWNLOADER}"
 
 echo "▶ تثبيت الحزم (python, ffmpeg, nodejs)…"
 pkg update -y
