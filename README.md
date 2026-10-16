@@ -7,7 +7,7 @@
 **محمّل وسائط مستقل وقابل للتثبيت · Independent, installable media downloader**
 
 [![Live App](https://img.shields.io/badge/Live%20App-افتح%20التطبيق-00d2ff?style=for-the-badge&logo=googlechrome&logoColor=white)](https://nidal-watfa99.github.io/)
-[![Version](https://img.shields.io/badge/version-8.5-00ff88?style=for-the-badge)](#)
+[![Version](https://img.shields.io/badge/version-8.6-00ff88?style=for-the-badge)](#)
 [![PWA](https://img.shields.io/badge/PWA-installable-5a0fc8?style=for-the-badge&logo=pwa&logoColor=white)](#-التثبيت)
 [![License: MIT](https://img.shields.io/badge/License-MIT-ff9f43?style=for-the-badge)](LICENSE)
 

@@ -851,7 +851,8 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Vary", "Origin")
             self.send_header("Access-Control-Allow-Private-Network", "true")
             self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-            self.send_header("Access-Control-Allow-Headers", "Content-Type")
+            req_h = self.headers.get("Access-Control-Request-Headers")
+            self.send_header("Access-Control-Allow-Headers", req_h if req_h else "Content-Type")
             self.send_header("Access-Control-Expose-Headers", "Content-Disposition, Content-Length")
 
     def send_json(self, obj, status=200, force_cors=False):
@@ -860,15 +861,20 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
+        if self.close_connection:
+            self.send_header("Connection", "close")
         self.cors(force_cors)
         self.end_headers()
-        self.wfile.write(body)
+        if self.command != "HEAD":
+            self.wfile.write(body)
 
     def guard(self):
         if not self.host_ok():
+            self.close_connection = True
             self.send_json({"error": "host not allowed"}, 403)
             return False
         if not self.origin_ok():
+            self.close_connection = True
             slog("طلب مرفوض من الموقع: %s" % self.headers.get("Origin"), "warn")
             print(f" ⛔ طلب مرفوض من الموقع: {self.headers.get('Origin')}  ← لو هذا موقعك شغّل المساعد مع:  --origin {self.headers.get('Origin')}")
             o = self.headers.get("Origin")
@@ -973,6 +979,7 @@ class Handler(BaseHTTPRequestHandler):
             n = int(self.headers.get("Content-Length") or 0)
             limit = 2 * 1024 * 1024 if path == "/api/cookies" else 65536
             if n > limit:
+                self.close_connection = True
                 return self.send_json({"error": "too large"}, 413)
             raw = self.rfile.read(n) if n else b"{}"
             data = json.loads(raw.decode("utf-8") or "{}")

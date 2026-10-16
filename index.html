@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=5">
-<meta name="theme-color" content="#05080d">
+<meta name="theme-color" content="#191919">
 <meta name="description" content="ALTRA-DAWNLOADER — محمل وسائط مستقل قابل للتثبيت">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,144 +12,206 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400;500;600&display=swap">
 <title>ALTRA-DAWNLOADER</title>
 <style>
-:root{
-  --bg:#05080d;--card:#0a1119;--line:#173142;--c:#00d2ff;--g:#00ff88;--r:#ff3060;
-  --o:#ff9f43;--txt:#eaf7ff;--muted:#7892a5;--warn:#ffcc00;--drawer:#080e16;
-  color-scheme:dark;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:var(--bg);color:var(--txt);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+@property --a{syntax:'<angle>';initial-value:0deg;inherits:false}
+:root{--bg:#191919;--s1:#1f1f1f;--s2:#252525;--s3:#323232;--tint:#393e51;--line:#333;--card:#252525;--drawer:#1f1f1f;
+--c:#8ab4f8;--blue:#3588fe;--g:#81c995;--r:#f28b82;--o:#fdd663;--warn:#fdd663;--txt:#e3e3e3;--muted:#8a8a8a;color-scheme:dark;
+--font:'Google Sans Flex','Google Sans','Google Sans Text','Noto Sans Arabic','Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+--rainbow:conic-gradient(from var(--a),#4285f4,#34a853,#fbbc04,#ea4335,#4285f4)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--txt);font:14.5px/1.55 var(--font)}
 body{min-height:100dvh;overflow-x:hidden}
-.app{max-width:560px;margin:0 auto;min-height:100dvh;padding-bottom:20px;position:relative}
-.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:#05080df2;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  border-bottom:1px solid var(--line);padding:10px 12px;display:flex;align-items:center;gap:10px}
-.menu-btn,.icon-btn{width:40px;height:40px;border:1px solid #1b3c4d;background:#0a1821;border-radius:11px;
-  color:var(--txt);font-size:18px;cursor:pointer;display:grid;place-items:center;flex-shrink:0}
-.menu-btn:active,.icon-btn:active{transform:scale(.95)}
-.brand{flex:1;min-width:0}
-.logo{display:inline-block;font-weight:900;letter-spacing:1.5px;font-size:15px;background:linear-gradient(110deg,#b8860b 0%,#ffd700 36%,#fff6b0 47%,#ffffff 50%,#fff6b0 53%,#ffd700 64%,#b8860b 100%);background-size:260% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:goldGlint 2.6s linear infinite;filter:drop-shadow(0 0 8px #ffd70066)}
-@keyframes goldGlint{0%{background-position:160% 0}100%{background-position:-60% 0}}
-@keyframes goldShine{0%{background-position:0% center}100%{background-position:200% center}}
-.sub{font-size:10px;color:var(--muted)}
-.live{font-size:9px;color:var(--g);border:1px solid #00ff8844;border-radius:20px;padding:3px 8px;white-space:nowrap;animation:pulseLive 2s ease-in-out infinite}
-@keyframes pulseLive{0%,100%{opacity:1;box-shadow:0 0 0 0 #00ff8844}50%{opacity:.85;box-shadow:0 0 8px 2px #00ff8844}}
-.laser-bar{height:2px;width:100%;background:linear-gradient(90deg,transparent,#00d2ff,var(--g),#ffd700,#00d2ff,transparent);background-size:200% 100%;animation:laserMove 2.5s linear infinite;opacity:.7}
-.laser-bar.active{opacity:1;height:3px;box-shadow:0 0 10px #00d2ff88}
-@keyframes laserMove{0%{background-position:200% 0}100%{background-position:-200% 0}}
-.platforms{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:14px}
-.plat{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:12px;background:#061019;border:1px solid #1b3c4d;cursor:pointer;transition:.2s;font-size:11px;color:var(--muted)}
-.plat:hover,.plat:active{border-color:var(--c);color:var(--c);transform:translateY(-2px);box-shadow:0 4px 12px #00d2ff22}
-.plat span{font-size:22px;line-height:1}
-.plat-hint{font-size:10px;color:var(--muted);text-align:center;margin-top:8px;line-height:1.5}
-.card{margin:12px;padding:14px;background:linear-gradient(155deg,var(--card),#071019);border:1px solid var(--line);
-  border-radius:14px;box-shadow:0 8px 28px #0006}
-h2{font-size:13px;font-weight:700;margin:0 0 12px;color:var(--c);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.row{display:flex;gap:8px;align-items:stretch}
-.grow{flex:1;min-width:0}
-input,select,button,textarea{font:inherit;color:var(--txt)}
-input,select,textarea{width:100%;background:#061019;border:1px solid #1b3c4d;border-radius:11px;padding:11px 12px;outline:none}
-input:focus,select:focus,textarea:focus{border-color:var(--c);box-shadow:0 0 0 3px #00d2ff22}
-input,select,textarea{font-size:16px}
-textarea{resize:vertical;min-height:72px;font-family:ui-monospace,monospace;font-size:14px;direction:ltr;text-align:start;user-select:text;-webkit-user-select:text}
-.env-warn{margin:12px;padding:12px 14px;background:#ffcc0014;border:1px solid #ffcc0066;border-radius:12px;font-size:12px;line-height:1.7;color:#ffe9a3;display:none}
-.env-warn.show{display:block}
-button.act{border:1px solid #1b3c4d;background:#0a1821;border-radius:11px;padding:10px 13px;cursor:pointer;white-space:nowrap}
-button.act:active{transform:scale(.97)}button.act:disabled{opacity:.45}
-button.primary{background:#00d2ff18;border-color:#00d2ff77;color:#bdf4ff}
-button.good{border-color:#00ff8866;color:#aaffd3}
-button.danger{border-color:#ff306066;color:#ff9ab2}
-button.ghost{background:transparent}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.small{font-size:11px;color:var(--muted)}
-.status{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted);flex-wrap:wrap}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0}
-.dot.ok{background:var(--g);box-shadow:0 0 8px var(--g)}
-.dot.bad{background:var(--r)}.dot.warn{background:var(--warn)}
-.task{border-top:1px solid #173142;padding:12px 0}.task:first-child{border-top:0;padding-top:0}
-.tasktitle{font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
-.bar{height:6px;background:#07131b;border-radius:99px;overflow:hidden;margin:7px 0}
-.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--c),#00ffaa);transition:width .2s;border-radius:99px}
-.meta{font-size:11px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
-.actions{display:flex;gap:5px;flex-wrap:wrap}
-.badge{font-size:10px;padding:2px 7px;border-radius:6px;background:#102431;color:var(--c);font-weight:700}
-.tag{font-size:10px;padding:2px 6px;border-radius:4px;background:#122a38;color:var(--c);margin-inline-start:4px}
-.speed{color:var(--g)}
-.empty{text-align:center;padding:22px;color:var(--muted)}
-.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(16px);background:#0d1f2b;border:1px solid #25566c;
-  padding:10px 16px;border-radius:12px;font-size:13px;opacity:0;pointer-events:none;transition:all .28s;z-index:80;max-width:90%;text-align:center}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.dropzone{border:1.5px dashed #1b3c4d;border-radius:12px;padding:12px;text-align:center;color:var(--muted);font-size:12px;margin-top:8px}
-.dropzone.over{border-color:var(--c);background:#00d2ff0c;color:var(--c)}
-
-/* Drawer */
-.overlay{position:fixed;inset:0;background:#0009;z-index:50;opacity:0;pointer-events:none;transition:opacity .25s}
-.overlay.show{opacity:1;pointer-events:auto}
-.drawer{position:fixed;top:0;bottom:0;right:0;width:min(320px,88vw);background:var(--drawer);border-left:1px solid var(--line);
-  z-index:60;transform:translateX(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);overflow-y:auto;padding:16px 0 40px}
-[dir="ltr"] .drawer{right:auto;left:0;border-left:0;border-right:1px solid var(--line);transform:translateX(-105%)}
-.drawer.open{transform:translateX(0)}
-.drawer h3{padding:8px 18px 12px;color:var(--c);font-size:15px}
-.ditem{display:flex;align-items:center;gap:12px;width:100%;padding:13px 18px;border:0;background:transparent;color:var(--txt);
-  font:inherit;text-align:start;cursor:pointer;border-bottom:1px solid #0f1c28}
-.ditem:active{background:#0c1520}
-.ditem .ic{width:28px;text-align:center;font-size:16px;opacity:.9}
-.ditem .lab{flex:1}
-.ditem .chev{color:var(--muted);font-size:12px}
-.dsep{height:1px;background:var(--line);margin:8px 0}
-.dfoot{padding:16px 18px;font-size:11px;color:var(--muted);line-height:1.5}
-
-/* Panels / sheets */
-.sheet{display:none}.sheet.active{display:block;animation:fade .2s ease}
-@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.console{height:280px;overflow:auto;background:#020509;border:1px solid #122431;border-radius:10px;padding:10px;
-  font:11px/1.5 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-all}
-.console .l-error{color:#ff6b7a}.console .l-warn{color:#ffc107}.console .l-ok{color:#00ff88}.console .l-h{color:#7fdcff}
-.console div{padding:1px 0;border-bottom:1px solid #0a141c}
-.console-bar{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
-.console-bar .act{padding:7px 10px;font-size:12px}
-.err-dot{position:absolute;top:4px;inset-inline-end:4px;width:9px;height:9px;border-radius:50%;background:#ff4757;display:none}
+body::before{content:"";position:fixed;inset:-20% -10% auto -10%;height:60%;pointer-events:none;z-index:0;
+ background:radial-gradient(40% 50% at 20% 30%,#3588fe26,transparent 70%),radial-gradient(35% 45% at 80% 20%,#34a85318,transparent 70%),radial-gradient(30% 40% at 55% 60%,#ea433512,transparent 70%)}
+.app{max-width:560px;margin:0 auto;min-height:100dvh;padding-bottom:28px;position:relative;z-index:1}
+.i{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.i.sp{fill:currentColor;stroke:none}
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:#191919e6;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:10px 14px;display:flex;align-items:center;gap:12px;direction:ltr}
+.menu-btn,.icon-btn{width:46px;height:46px;border:0;background:var(--s3);border-radius:15px;color:var(--txt);cursor:pointer;display:grid;place-items:center;flex-shrink:0;position:relative;transition:.2s}
+.menu-btn:active,.icon-btn:active{transform:scale(.92);background:#3d3d3d}
+.menu-btn:hover,.icon-btn:hover{background:#3a3a3a}
+.brand{flex:1;min-width:0;direction:ltr;text-align:left}
+.logo{display:inline-block;font-weight:600;letter-spacing:.5px;font-size:17px;color:#ececec}
+.logo b{background:linear-gradient(90deg,#8ab4f8,#81c995,#fdd663,#f28b82,#8ab4f8);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:flow 8s linear infinite}
+@keyframes flow{to{background-position:300% 0}}
+.sub{font-size:10.5px;color:var(--muted);letter-spacing:.3px}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:var(--g);background:#81c99514;border-radius:99px;padding:4px 10px;direction:ltr}
+.live::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 8px var(--g);animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.35}}
+.laser-bar{height:2px;width:calc(100% - 28px);margin:0 auto;border-radius:9px;background:linear-gradient(90deg,transparent,#4285f4,#34a853,#fbbc04,#ea4335,transparent);background-size:200% 100%;animation:laser 2.6s linear infinite;opacity:.25;transition:.4s}
+.laser-bar.active{opacity:1;height:3px;box-shadow:0 0 14px #4285f499}
+@keyframes laser{to{background-position:-200% 0}}
+.err-dot{position:absolute;top:8px;inset-inline-end:8px;width:9px;height:9px;border-radius:50%;background:#f28b82;display:none;box-shadow:0 0 8px #f28b82}
 .icon-btn.has-err .err-dot{display:block}
-.contact a{color:var(--c);text-decoration:none;display:block;padding:10px 0;border-bottom:1px solid #122431}
-.modal-bg{position:fixed;inset:0;background:#000a;z-index:70;display:flex;align-items:flex-end;justify-content:center;padding:0}
-.modal{background:var(--card);border:1px solid var(--line);border-radius:18px 18px 0 0;padding:18px;width:100%;max-width:560px;max-height:75vh;overflow:auto}
-.modal h3{margin-bottom:12px;color:var(--c)}
+/* glow ring */
+.glow{position:relative}
+.glow::before,.glow::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;background:var(--rainbow);pointer-events:none;animation:spin 7s linear infinite;
+ -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+.glow::before{filter:blur(14px);opacity:.65;padding:4px}
+.glow::after{opacity:.9}
+@keyframes spin{to{--a:360deg}}
+/* hero */
+.hero{text-align:center;padding:34px 20px 8px;animation:up .7s cubic-bezier(.2,.8,.2,1) both}
+@keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.badge-pill{display:inline-flex;align-items:center;gap:10px;padding:6px 16px 6px 7px;border:1px solid #2f2f2f;border-radius:99px;background:#1c1c1c;font-size:13px;color:#ddd;direction:rtl}
+.orb{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;color:#fff;background:radial-gradient(circle at 32% 28%,#cfe3ff,#4f8dfa 45%,#16327a);box-shadow:0 0 14px #3588fe88,inset 0 -3px 6px #0a1a4a}
+.hero h1{font-size:clamp(28px,8vw,38px);font-weight:500;line-height:1.3;margin:22px 0 10px;color:#f1f1f1;letter-spacing:-.3px}
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,#8ab4f8,#81c995,#fdd663,#f28b82);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--muted);font-size:14px;line-height:1.8;max-width:380px;margin:0 auto}
+/* prompt card */
+.prompt{margin:22px 14px 0;padding:16px 16px 12px;background:var(--s1);border-radius:28px;animation:up .8s .1s cubic-bezier(.2,.8,.2,1) both;box-shadow:0 18px 50px #0007}
+.prompt textarea{background:transparent;border:0;box-shadow:none;padding:4px 4px 8px;min-height:92px;font-size:15px;color:#e8e8e8;font-family:ui-monospace,Menlo,monospace}
+.prompt textarea:focus{box-shadow:none}
+.prompt textarea::placeholder{color:#777;font-family:var(--font)}
+.p-bar{display:flex;align-items:center;gap:8px;direction:ltr}
+.rb{width:44px;height:44px;border-radius:50%;border:1px solid #3a3a3a;background:transparent;color:#ddd;display:grid;place-items:center;cursor:pointer;transition:.2s}
+.rb:active{transform:scale(.9);background:var(--s3)}
+.qsel{position:relative;margin-inline-start:auto;direction:rtl}
+.qsel select{width:auto;appearance:none;-webkit-appearance:none;background:var(--s2);border:1px solid #3a3a3a;border-radius:14px;padding:10px 34px 10px 14px;font-size:14px;color:#ddd;cursor:pointer}
+.qsel .i{position:absolute;left:8px;top:50%;width:16px;height:16px;transform:translateY(-50%);pointer-events:none;color:#aaa}
+#go{width:48px;height:48px;border-radius:16px;border:0;background:var(--blue);color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 6px 22px #3588fe66;transition:.2s;padding:0;font-size:0}
+#go:active{transform:scale(.9)}
+#go:hover{filter:brightness(1.12)}
+.dropzone{border:1.5px dashed #3a3a3a;border-radius:16px;padding:9px;text-align:center;color:#777;font-size:12px;margin-top:10px;transition:.2s}
+.dropzone.over{border-color:var(--blue);background:#3588fe14;color:var(--c)}
+.hintline{text-align:center;color:#6f6f6f;font-size:11.5px;margin:10px 22px 0;line-height:1.7}
+.chips-row{display:flex;gap:10px;overflow-x:auto;padding:16px 14px 4px;scrollbar-width:none}
+.chips-row::-webkit-scrollbar{display:none}
+.qchip{display:inline-flex;align-items:center;gap:9px;white-space:nowrap;padding:12px 18px;border-radius:99px;background:var(--s2);border:0;color:#e0e0e0;font-size:14px;cursor:pointer;transition:.2s}
+.qchip .i{color:#6ea8fe;width:20px;height:20px}
+.qchip:active{transform:scale(.95);background:var(--s3)}
+/* cards */
+.card{margin:14px;padding:18px;background:var(--s2);border:1px solid #2e2e2e;border-radius:26px;box-shadow:0 10px 34px #0005;animation:up .6s both}
+h2{font-size:15px;font-weight:500;margin:0 0 14px;color:#f0f0f0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.row{display:flex;gap:8px;align-items:stretch}.grow{flex:1;min-width:0}
+input,select,button,textarea{font:inherit;color:var(--txt)}
+input,select,textarea{width:100%;background:var(--bg);border:1px solid #3a3a3a;border-radius:16px;padding:12px 14px;outline:none;transition:.2s;font-size:16px}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 4px #3588fe22}
+textarea{resize:none;min-height:72px;font-family:ui-monospace,monospace;font-size:14px;direction:ltr;text-align:start;user-select:text;-webkit-user-select:text}
+label.small{color:#9a9a9a}
+.env-warn{margin:12px 14px;padding:14px 16px;background:#fdd6631a;border:1px solid #fdd66340;border-radius:20px;font-size:12px;line-height:1.7;color:#ffe9a3;display:none}.env-warn.show{display:block}
+button.act{border:0;background:var(--s3);border-radius:99px;padding:10px 16px;cursor:pointer;white-space:nowrap;transition:.2s;color:#e6e6e6}
+button.act:active,.act:active{transform:scale(.95)}button.act:disabled{opacity:.4}
+a.act{border-radius:99px;background:var(--s3);padding:10px 16px;display:inline-block;color:#e6e6e6}
+button.primary,a.primary{background:var(--tint);color:#aecbfa}
+button.good,a.good{background:#81c9951f;color:#a8dab5}
+button.danger{background:#f28b821f;color:#f6aea9}
+button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.small{font-size:11.5px;color:var(--muted)}
+.status{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}.dot.ok{background:var(--g);box-shadow:0 0 8px var(--g)}.dot.bad{background:var(--r)}.dot.warn{background:var(--warn)}
+.task{border-top:1px solid #333;padding:14px 0}.task:first-child{border-top:0;padding-top:0}
+.tasktitle{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13.5px;color:#f0f0f0}
+.bar{height:7px;background:#1a1a1a;border-radius:99px;overflow:hidden;margin:9px 0}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#4285f4,#34a853,#fbbc04);background-size:200% 100%;animation:laser 2.5s linear infinite;transition:width .25s;border-radius:99px;box-shadow:0 0 10px #4285f488}
+.meta{font-size:11.5px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.badge{font-size:11px;padding:2px 10px;border-radius:99px;background:var(--tint);color:#aecbfa;font-weight:600}
+.tag{font-size:10px;padding:2px 8px;border-radius:99px;background:var(--s3);color:#aecbfa;margin-inline-start:6px}
+.speed{color:var(--g)}
+.empty{text-align:center;padding:26px 10px;color:#777}
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(16px);background:#3a3a3a;border-radius:99px;padding:12px 22px;font-size:13px;opacity:0;pointer-events:none;transition:.3s;z-index:80;max-width:90%;text-align:center;box-shadow:0 10px 30px #0009}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* drawer (left, like AI Studio) */
+.overlay{position:fixed;inset:0;background:#000a;backdrop-filter:blur(3px);z-index:50;opacity:0;pointer-events:none;transition:opacity .3s}.overlay.show{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;bottom:0;left:0;right:auto;width:min(310px,86vw);background:var(--s1);border-radius:0 28px 28px 0;z-index:60;transform:translateX(-105%);transition:transform .32s cubic-bezier(.2,.8,.2,1);overflow-y:auto;padding:22px 12px 40px;box-shadow:20px 0 60px #000a}
+.drawer.open{transform:translateX(0)}
+.drawer h3{padding:4px 12px 16px;font-size:20px;font-weight:500;color:#f1f1f1;direction:ltr}
+.ditem{display:flex;align-items:center;gap:14px;width:100%;padding:13px 16px;border:0;background:transparent;color:#d6d6d6;font:inherit;text-align:start;cursor:pointer;border-radius:99px;margin-bottom:2px;transition:.2s}
+.ditem:active{background:var(--s3)}.ditem.active{background:var(--tint);color:#c9dcff}
+.ditem .ic{display:grid;place-items:center}.ditem .lab{flex:1}
+.dsep{height:1px;background:#303030;margin:10px 8px}
+.dfoot{padding:16px 14px;font-size:11px;color:#666;line-height:1.7}
+.sheet{display:none}.sheet.active{display:block;animation:up .35s ease both}
+.console{height:280px;overflow:auto;background:#141414;border:1px solid #2c2c2c;border-radius:18px;padding:12px;font:11px/1.55 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-all}
+.console .l-error{color:#f28b82}.console .l-warn{color:#fdd663}.console .l-ok{color:#81c995}.console .l-h{color:#8ab4f8}
+.console div{padding:1px 0;border-bottom:1px solid #1f1f1f}
+.console-bar{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}.console-bar .act{padding:8px 12px;font-size:12px}
+.contact a{color:#aecbfa;text-decoration:none;display:block;padding:12px 0;border-bottom:1px solid #333}
+.modal-bg{position:fixed;inset:0;background:#000b;backdrop-filter:blur(4px);z-index:70;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:var(--s2);border-radius:30px 30px 0 0;padding:22px 18px 26px;width:100%;max-width:560px;max-height:80vh;overflow:auto;animation:sheetup .35s cubic-bezier(.2,.8,.2,1)}
+.modal::before{content:"";display:block;width:40px;height:4px;border-radius:9px;background:#555;margin:-10px auto 16px}
+@keyframes sheetup{from{transform:translateY(60px);opacity:0}}
+.modal h3{margin-bottom:12px;color:#f0f0f0;font-weight:500}
 .share-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.share-grid button{padding:14px 8px;border-radius:12px;border:1px solid #1b3c4d;background:#0a1821;color:var(--txt);font-size:12px;cursor:pointer}
-.share-grid button span{display:block;font-size:22px;margin-bottom:6px}
-.install-banner{margin:12px;padding:12px 14px;background:#00d2ff14;border:1px solid #00d2ff44;border-radius:12px;
-  display:none;align-items:center;gap:10px;font-size:13px}
-.install-banner.show{display:flex}
-.install-banner button{margin-inline-start:auto}
-.storage-box{padding:10px;border:1px solid #1b3c4d;border-radius:10px;background:#061019;margin-top:8px;font-size:12px}
+.share-grid button{padding:16px 8px;border-radius:20px;border:0;background:var(--s3);color:var(--txt);font-size:12px;cursor:pointer}
+.share-grid button span{display:block;font-size:24px;margin-bottom:6px}
+.install-banner{margin:12px 14px;padding:14px 16px;background:var(--tint);border-radius:22px;display:none;align-items:center;gap:12px;font-size:13px;color:#d5e3ff}.install-banner.show{display:flex}.install-banner button{margin-inline-start:auto}
+.storage-box{padding:12px 14px;border-radius:16px;background:var(--bg);margin-top:8px;font-size:12px}
 .search-bar{display:flex;gap:8px;margin-bottom:10px}
-.chip{margin:12px 12px 0;padding:10px 12px;border-radius:12px;font-size:12px;line-height:1.6;border:1px solid #1b3c4d;background:#0a1821;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.chip.ok{border-color:#00ff8855;background:#00ff8810;color:#bfffe0}
-.chip.warn{border-color:#ffcc0055;background:#ffcc0010;color:#ffe9a3}
-.chip .grow{min-width:140px}
-.step-box{border:1px solid #173142;border-radius:12px;padding:12px;margin-top:10px;background:#061019}
-.step-box b{color:var(--c)}
-.login-badge{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:99px;padding:6px 12px;background:#1f6bff;color:#fff;font-weight:700;font-size:12px;cursor:pointer;box-shadow:0 0 0 3px #1f6bff33}
-.login-badge:active{transform:scale(.97)}
-.btn-blue{background:#1f6bff;border-color:#1f6bff;color:#fff;font-weight:700}
+.sd{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--g);box-shadow:0 0 10px var(--g);flex-shrink:0;animation:pulse 2.4s infinite}.sd.wn{background:var(--o);box-shadow:0 0 10px var(--o)}
+.chip{margin:6px 14px 0;padding:12px 16px;border-radius:22px;font-size:12px;line-height:1.7;background:var(--s2);display:flex;gap:10px;align-items:center;flex-wrap:wrap;color:#ccc}
+.chip.ok{background:#81c9951a;color:#b7e4c2}.chip.warn{background:#fdd6631a;color:#ffe9a3}.chip .grow{min-width:140px}
+.chip code{background:#141414;padding:2px 6px;border-radius:8px}
+.step-box{border-radius:20px;padding:14px;margin-top:12px;background:var(--bg)}.step-box b{color:#aecbfa}
+.login-badge{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:99px;padding:7px 14px;background:var(--blue);color:#fff;font-weight:600;font-size:12px;cursor:pointer;box-shadow:0 4px 16px #3588fe55}
+.btn-blue{background:var(--blue)!important;color:#fff!important;font-weight:600}
 .modal textarea{min-height:110px;margin-top:8px}
 .code-box{display:flex;gap:8px;align-items:stretch;margin-top:8px}
-.code-box code{flex:1;min-width:0;direction:ltr;text-align:left;background:#020509;border:1px solid #122431;border-radius:10px;padding:10px;
-  font:12px/1.5 ui-monospace,Menlo,monospace;color:#bdf4ff;overflow-x:auto;white-space:pre;user-select:all;-webkit-user-select:all}
+.code-box code{flex:1;min-width:0;direction:ltr;text-align:left;background:#141414;border-radius:16px;padding:12px;font:12px/1.5 ui-monospace,Menlo,monospace;color:#aecbfa;overflow-x:auto;white-space:pre;user-select:all;-webkit-user-select:all}
+/* platform gallery cards */
+.gal-title{margin:26px 20px 0;font-size:15px;font-weight:500;color:#f0f0f0}
+.platforms{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px}
+.plat{position:relative;min-height:150px;border-radius:26px;overflow:hidden;cursor:pointer;border:1.5px solid #3a3a3a;isolation:isolate;transition:transform .3s,border-color .3s,box-shadow .3s;
+ background:radial-gradient(120% 90% at 85% 0%,var(--p1,#3588fe),transparent 62%),radial-gradient(100% 100% at 5% 100%,var(--p2,#34a853),transparent 58%),#121212}
+.plat:first-child,.plat:last-child{grid-column:1/-1;min-height:190px}.plat:last-child{min-height:120px}
+.plat::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.35;background:repeating-linear-gradient(0deg,#ffffff10 0 1px,transparent 1px 22px),repeating-linear-gradient(90deg,#ffffff10 0 1px,transparent 1px 22px);-webkit-mask:radial-gradient(90% 90% at 70% 20%,#000,transparent);mask:radial-gradient(90% 90% at 70% 20%,#000,transparent)}
+.plat:hover,.plat:active{transform:translateY(-4px) scale(1.015);border-color:#6a6a6a;box-shadow:0 18px 40px #000a,0 0 30px var(--p1,#3588fe)33}
+.pg{position:absolute;top:50%;left:50%;transform:translate(-50%,-62%);font-size:54px;line-height:1;filter:drop-shadow(0 8px 18px #000a);transition:.4s}
+.plat:first-child .pg{font-size:76px}.plat:hover .pg{transform:translate(-50%,-68%) scale(1.12) rotate(-4deg)}
+.pl{position:absolute;inset-inline-start:12px;bottom:12px;font-style:normal;font-size:13px;padding:8px 16px;border-radius:16px;background:#262626d9;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#f1f1f1}
+[data-plat=youtube]{--p1:#ff2d4d;--p2:#7a0a25}[data-plat=instagram]{--p1:#dd2a7b;--p2:#f58529}[data-plat=tiktok]{--p1:#25f4ee;--p2:#fe2c55}
+[data-plat=x]{--p1:#5a5a5a;--p2:#1a1a1a}[data-plat=facebook]{--p1:#1877f2;--p2:#0a2f6b}[data-plat=reddit]{--p1:#ff4500;--p2:#7a2200}
+[data-plat=soundcloud]{--p1:#ff7700;--p2:#a02c00}[data-plat=vimeo]{--p1:#1ab7ea;--p2:#0a4a66}[data-plat=twitch]{--p1:#9146ff;--p2:#2c1060}[data-plat=direct]{--p1:#3588fe;--p2:#34a853}
+.platforms.compact{display:flex;overflow-x:auto;gap:10px;padding:4px 0 2px;scrollbar-width:none}.platforms.compact::-webkit-scrollbar{display:none}
+.platforms.compact .plat,.platforms.compact .plat:first-child,.platforms.compact .plat:last-child{min-height:0;border-radius:99px;border:0;background:var(--s3);padding:11px 18px;display:inline-flex;align-items:center;gap:9px;white-space:nowrap;flex:none}
+.platforms.compact .plat::before{display:none}.platforms.compact .pg,.platforms.compact .plat:first-child .pg{position:static;transform:none;font-size:17px;filter:none}.platforms.compact .pl{position:static;background:none;padding:0;backdrop-filter:none;font-size:13.5px}
+.plat-hint{font-size:11.5px;color:#6f6f6f;text-align:center;margin:0 20px;line-height:1.7}
+.logo{white-space:nowrap;font-size:14px;letter-spacing:0}.brand{min-width:0}.brand{overflow:hidden}
+.live{font-size:0;padding:0;width:10px;height:10px;background:none}.live::before{width:8px;height:8px}
+.top{gap:10px;padding:10px 12px}.menu-btn,.icon-btn{width:44px;height:44px;border-radius:14px}
+#helperChip.warn .grow{max-height:3.4em;overflow:hidden;position:relative;-webkit-mask:linear-gradient(#000 55%,transparent);mask:linear-gradient(#000 55%,transparent);cursor:pointer}
+#helperChip.warn.open .grow{max-height:none;-webkit-mask:none;mask:none}
+@media(hover:none){.dropzone{display:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+<symbol id="i-tune" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+<symbol id="i-term" viewBox="0 0 24 24"><path d="m4 17 6-6-6-6M12 19h8"/></symbol>
+<symbol id="i-dl" viewBox="0 0 24 24"><path d="M12 3v12m0 0 5-5m-5 5-5-5M4 21h16"/></symbol>
+<symbol id="i-clip" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 2c.6 5.6 4.4 9.4 10 10-5.6.6-9.4 4.4-10 10-.6-5.6-4.4-9.4-10-10 5.6-.6 9.4-4.4 10-10z"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8M5 10v10h14V10"/></symbol>
+<symbol id="i-hist" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol>
+<symbol id="i-cpu" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+<symbol id="i-share" viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v14"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+</defs></svg>
 <div class="app">
   <header class="top">
-    <button class="menu-btn" id="menuBtn" aria-label="القائمة">☰</button>
+    <button class="menu-btn" id="menuBtn" aria-label="القائمة"><svg class="i " viewBox="0 0 24 24"><use href="#i-menu"/></svg></button>
     <div class="brand">
-      <div class="logo">ALTRA-DAWNLOADER</div>
+      <div class="logo"><b>ALTRA</b>-DAWNLOADER</div>
       <div class="sub" id="subTitle">v8.6 · محمل مستقل</div>
     </div>
-    <span class="live">● LIVE</span>
-    <button class="icon-btn" id="consoleBtn" title="Console · تتبع الأخطاء" style="position:relative" data-sheet-link="console">⌘<span class="err-dot"></span></button>
-    <button class="icon-btn" id="quickInstall" title="تثبيت" style="display:none">⬇</button>
+    <span class="live">LIVE</span>
+    <button class="icon-btn" id="consoleBtn" title="Console" style="position:relative" data-sheet-link="console"><svg class="i " viewBox="0 0 24 24"><use href="#i-term"/></svg><span class="err-dot"></span></button>
+    <button class="icon-btn" id="quickInstall" title="تثبيت" style="display:none"><svg class="i " viewBox="0 0 24 24"><use href="#i-dl"/></svg></button>
+    <button class="icon-btn" title="الإعدادات" data-sheet-link="settings"><svg class="i " viewBox="0 0 24 24"><use href="#i-tune"/></svg></button>
   </header>
   <div class="laser-bar" id="laserBar"></div>
 
@@ -160,19 +222,31 @@ button.ghost{background:transparent}
 
   <div class="env-warn" id="envWarn"></div>
 
-  <div class="chip" id="helperChip">⏳ فحص المساعد المحلي…</div>
+  <div class="chip" id="helperChip"><i class="sd wn"></i> فحص المساعد المحلي…</div>
 
   <!-- HOME -->
   <div id="sheet-home" class="sheet active">
-    <div class="card">
-      <h2>⚡ تحميل فوري</h2>
-      <textarea id="url" rows="3" placeholder="الصق الرابط هنا… أو من أي تطبيق: مشاركة ← ALTRA (يبدأ التحميل تلقائياً)"></textarea>
-      <div class="row" style="margin-top:8px">
-        <button class="act primary grow" id="go" style="padding:13px;font-weight:700">GO · ابدأ التحميل</button>
-        <button class="act ghost" id="paste">📋</button>
+    <section class="hero">
+      <div class="badge-pill"><span class="orb">A</span>نقدّم لكم ALTRA · الإصدار 8.6</div>
+      <h1>حمّل أي شيء<br>مع <em>ALTRA</em></h1>
+      <p>الصق الرابط وسيتولى المحمّل الباقي — فيديو وصوت من أكثر من ١٠٠٠ موقع، بأعلى جودة وبلا حسابات.</p>
+    </section>
+    <div class="prompt glow">
+      <textarea id="url" rows="3" placeholder="الصق رابط الفيديو أو الصوت هنا…"></textarea>
+      <div class="p-bar">
+        <button class="rb" id="paste" title="لصق من الحافظة"><svg class="i " viewBox="0 0 24 24"><use href="#i-clip"/></svg></button>
+        <button class="rb" data-sheet-link="search" title="بحث متقدم"><svg class="i " viewBox="0 0 24 24"><use href="#i-search"/></svg></button>
+        <div class="qsel"><select id="qQuality" aria-label="الجودة"><option value="max">أقصى جودة</option><option value="2160">4K</option><option value="1440">1440p</option><option value="1080">1080p</option><option value="720">720p</option><option value="480">480p</option><option value="360">360p</option></select><svg class="i " viewBox="0 0 24 24"><use href="#i-chev"/></svg></div>
+        <button id="go" title="ابدأ التحميل" aria-label="ابدأ التحميل"><svg class="i sp" viewBox="0 0 24 24"><use href="#i-spark"/></svg></button>
       </div>
       <div class="dropzone" id="dropzone">أسقط الروابط هنا</div>
-      <div class="small" style="margin-top:8px" id="hint">حتى 10 مهام · بعد التثبيت: شارك أي رابط من يوتيوب/إنستغرام/تيك توك ← اختر ALTRA ← يبدأ فوراً</div>
+    </div>
+    <div class="hintline" id="hint">حتى 10 مهام · بعد التثبيت: شارك أي رابط من يوتيوب/إنستغرام/تيك توك ← اختر ALTRA ← يبدأ فوراً</div>
+    <div class="chips-row">
+      <button class="qchip" data-sheet-link="helper"><svg class="i " viewBox="0 0 24 24"><use href="#i-cpu"/></svg>المساعد المحلي</button>
+      <button class="qchip" data-sheet-link="history"><svg class="i " viewBox="0 0 24 24"><use href="#i-hist"/></svg>السجل</button>
+      <button class="qchip" data-sheet-link="stats"><svg class="i " viewBox="0 0 24 24"><use href="#i-chart"/></svg>الإحصائيات</button>
+      <button class="qchip" data-sheet-link="settings"><svg class="i " viewBox="0 0 24 24"><use href="#i-tune"/></svg>الإعدادات</button>
     </div>
 
     <div class="card">
@@ -180,19 +254,19 @@ button.ghost{background:transparent}
       <div id="queue"><div class="empty">لا مهام بعد — الصق رابطاً أو شارك من تطبيق آخر</div></div>
     </div>
 
-    <div class="card">
-      <h2>🌐 المنصات المدعومة</h2>
+    <div class="gal-title">المنصات المدعومة</div>
+    <div>
       <div class="platforms" id="homePlatforms">
-        <div class="plat" data-plat="youtube" title="YouTube"><span>▶️</span>يوتيوب</div>
-        <div class="plat" data-plat="instagram" title="Instagram"><span>📸</span>إنستغرام</div>
-        <div class="plat" data-plat="tiktok" title="TikTok"><span>🎵</span>تيك توك</div>
-        <div class="plat" data-plat="x" title="X / Twitter"><span>𝕏</span>إكس</div>
-        <div class="plat" data-plat="facebook" title="Facebook"><span>👤</span>فيسبوك</div>
-        <div class="plat" data-plat="reddit" title="Reddit"><span>🔴</span>ريديت</div>
-        <div class="plat" data-plat="soundcloud" title="SoundCloud"><span>☁️</span>ساوندكلاود</div>
-        <div class="plat" data-plat="vimeo" title="Vimeo"><span>🎬</span>فيميو</div>
-        <div class="plat" data-plat="twitch" title="Twitch"><span>🟣</span>تويتش</div>
-        <div class="plat" data-plat="direct" title="رابط مباشر"><span>🔗</span>مباشر</div>
+        <div class="plat" data-plat="youtube" title="YouTube"><span class="pg">▶️</span><em class="pl">يوتيوب</em></div>
+        <div class="plat" data-plat="instagram" title="Instagram"><span class="pg">📸</span><em class="pl">إنستغرام</em></div>
+        <div class="plat" data-plat="tiktok" title="TikTok"><span class="pg">🎵</span><em class="pl">تيك توك</em></div>
+        <div class="plat" data-plat="x" title="X / Twitter"><span class="pg">𝕏</span><em class="pl">إكس</em></div>
+        <div class="plat" data-plat="facebook" title="Facebook"><span class="pg">👤</span><em class="pl">فيسبوك</em></div>
+        <div class="plat" data-plat="reddit" title="Reddit"><span class="pg">🔴</span><em class="pl">ريديت</em></div>
+        <div class="plat" data-plat="soundcloud" title="SoundCloud"><span class="pg">☁️</span><em class="pl">ساوندكلاود</em></div>
+        <div class="plat" data-plat="vimeo" title="Vimeo"><span class="pg">🎬</span><em class="pl">فيميو</em></div>
+        <div class="plat" data-plat="twitch" title="Twitch"><span class="pg">🟣</span><em class="pl">تويتش</em></div>
+        <div class="plat" data-plat="direct" title="رابط مباشر"><span class="pg">🔗</span><em class="pl">مباشر</em></div>
       </div>
       <div class="plat-hint">اضغط أيقونة لتجهيز البحث أو الصق رابط المنصة · المساعد المحلي يدعم أكثر من 1000 موقع</div>
     </div>
@@ -347,18 +421,18 @@ button.ghost{background:transparent}
       <div id="advResults" style="margin-top:12px"></div>
     </div>
     <div class="card">
-      <h2>🌐 اختصارات المنصات</h2>
-      <div class="platforms">
-        <div class="plat" data-plat="youtube" title="YouTube"><span>▶️</span>يوتيوب</div>
-        <div class="plat" data-plat="instagram" title="Instagram"><span>📸</span>إنستغرام</div>
-        <div class="plat" data-plat="tiktok" title="TikTok"><span>🎵</span>تيك توك</div>
-        <div class="plat" data-plat="x" title="X"><span>𝕏</span>إكس</div>
-        <div class="plat" data-plat="facebook" title="Facebook"><span>👤</span>فيسبوك</div>
-        <div class="plat" data-plat="reddit" title="Reddit"><span>🔴</span>ريديت</div>
-        <div class="plat" data-plat="soundcloud" title="SoundCloud"><span>☁️</span>ساوندكلاود</div>
-        <div class="plat" data-plat="vimeo" title="Vimeo"><span>🎬</span>فيميو</div>
-        <div class="plat" data-plat="twitch" title="Twitch"><span>🟣</span>تويتش</div>
-        <div class="plat" data-plat="direct" title="مباشر"><span>🔗</span>مباشر</div>
+      <h2>اختصارات المنصات</h2>
+      <div class="platforms compact">
+        <div class="plat" data-plat="youtube" title="YouTube"><span class="pg">▶️</span><em class="pl">يوتيوب</em></div>
+        <div class="plat" data-plat="instagram" title="Instagram"><span class="pg">📸</span><em class="pl">إنستغرام</em></div>
+        <div class="plat" data-plat="tiktok" title="TikTok"><span class="pg">🎵</span><em class="pl">تيك توك</em></div>
+        <div class="plat" data-plat="x" title="X"><span class="pg">𝕏</span><em class="pl">إكس</em></div>
+        <div class="plat" data-plat="facebook" title="Facebook"><span class="pg">👤</span><em class="pl">فيسبوك</em></div>
+        <div class="plat" data-plat="reddit" title="Reddit"><span class="pg">🔴</span><em class="pl">ريديت</em></div>
+        <div class="plat" data-plat="soundcloud" title="SoundCloud"><span class="pg">☁️</span><em class="pl">ساوندكلاود</em></div>
+        <div class="plat" data-plat="vimeo" title="Vimeo"><span class="pg">🎬</span><em class="pl">فيميو</em></div>
+        <div class="plat" data-plat="twitch" title="Twitch"><span class="pg">🟣</span><em class="pl">تويتش</em></div>
+        <div class="plat" data-plat="direct" title="مباشر"><span class="pg">🔗</span><em class="pl">مباشر</em></div>
       </div>
       <div class="plat-hint">اضغط منصة لفتح البحث المتقدم مع فلترها، أو الصق رابطها في الصفحة الرئيسية</div>
     </div>
@@ -372,7 +446,7 @@ button.ghost{background:transparent}
         المتصفح لا يستطيع وحده استخراج فيديو يوتيوب أو إنستغرام أو تيك توك. المساعد برنامج صغير يعمل على جهازك
         ويستخدم <b>yt-dlp</b> (أكثر من 1000 موقع)، والتطبيق يرسل له الرابط ويستلم الملف. لا خوادم خارجية ولا حسابات.
       </div>
-      <div class="chip" id="helperChip2" style="margin:10px 0 0">⏳</div>
+      <div class="chip" id="helperChip2" style="margin:10px 0 0"><i class="sd wn"></i></div>
       <div class="small" style="margin-top:8px;line-height:1.7">
         بعد تشغيل المساعد يمكنك فتح <b>لوحة التحكم</b> على
         <a href="http://127.0.0.1:8787/dashboard" target="_blank" rel="noopener" style="color:var(--c)">http://127.0.0.1:8787/dashboard</a>
@@ -426,7 +500,7 @@ python altra-server.py</code><button class="act" data-copy="cmd3">نسخ</button
     <div class="card">
       <h2>ℹ عن التطبيق</h2>
       <div class="small" style="line-height:1.75">
-        <b style="color:var(--c);font-size:15px">ALTRA-DAWNLOADER v8.5</b><br>
+        <b style="color:var(--c);font-size:15px">ALTRA-DAWNLOADER v8.6</b><br>
         محمل وسائط قابل للتثبيت (PWA) يعمل كتطبيق على الجهاز.<br><br>
         <b>القدرات المستقلة:</b><br>
         • تحميل الملفات المباشرة (mp4, mp3, …) بأقصى سرعة عبر البث إلى القرص<br>
@@ -475,21 +549,21 @@ python altra-server.py</code><button class="act" data-copy="cmd3">نسخ</button
 <!-- Drawer -->
 <div class="overlay" id="overlay"></div>
 <aside class="drawer" id="drawer">
-  <h3>القائمة</h3>
-  <button class="ditem" data-sheet="home"><span class="ic">⌂</span><span class="lab">الرئيسية · التحميل</span></button>
-  <button class="ditem" data-sheet="settings"><span class="ic">⚙️</span><span class="lab">الإعدادات</span><span class="chev">‹</span></button>
-  <button class="ditem" data-sheet="history"><span class="ic">▣</span><span class="lab">السجل</span></button>
-  <button class="ditem" data-sheet="stats"><span class="ic">◈</span><span class="lab">الإحصائيات</span></button>
-  <button class="ditem" data-sheet="search"><span class="ic">🔍</span><span class="lab">بحث متقدم</span></button>
+  <h3>ALTRA</h3>
+  <button class="ditem active" data-sheet="home"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-home"/></svg></span><span class="lab">الرئيسية · التحميل</span></button>
+  <button class="ditem" data-sheet="settings"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-tune"/></svg></span><span class="lab">الإعدادات</span></button>
+  <button class="ditem" data-sheet="history"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-hist"/></svg></span><span class="lab">السجل</span></button>
+  <button class="ditem" data-sheet="stats"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-chart"/></svg></span><span class="lab">الإحصائيات</span></button>
+  <button class="ditem" data-sheet="search"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-search"/></svg></span><span class="lab">بحث متقدم</span></button>
   <div class="dsep"></div>
-  <button class="ditem" id="shareAppBtn"><span class="ic">📤</span><span class="lab">مشاركة التطبيق</span></button>
-  <button class="ditem" id="installMenuBtn"><span class="ic">⬇</span><span class="lab">تثبيت على سطح المكتب</span></button>
+  <button class="ditem" id="shareAppBtn"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-share"/></svg></span><span class="lab">مشاركة التطبيق</span></button>
+  <button class="ditem" id="installMenuBtn"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-dl"/></svg></span><span class="lab">تثبيت على سطح المكتب</span></button>
   <div class="dsep"></div>
-  <button class="ditem" data-sheet="helper"><span class="ic">🧩</span><span class="lab">المساعد المحلي</span></button>
-  <button class="ditem" data-sheet="about"><span class="ic">ℹ</span><span class="lab">نبذة عن التطبيق</span></button>
-  <button class="ditem" data-sheet="contact"><span class="ic">✉</span><span class="lab">التواصل مع المطور</span></button>
-  <button class="ditem" data-sheet="console"><span class="ic">⌘</span><span class="lab">Console</span></button>
-  <div class="dfoot">ALTRA-DAWNLOADER v8.5<br>nidalwatfa99@gmail.com<br>WhatsApp 0096998854450</div>
+  <button class="ditem" data-sheet="helper"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-cpu"/></svg></span><span class="lab">المساعد المحلي</span></button>
+  <button class="ditem" data-sheet="about"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-info"/></svg></span><span class="lab">نبذة عن التطبيق</span></button>
+  <button class="ditem" data-sheet="contact"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-mail"/></svg></span><span class="lab">التواصل مع المطور</span></button>
+  <button class="ditem" data-sheet="console"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-term"/></svg></span><span class="lab">Console</span></button>
+  <div class="dfoot">ALTRA-DAWNLOADER v8.6<br>nidalwatfa99@gmail.com<br>WhatsApp 0096998854450</div>
 </aside>
 
 <div id="toast" class="toast"></div>
@@ -693,7 +767,7 @@ async function checkHelper(force) {
     helper.ok = false; helper.info = null; helper.err = /failed to fetch|load failed|networkerror/i.test(e.message || '') ? 'المتصفح منع الاتصال أو المساعد متوقف' : (e.name === 'AbortError' ? 'انتهت المهلة' : (e.message || String(e)));
     // تشخيص السبب: هل الخادم يصل إليه المتصفح أصلاً؟
     helper.reason = 'blocked';
-    try { await fetch(base + '/health', { mode: 'no-cors', cache: 'no-store', signal: AbortSignal.timeout ? AbortSignal.timeout(2500) : undefined }); helper.reason = 'origin'; } catch {}
+    try { await fetch(base + '/health', { mode: 'no-cors', cache: 'no-store', signal: AbortSignal.timeout ? AbortSignal.timeout(2500) : undefined }); helper.reason = 'cors'; } catch {}
   } finally { clearTimeout(t); }
   if (!helper.ok && /127\.0\.0\.1/.test(base) && !checkHelper._alt) {
     checkHelper._alt = 1; $('#helperUrl').value = base.replace('127.0.0.1', 'localhost');
@@ -739,6 +813,8 @@ async function fullDiag() {
     log('→ Chrome يمنع الاتصال بالمساعد (إذن «الشبكة المحلية») أو المساعد متوقف. افتح http://localhost:8787 مباشرة.');
   } else if (helper.reason === 'origin') {
     log('→ المساعد يعمل لكنه يرفض هذا الموقع. شغّله مع: --origin ' + location.origin);
+  } else if (helper.reason === 'cors') {
+    log('→ المساعد يعمل والمنفذ مفتوح، لكن Chrome يحجب الرد (إذن «الشبكة المحلية» مرفوض أو أُغلق). اضغط 🔒 ← إعدادات الموقع ← الشبكة المحلية ← سماح، ثم أعد تحميل الصفحة. أو افتح http://localhost:8787');
   }
   log('══ انتهى ══');
 }
@@ -747,7 +823,7 @@ function renderHelperChip() {
   if (helper.ok) {
     const i = helper.info || {};
     cls = 'chip ok';
-    html = '🟢 <span class="grow">المساعد المحلي متصل · كل المواقع مدعومة'
+    html = '<i class="sd"></i><span class="grow">المساعد المحلي متصل · كل المواقع مدعومة'
       + (i.ytdlp ? ' · yt-dlp ' + esc(i.ytdlp) : ' · <b>yt-dlp غير مثبّت</b>')
       + (i.ytdlp_old ? ' · ⚠ yt-dlp قديم، حدّثه' : '')
       + (i.ffmpeg ? '' : ' · بدون ffmpeg')
@@ -757,10 +833,12 @@ function renderHelperChip() {
     cls = 'chip warn';
     const O = esc(location.origin);
     const why = helper.reason === 'origin'
-      ? '🟠 المساعد <b>يعمل</b> لكنه يرفض هذا الموقع <b dir="ltr" style="user-select:text">' + O + '</b>. أوقفه في Termux (Ctrl+C) وشغّله هكذا:<br><code dir="ltr" style="user-select:text;display:block;margin-top:4px">python altra-server.py --origin ' + O + '</code>'
+      ? '<i class="sd wn"></i> المساعد <b>يعمل</b> لكنه يرفض هذا الموقع <b dir="ltr" style="user-select:text">' + O + '</b>. أوقفه في Termux (Ctrl+C) وشغّله هكذا:<br><code dir="ltr" style="user-select:text;display:block;margin-top:4px">python altra-server.py --origin ' + O + '</code>'
+      : helper.reason === 'cors'
+      ? '<i class="sd wn"></i> المساعد <b>يعمل</b> لكن Chrome يحجب الاتصال به من هذا الموقع (إذن «الشبكة المحلية»). اضغط 🔒 بجانب الرابط ← إعدادات الموقع ← «الشبكة المحلية» ← سماح، ثم أعد تحميل الصفحة. أو الحل المضمون: «افتح من المساعد» وثبّت التطبيق من هناك.'
       : helper.reason === 'blocked'
-      ? '🟡 المتصفح يمنع هذا الموقع من الوصول إلى المساعد على جهازك (إذن «الشبكة المحلية» أو حماية Chrome)، أو أن المساعد متوقف. جرّب: 1) تأكد أن المساعد يعمل في Termux. 2) اضغط 🔒 بجانب الرابط ← إعدادات الموقع ← اسمح بـ«الشبكة المحلية». أو الحل المضمون: «افتح من المساعد» وثبّت التطبيق من هناك.'
-      : '🟡 المساعد المحلي غير متصل · تعمل الملفات المباشرة فقط. لتحميل يوتيوب وإنستغرام وغيرهما شغّل المساعد.';
+      ? '<i class="sd wn"></i> المتصفح يمنع هذا الموقع من الوصول إلى المساعد على جهازك (إذن «الشبكة المحلية» أو حماية Chrome)، أو أن المساعد متوقف. جرّب: 1) تأكد أن المساعد يعمل في Termux. 2) اضغط 🔒 بجانب الرابط ← إعدادات الموقع ← اسمح بـ«الشبكة المحلية». أو الحل المضمون: «افتح من المساعد» وثبّت التطبيق من هناك.'
+      : '<i class="sd wn"></i> المساعد المحلي غير متصل · تعمل الملفات المباشرة فقط. لتحميل يوتيوب وإنستغرام وغيرهما شغّل المساعد.';
     html = '<span class="grow">' + why + '</span>'
       + '<button class="act primary" data-sheet-link="helper" style="padding:6px 10px">كيف؟</button>'
       + '<button class="act" data-sheet-link="console" style="padding:6px 10px">⌘ سجل</button>'
@@ -793,12 +871,23 @@ async function helperRun(task, signal) {
   if (!r.ok || !j.id) throw new Error(j.error || ('HTTP ' + r.status));
   task.engine = 'helper'; task.status = 'downloading'; task.progress = Math.max(task.progress, 8);
   renderQueue();
-  let s;
+  let s, pollFails = 0;
   try {
     while (true) {
       await sleep(700, signal);
-      const sr = await hfetch(base + '/api/status/' + j.id, { signal, cache: 'no-store' });
-      s = await sr.json();
+      let sr;
+      try {
+        sr = await hfetch(base + '/api/status/' + j.id, { signal, cache: 'no-store' });
+        s = await sr.json();
+        pollFails = 0;
+      } catch (pe) {
+        if (pe.name === 'AbortError') throw pe;
+        // تعثّر لحظي (تجميد أندرويد للخلفية، تبديل شبكة…): أعد المحاولة بدل إفشال المهمة
+        if (++pollFails > 10) throw new Error('انقطع الاتصال بالمساعد أثناء التحميل (تأكد أن Termux يعمل)');
+        task.note = 'إعادة الاتصال بالمساعد… (' + pollFails + ')'; renderQueue();
+        await sleep(Math.min(800 * pollFails, 4000), signal);
+        continue;
+      }
       if (!sr.ok) throw new Error(s.error || 'status failed');
       task.progress = Math.max(task.progress, Math.min(99, s.progress || 0));
       task.speed = s.speed || 0; task.bytes = s.bytes || 0;
@@ -874,6 +963,8 @@ function showSheet(id) {
   const el = $('#sheet-' + id);
   if (el) el.classList.add('active');
   closeDrawer();
+  $$('.ditem[data-sheet]').forEach(b => b.classList.toggle('active', b.dataset.sheet === id));
+  window.scrollTo({top:0,behavior:'smooth'});
   if (id === 'stats') renderStats();
   if (id === 'history') renderHistory();
   if (id === 'helper') checkHelper(true);
@@ -1890,11 +1981,24 @@ async function clipCheck() {
 document.addEventListener('visibilitychange', clipCheck);
 window.addEventListener('focus', clipCheck);
 setTimeout(clipCheck, 600);
+try {
+  if (/^https?:$/.test(location.protocol) && !/^(localhost|127\.|\[::1\])/.test(location.hostname)) {
+    const c1 = $('#cmd1');
+    if (c1) c1.textContent = 'curl -fsSL ' + new URL('setup-termux.sh', location.href).href + ' | ALTRA_BASE=' + new URL('./', location.href).href.replace(/\/$/, '') + ' bash';
+  }
+} catch (e) { /* يبقى الأمر الافتراضي */ }
 log('ALTRA-DAWNLOADER v8.6 READY');
 updateLaser();
 log('للمنصات الاجتماعية: ضع خادمك في الإعدادات لتحقيق الاستقلالية.');
 log('للملفات المباشرة: يعمل فوراً بدون أي خادم خارجي.');
+$('#helperChip').addEventListener('click',e=>{if(e.target.closest('button,a'))return;$('#helperChip').classList.toggle('open');});
+/* Quick quality pill ⇄ settings */
+(function(){const q=$('#quality'),qq=$('#qQuality');if(!q||!qq)return;
+ const pull=()=>{if(q.value)qq.value=q.value;};
+ qq.addEventListener('change',()=>{q.value=qq.value;q.dispatchEvent(new Event('change'));});
+ q.addEventListener('change',pull);pull();setTimeout(pull,400);window.addEventListener('load',pull);})();
 })();
+
 </script>
 </body>
 </html>

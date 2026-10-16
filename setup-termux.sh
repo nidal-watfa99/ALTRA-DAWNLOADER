@@ -1,7 +1,16 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # ALTRA Helper: إعداد تلقائي على أندرويد (Termux)
 set -e
-BASE="${ALTRA_BASE:-https://nidal-watfa99.github.io}"
+
+# مصادر التنزيل بالترتيب (يمكن تحديد مصدر أول عبر ALTRA_BASE)
+BASES=()
+[ -n "$ALTRA_BASE" ] && BASES+=("${ALTRA_BASE%/}")
+BASES+=(
+  "https://nidal-watfa99.github.io/ALTRA-DAWNLOADER"
+  "https://nidal-watfa99.github.io"
+  "https://raw.githubusercontent.com/nidal-watfa99/ALTRA-DAWNLOADER/main"
+  "https://raw.githubusercontent.com/nidal-watfa99/nidal-watfa99.github.io/main"
+)
 
 echo "▶ تثبيت الحزم (python, ffmpeg, nodejs)…"
 pkg update -y
@@ -13,17 +22,49 @@ python -m pip install -U "yt-dlp[default]" || python -m pip install -U yt-dlp
 
 mkdir -p "$HOME/altra"
 cd "$HOME/altra"
-ZIP=$(ls -t "$HOME"/storage/downloads/ALTRA-DAWNLOADER*.zip 2>/dev/null | head -1)
-if [ -n "$ZIP" ]; then
-  echo "▶ تثبيت الملفات من الأرشيف المحلي: $(basename "$ZIP")"
-  rm -rf "$TMPDIR/altra-src" && mkdir -p "$TMPDIR/altra-src" && unzip -oq "$ZIP" -d "$TMPDIR/altra-src"
-  cp -f "$TMPDIR"/altra-src/*/altra-server.py "$TMPDIR"/altra-src/*/index.html "$TMPDIR"/altra-src/*/sw.js \
-        "$TMPDIR"/altra-src/*/manifest.webmanifest "$TMPDIR"/altra-src/*/icon-*.png .
-else
-  echo "▶ تنزيل ملفات ALTRA من GitHub…"
-  for f in altra-server.py index.html sw.js manifest.webmanifest icon-192.png icon-512.png; do
-    curl -fsSL -o "$f" "$BASE/$f" && echo "   ✓ $f"
+
+# يتحقق أن الملف المنزَّل سليم (وليس صفحة خطأ HTML)
+fetch_one() {  # $1=file
+  local f="$1" b tmp="$1.part"
+  for b in "${BASES[@]}"; do
+    if curl -fsSL --connect-timeout 10 --max-time 120 -o "$tmp" "$b/$f" 2>/dev/null; then
+      case "$f" in
+        altra-server.py) grep -q '^VERSION' "$tmp" || { rm -f "$tmp"; continue; } ;;
+        index.html)      grep -qi '<html' "$tmp"     || { rm -f "$tmp"; continue; } ;;
+        sw.js)           grep -q 'addEventListener' "$tmp" || { rm -f "$tmp"; continue; } ;;
+      esac
+      mv -f "$tmp" "$f"; echo "   ✓ $f  ← $b"; return 0
+    fi
+    rm -f "$tmp"
   done
+  return 1
+}
+
+echo "▶ تنزيل ملفات ALTRA (الأحدث من الشبكة أولاً)…"
+OK=1
+for f in altra-server.py index.html sw.js manifest.webmanifest icon-192.png icon-512.png; do
+  if ! fetch_one "$f"; then
+    echo "   ✗ تعذّر تنزيل $f"
+    case "$f" in altra-server.py|index.html) OK=0 ;; esac
+  fi
+done
+
+if [ "$OK" -ne 1 ]; then
+  # بديل: أرشيف محلي في التنزيلات (قد يكون أقدم من النسخة المنشورة)
+  ZIP=$(ls -t "$HOME"/storage/downloads/ALTRA-DAWNLOADER*.zip 2>/dev/null | head -1)
+  if [ -n "$ZIP" ]; then
+    T="${TMPDIR:-$PREFIX/tmp}/altra-src"
+    echo "▶ لا اتصال بالمصادر. تثبيت من الأرشيف المحلي: $(basename "$ZIP")"
+    rm -rf "$T" && mkdir -p "$T" && unzip -oq "$ZIP" -d "$T"
+    cp -f "$T"/*/altra-server.py "$T"/*/index.html "$T"/*/sw.js "$T"/*/manifest.webmanifest "$T"/*/icon-*.png . 2>/dev/null || \
+    cp -f "$T"/altra-server.py "$T"/index.html "$T"/sw.js "$T"/manifest.webmanifest "$T"/icon-*.png .
+  fi
+fi
+
+if [ ! -s altra-server.py ]; then
+  echo "❌ لم يتم الحصول على altra-server.py. تحقق من الإنترنت ثم أعد تشغيل الأمر،"
+  echo "   أو نزّل ALTRA-DAWNLOADER.zip إلى مجلد التنزيلات وأعد التشغيل."
+  exit 1
 fi
 echo "   النسخة المثبتة: $(grep -m1 '^VERSION' altra-server.py)"
 
