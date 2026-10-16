@@ -1,4 +1,4 @@
-const CACHE = 'altra-v8-11';
+const CACHE = 'altra-v8-13';
 const ASSETS = [
   './',
   './index.html',
@@ -23,7 +23,7 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
   if (url.origin !== self.location.origin) return;
-  if (/^\/(api|file|health|dashboard|admin|control)(\/|$)/.test(url.pathname) || e.request.headers.has('range')) return;
+  if (/^\/(api|file|lib|health|dashboard|admin|control)(\/|$)/.test(url.pathname) || e.request.headers.has('range')) return;
   // الصفحة نفسها: الشبكة أولاً حتى تصل التحديثات فوراً، ثم الذاكرة عند انقطاع الإنترنت
   if (e.request.mode === 'navigate' || /\.html$/.test(url.pathname)) {
     e.respondWith(

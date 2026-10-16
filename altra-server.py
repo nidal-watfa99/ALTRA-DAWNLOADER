@@ -36,7 +36,7 @@ import zipfile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, quote, unquote, urlparse
 
-VERSION = "8.6"
+VERSION = "8.8"
 HERE = os.path.realpath(os.path.dirname(os.path.abspath(__file__)))
 
 DASHBOARD_HTML = r'''<!DOCTYPE html>
@@ -117,7 +117,7 @@ const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
 function fmtBytes(n){if(!n||n<0)return'—';const u=['B','KB','MB','GB'];let i=0;while(n>=1024&&i<3){n/=1024;i++}return n.toFixed(i?1:0)+' '+u[i]}
 function fmtUp(s){const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;return(h?h+'س ':'')+(m?m+'د ':'')+sec+'ث'}
-function badge(st){return'<span class="badge b-'+st+'">'+({queued:'في الانتظار',running:'جاري',done:'مكتمل',error:'خطأ',cancelled:'ملغى'}[st]||st)+'</span>'}
+function badge(st){return'<span class="badge b-'+st+'">'+({queued:'في الانتظار',running:'جاري',paused:'متوقف مؤقتاً',done:'مكتمل',error:'خطأ',cancelled:'ملغى'}[st]||st)+'</span>'}
 async function refresh(){
   try{
     const [info,jobsRes]=await Promise.all([fetch('/api/info').then(r=>r.json()),fetch('/api/jobs').then(r=>r.json())]);
@@ -144,7 +144,7 @@ async function refresh(){
         <td>${esc(j.site)||'—'}</td>
         <td>${fmtBytes(j.size||j.bytes)}</td>
         <td>${j.speed?fmtBytes(j.speed)+'/s':'—'}</td>
-        <td>${['queued','running'].includes(j.state)?`<button onclick="cancel('${esc(j.id)}')">إلغاء</button>`:''}
+        <td>${['queued','running','paused'].includes(j.state)?`<button onclick="cancel('${esc(j.id)}')">إلغاء</button>`:''}
             ${j.state==='done'?`<a href="/file/${esc(j.id)}" download>تحميل</a>`:''}</td>`;
       tb.appendChild(tr);
     }
@@ -174,11 +174,20 @@ except ImportError:
             except ImportError:
                 sys.path.remove(cand)
 
-AUDIO_FORMATS = {"mp3", "ogg", "opus", "wav", "m4a", "flac", "aac"}
-VIDEO_FORMATS = {"mp4", "webm", "best"}
+AUDIO_FORMATS = {"mp3", "m4a", "aac", "flac", "wav", "ogg", "opus", "alac"}
+VIDEO_FORMATS = {"mp4", "mkv", "webm", "mov", "avi", "flv", "gif", "best"}
+# صيغ تُدمج مباشرة، وأخرى تُحوَّل بعد التحميل عبر ffmpeg
+MERGE_FORMATS = {"mp4", "mkv", "webm"}
+CONVERT_FORMATS = {"mov", "avi", "flv", "gif"}
 STATIC_OK = {".html", ".js", ".webmanifest", ".png", ".json", ".css", ".svg", ".ico"}
 # المواقع المسموح لها افتراضياً بالاتصال بالمساعد (يمكن إضافة المزيد بـ --origin)
-DEFAULT_ORIGINS = {"https://nidal-watfa99.github.io"}
+DEFAULT_ORIGINS = {"https://nidal-watfa99.github.io", "https://danial56hd-wq.github.io"}
+# حدود السرعة المسموحة (للخيار «حد السرعة» في التطبيق) → بايت/ثانية
+RATE_LIMITS = {"250K": 250 * 1024, "500K": 500 * 1024, "1M": 1024 * 1024, "2M": 2 * 1024 * 1024, "5M": 5 * 1024 * 1024}
+MEDIA_EXTS = {".mp4", ".m4v", ".mov", ".webm", ".mkv", ".avi", ".flv", ".gif", ".3gp",
+              ".mp3", ".m4a", ".aac", ".flac", ".wav", ".ogg", ".opus", ".alac", ".weba", ".mka", ".zip"}
+LIB = {}          # معرّف ← مسار ملف في «ملفاتي»
+LIB_LOCK = threading.Lock()
 
 CFG = {
     "cache": os.path.join(tempfile.gettempdir(), "altra-cache"),
@@ -190,6 +199,7 @@ CFG = {
     "loopback": True,
     "has_ffmpeg": bool(shutil.which("ffmpeg")),
     "save": None,
+    "gallery": False,
 }
 JOBS = {}
 JOBS_LOCK = threading.Lock()
@@ -267,9 +277,15 @@ class Job:
         self.finished = None
         self.cancel = threading.Event()
         self.dir = os.path.join(CFG["cache"], self.id)
+        self.pausing = False        # طُلب الإيقاف المؤقت (يُحتفظ بالملف الجزئي)
+        self.resumed = False        # استُؤنفت المهمة بعد إيقاف
+        self.thumbnail = ""
+        self.duration = None
+        self.uploader = ""
 
     def public(self):
         return {
+            "thumbnail": self.thumbnail, "duration": self.duration, "uploader": self.uploader,
             "id": self.id, "state": self.state, "phase": self.phase,
             "progress": round(self.progress, 1), "speed": self.speed or 0,
             "eta": self.eta, "bytes": self.bytes, "title": self.title,
@@ -383,7 +399,7 @@ def build_opts(job, hook):
     if audio:
         opts["format"] = "bestaudio/best"
         if ff:
-            codec = fmt if fmt in AUDIO_FORMATS else "mp3"
+            codec = fmt if fmt in AUDIO_FORMATS else ("best" if fmt == "best" else "mp3")
             pp = {"key": "FFmpegExtractAudio", "preferredcodec": "vorbis" if codec == "ogg" else codec}
             if codec in ("mp3", "ogg", "opus"):
                 pp["preferredquality"] = "320"
@@ -394,6 +410,16 @@ def build_opts(job, hook):
         if fmt == "webm":
             opts["format"] = (f"bv*{hf}[ext=webm]+ba[ext=webm]/bv*{hf}+ba/b{hf}/b")
             opts["merge_output_format"] = "webm"
+        elif fmt == "mkv":
+            opts["format"] = f"bv*{hf}+ba/b{hf}/b"
+            opts["merge_output_format"] = "mkv"
+        elif fmt == "best":
+            # الأصل بلا أي تحويل: أفضل فيديو + أفضل صوت بحاويته الطبيعية
+            opts["format"] = f"bv*{hf}+ba/b{hf}/b"
+        elif fmt in CONVERT_FORMATS:
+            opts["format"] = f"bv*{hf}+ba/b{hf}/b"
+            opts["merge_output_format"] = "mkv"
+            opts["postprocessors"] = [{"key": "FFmpegVideoConvertor", "preferedformat": fmt}]
         else:
             opts["format"] = (f"bv*{hf}[ext=mp4]+ba[ext=m4a]/bv*{hf}+ba/b{hf}[ext=mp4]/b{hf}/b")
             opts["merge_output_format"] = "mp4"
@@ -401,6 +427,26 @@ def build_opts(job, hook):
         stages = 2
     else:
         opts["format"] = f"b{hf}[ext=mp4]/b{hf}/b[ext=mp4]/b"
+        if fmt not in ("mp4", "best"):
+            slog("ffmpeg غير موجود: لا يمكن التحويل إلى %s، سيُحفظ بصيغته الأصلية (ثبّت ffmpeg)" % fmt, "warn", job)
+
+    # ── إضافات 8.8: حد السرعة · الاستئناف · الترجمة · الغلاف والوسوم ──
+    lim = RATE_LIMITS.get(str(p.get("limit") or ""))
+    if lim:
+        opts["ratelimit"] = lim
+    if job.resumed:
+        opts["overwrites"] = None  # يكمل الملف الجزئي بدل البدء من الصفر
+    if ff and p.get("tags") and audio and fmt != "wav":
+        pps = opts.setdefault("postprocessors", [])
+        pps.append({"key": "FFmpegMetadata", "add_metadata": True})
+        if fmt in ("mp3", "m4a"):
+            opts["writethumbnail"] = True
+            pps.insert(0, {"key": "FFmpegThumbnailsConvertor", "format": "jpg", "when": "before_dl"})
+            pps.append({"key": "EmbedThumbnail"})
+    if ff and p.get("subs") and not audio and mode != "mute" and fmt in ("mp4", "mkv", "webm", "best"):
+        opts["writesubtitles"] = True
+        opts["subtitleslangs"] = ["ar", "en"]
+        opts.setdefault("postprocessors", []).append({"key": "FFmpegEmbedSubtitle"})
 
     cookies = cookies_path()
     if os.path.isfile(cookies):
@@ -415,6 +461,170 @@ def build_opts(job, hook):
     if runtimes:
         opts["js_runtimes"] = runtimes
     return opts, stages
+
+
+EXTRA_PP = {"FFmpegMetadata", "FFmpegThumbnailsConvertor", "EmbedThumbnail", "FFmpegEmbedSubtitle"}
+
+
+def strip_extras(opts):
+    """يزيل الترجمة والغلاف والوسوم (إضافات اختيارية) إن تسبّبت في فشل التحميل."""
+    for k in ("writesubtitles", "subtitleslangs", "writethumbnail"):
+        opts.pop(k, None)
+    pps = [x for x in opts.get("postprocessors", []) if x.get("key") not in EXTRA_PP]
+    if pps:
+        opts["postprocessors"] = pps
+    else:
+        opts.pop("postprocessors", None)
+
+
+def probe_opts():
+    """خيارات yt-dlp للاستعلام فقط (بلا تحميل): نفس الكوكيز ومحرّكات JS المستخدمة في التحميل."""
+    o = {"quiet": True, "no_warnings": True, "skip_download": True, "socket_timeout": 20,
+         "retries": 2, "noplaylist": False}
+    cookies = cookies_path()
+    if os.path.isfile(cookies):
+        o["cookiefile"] = cookies
+    elif CFG["browser"]:
+        o["cookiesfrombrowser"] = (CFG["browser"],)
+    runtimes = {rt: {} for rt in ("deno", "node", "bun") if shutil.which(rt)}
+    if runtimes:
+        o["js_runtimes"] = runtimes
+    return o
+
+
+def probe(url, query=None, n=12):
+    """معاينة رابط: العنوان والصورة والمدة والجودات المتاحة بأحجامها التقريبية، أو عناصر قائمة تشغيل/نتائج بحث."""
+    if yt_dlp is None:
+        raise RuntimeError("yt-dlp غير مثبّت. نفّذ: pip install -U \"yt-dlp[default]\"")
+
+    def ent(e):
+        u = e.get("webpage_url") or e.get("url") or ""
+        if u and not re.match(r"^https?://", u) and e.get("id") and (e.get("ie_key") or "").lower().startswith("youtube"):
+            u = "https://www.youtube.com/watch?v=" + e["id"]
+        th = e.get("thumbnail") or ""
+        if not th:
+            ts = e.get("thumbnails") or []
+            th = (ts[-1].get("url") if ts else "") or ""
+        if not th and e.get("id") and (e.get("ie_key") or "").lower().startswith("youtube"):
+            th = "https://i.ytimg.com/vi/%s/mqdefault.jpg" % e["id"]
+        return {"id": e.get("id"), "title": (e.get("title") or "")[:200], "url": u,
+                "duration": e.get("duration"), "thumbnail": th,
+                "uploader": (e.get("uploader") or e.get("channel") or "")[:80]}
+
+    o = probe_opts()
+    if query:
+        src = "ytsearch%d:%s" % (max(1, min(int(n), 25)), query)
+        o["extract_flat"] = "in_playlist"
+        with yt_dlp.YoutubeDL(o) as ydl:
+            info = ydl.extract_info(src, download=False)
+        return {"kind": "search", "title": query, "entries": [x for x in (ent(e) for e in (info.get("entries") or []) if e) if x["url"]]}
+
+    o["extract_flat"] = "in_playlist"
+    with yt_dlp.YoutubeDL(o) as ydl:
+        info = ydl.extract_info(normalize_url(url), download=False)
+    if not info:
+        raise RuntimeError("لم يُعثر على وسائط في هذا الرابط.")
+    if info.get("_type") == "playlist" or info.get("entries"):
+        ents = [ent(e) for e in (info.get("entries") or []) if e]
+        ents = [x for x in ents if x["url"]][:200]
+        return {"kind": "playlist", "title": (info.get("title") or "")[:200], "uploader": (info.get("uploader") or info.get("channel") or "")[:80],
+                "thumbnail": info.get("thumbnail") or (ents[0]["thumbnail"] if ents else ""), "entries": ents}
+
+    # فيديو واحد: نحتاج قائمة الصيغ كاملة لحساب الأحجام
+    if not info.get("formats"):
+        o2 = probe_opts()
+        o2["noplaylist"] = True
+        with yt_dlp.YoutubeDL(o2) as ydl:
+            info = ydl.extract_info(normalize_url(url), download=False)
+    fmts = info.get("formats") or []
+    best_audio = 0
+    for f in fmts:
+        if f.get("vcodec") in (None, "none") and f.get("acodec") not in (None, "none"):
+            best_audio = max(best_audio, f.get("filesize") or f.get("filesize_approx") or 0)
+    sizes = {}
+    for f in fmts:
+        h = f.get("height")
+        if not h or f.get("vcodec") in (None, "none"):
+            continue
+        sz = f.get("filesize") or f.get("filesize_approx") or 0
+        if f.get("acodec") in (None, "none"):
+            sz = sz + best_audio if sz else 0
+        if h not in sizes or (sz and sz > sizes[h]):
+            sizes[h] = sz
+    heights = sorted(sizes, reverse=True)
+    one = ent(info)
+    one.update({"kind": "video", "heights": heights, "sizes": {str(h): sizes[h] for h in heights},
+                "audio_size": best_audio, "live": bool(info.get("is_live")),
+                "thumbnail": info.get("thumbnail") or one["thumbnail"]})
+    return one
+
+
+def suggest(q):
+    """اقتراحات بحث يوتيوب (يجلبها المساعد لأن المتصفح يمنعها بـ CORS)."""
+    import urllib.request
+    import urllib.parse
+    u = "https://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q=" + urllib.parse.quote(q)
+    with urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0"}), timeout=6) as r:
+        data = json.loads(r.read().decode("utf-8", "replace"))
+    return [str(x) for x in (data[1] if len(data) > 1 else [])][:8]
+
+
+def library_roots():
+    """المجلدات التي يحفظ فيها المساعد (نفس منطق publish_to_gallery)."""
+    roots = []
+    base = detect_gallery_base()
+    if CFG["save"] and CFG["save"] != "off":
+        roots.append(CFG["save"])
+    elif base:
+        roots += [os.path.join(base, "ALTRA-DAWNLOADER"), os.path.join(base, "Movies", "ALTRA"), os.path.join(base, "Music", "ALTRA")]
+    roots.append(os.path.join(os.path.expanduser("~"), "altra-downloads"))
+    return [os.path.realpath(r) for r in dict.fromkeys(roots) if os.path.isdir(r)]
+
+
+def library_list():
+    import hashlib
+    items, seen = [], set()
+    roots = library_roots()
+    for root in roots:
+        for dp, dns, fns in os.walk(root):
+            dns[:] = [d for d in dns if not d.startswith(".")]
+            if dp[len(root):].count(os.sep) >= 3:
+                dns[:] = []
+            for fn in fns:
+                ext = os.path.splitext(fn)[1].lower()
+                fp = os.path.join(dp, fn)
+                if ext not in MEDIA_EXTS or fp in seen:
+                    continue
+                try:
+                    st = os.stat(fp)
+                except OSError:
+                    continue
+                seen.add(fp)
+                kind = "audio" if ext in (".mp3", ".m4a", ".aac", ".flac", ".wav", ".ogg", ".opus", ".alac", ".weba", ".mka") else ("zip" if ext == ".zip" else "video")
+                items.append({"id": hashlib.sha1(fp.encode("utf-8", "replace")).hexdigest()[:16], "name": fn, "size": st.st_size,
+                              "mtime": int(st.st_mtime), "kind": kind, "folder": os.path.basename(root), "path": fp})
+    items.sort(key=lambda x: x["mtime"], reverse=True)
+    items = items[:800]
+    with LIB_LOCK:
+        LIB.clear()
+        for it in items:
+            LIB[it["id"]] = it["path"]
+    for it in items:
+        it.pop("path", None)
+    return {"items": items, "roots": [os.path.basename(r) for r in roots],
+            "total": sum(i["size"] for i in items)}
+
+
+def library_path(fid):
+    """يحوّل المعرّف إلى مسار، مع التأكد أنه داخل مجلدات الحفظ فقط."""
+    with LIB_LOCK:
+        p = LIB.get(fid)
+    if not p:
+        return None
+    rp = os.path.realpath(p)
+    if not any(rp.startswith(r + os.sep) for r in library_roots()) or not os.path.isfile(rp):
+        return None
+    return rp
 
 
 def collect_files(info, jobdir):
@@ -490,6 +700,9 @@ def media_ok(path, why=None):
 def run_job(job):
     with SLOTS:
         if job.cancel.is_set():
+            if job.pausing:
+                job.state, job.phase = "paused", "paused"
+                return
             job.state, job.phase = "cancelled", "cancelled"
             job.error = "أُلغي"
             job.finished = time.time()
@@ -532,18 +745,32 @@ def run_job(job):
                     info = ydl.extract_info(normalize_url(job.url), download=True)
             except Exception as fe:  # noqa: BLE001
                 # الصيغة المطلوبة غير متوفرة (شائع في فيسبوك): أعد المحاولة بأوسع اختيار ممكن
-                if job.cancel.is_set() or "requested format" not in str(fe).lower():
+                if job.cancel.is_set():
                     raise
-                slog("الصيغة المطلوبة غير متوفرة، إعادة المحاولة بصيغة أوسع: " + clean_error(fe), "warn", job)
-                opts["format"] = "bv*+ba/b" if CFG["has_ffmpeg"] and not opts.get("postprocessors") else "b/best"
-                opts.pop("merge_output_format", None) if opts["format"] == "b/best" else None
-                with yt_dlp.YoutubeDL(opts) as ydl:
-                    info = ydl.extract_info(normalize_url(job.url), download=True)
+                fl = str(fe).lower()
+                if "requested format" not in fl:
+                    # فشل بسبب إضافة اختيارية (ترجمة/غلاف/وسوم): أعد المحاولة بدونها بدل إفشال المهمة
+                    if (job.params.get("subs") or job.params.get("tags")) and re.search(r"subtitle|thumbnail|embed|atomicparsley|mutagen|metadata", fl):
+                        slog("فشلت الإضافة الاختيارية (ترجمة/غلاف/وسوم)، إعادة المحاولة بدونها: " + clean_error(fe), "warn", job)
+                        strip_extras(opts)
+                        with yt_dlp.YoutubeDL(opts) as ydl:
+                            info = ydl.extract_info(normalize_url(job.url), download=True)
+                    else:
+                        raise
+                else:
+                    slog("الصيغة المطلوبة غير متوفرة، إعادة المحاولة بصيغة أوسع: " + clean_error(fe), "warn", job)
+                    opts["format"] = "bv*+ba/b" if CFG["has_ffmpeg"] and not opts.get("postprocessors") else "b/best"
+                    opts.pop("merge_output_format", None) if opts["format"] == "b/best" else None
+                    with yt_dlp.YoutubeDL(opts) as ydl:
+                        info = ydl.extract_info(normalize_url(job.url), download=True)
             if job.cancel.is_set():
                 raise Cancelled()
             if not info:
                 raise RuntimeError("لم يُعثر على وسائط في هذا الرابط.")
             job.title = (info.get("title") or "")[:200]
+            job.thumbnail = info.get("thumbnail") or ""
+            job.duration = info.get("duration")
+            job.uploader = (info.get("uploader") or info.get("channel") or "")[:80]
             files = collect_files(info, job.dir)
             if not files:
                 raise RuntimeError("اكتمل الاستخراج دون إنتاج ملف.")
@@ -592,12 +819,19 @@ def run_job(job):
             slog("اكتملت: %s · %.1f KB · محفوظ: %s%s" % (job.filename, job.size / 1024, job.saved or "—",
                  (" · خطأ الحفظ: " + job.save_error) if job.save_error else ""), "info" if not job.save_error else "warn", job)
         except Cancelled:
-            job.state, job.phase = "cancelled", "cancelled"
-            job.error = "أُلغي"
-        except Exception as e:  # noqa: BLE001
-            if job.cancel.is_set():
+            if job.pausing:
+                job.state, job.phase = "paused", "paused"
+                slog("أُوقفت مؤقتاً (الملف الجزئي محفوظ للاستئناف)", "info", job)
+            else:
                 job.state, job.phase = "cancelled", "cancelled"
                 job.error = "أُلغي"
+        except Exception as e:  # noqa: BLE001
+            if job.cancel.is_set():
+                if job.pausing:
+                    job.state, job.phase = "paused", "paused"
+                else:
+                    job.state, job.phase = "cancelled", "cancelled"
+                    job.error = "أُلغي"
             else:
                 slog("فشل: " + (clean_error(e) or repr(e)) + "\n" + traceback.format_exc(), "error", job)
                 job.error = clean_error(e) or "فشل غير معروف"
@@ -607,7 +841,8 @@ def run_job(job):
                     job.hint = explain(job.error)
                 job.state, job.phase = "error", "error"
         finally:
-            job.finished = time.time()
+            if job.state != "paused":
+                job.finished = time.time()
 
 
 def cookies_path():
@@ -701,16 +936,26 @@ def media_scan(path):
 
 
 def publish_to_gallery(job):
-    """ينسخ الملف النهائي إلى معرض الجوال، وإن لم يتوفر فإلى ~/altra-downloads (دائم، لا يُحذف)."""
+    """ينسخ الملف النهائي إلى مجلد ALTRA-DAWNLOADER (Video/Audio) داخل التخزين الداخلي.
+    افتراضياً لا يظهر في المعرض/الاستوديو (ملف .nomedia وبلا مسح إعلامي). للظهور فيه شغّل المساعد مع --gallery."""
     base = detect_gallery_base()
     ext = os.path.splitext(job.filepath)[1].lower().lstrip(".")
-    sub = "Music" if ext in AUDIO_FORMATS or ext == "weba" else ("Movies" if ext in ("mp4", "webm", "mkv", "mov", "m4v", "3gp") else "Download")
-    if base:
-        folder = base if CFG["save"] else os.path.join(base, sub, "ALTRA")
+    is_audio = ext in AUDIO_FORMATS or ext in ("weba", "mka", "aiff")
+    is_video = ext in ("mp4", "webm", "mkv", "mov", "m4v", "3gp", "avi", "flv", "gif")
+    root = None
+    if base and CFG["save"]:
+        folder = base
+    elif base and CFG["gallery"]:
+        folder = os.path.join(base, "Music" if is_audio else ("Movies" if is_video else "Download"), "ALTRA")
+    elif base:
+        root = os.path.join(base, "ALTRA-DAWNLOADER")
+        folder = os.path.join(root, "Audio" if is_audio else ("Video" if is_video else "Other"))
     else:
         folder = os.path.join(os.path.expanduser("~"), "altra-downloads")
     try:
         os.makedirs(folder, exist_ok=True)
+        if root:  # يخفي المجلد كله عن المعرض والمشغّلات
+            open(os.path.join(root, ".nomedia"), "a").close()
         dest = os.path.join(folder, job.filename)
         n = 1
         stem, e = os.path.splitext(dest)
@@ -718,13 +963,13 @@ def publish_to_gallery(job):
             dest = f"{stem} ({n}){e}"
             n += 1
         shutil.copy2(job.filepath, dest)
-        job.saved, job.gallery = dest, bool(base)
+        job.saved, job.gallery = dest, bool(base and CFG["gallery"])
         slog("نُسخ إلى: %s (%d بايت)" % (dest, os.path.getsize(dest)), "info", job)
-        if base:
+        if job.gallery:
             media_scan(dest)
     except Exception as ex:  # noqa: BLE001
         job.save_error = clean_error(ex)
-        slog("فشل النسخ إلى المعرض: " + repr(ex), "error", job)
+        slog("فشل حفظ الملف: " + repr(ex), "error", job)
 
 
 def diagnostics():
@@ -811,7 +1056,8 @@ def cleaner():
         time.sleep(300)
         limit = time.time() - CFG["keep"] * 60
         with JOBS_LOCK:
-            old = [j for j in JOBS.values() if j.finished and j.finished < limit]
+            stale_pause = time.time() - 6 * 3600
+            old = [j for j in JOBS.values() if (j.finished and j.finished < limit) or (j.state == "paused" and j.created < stale_pause)]
             for j in old:
                 JOBS.pop(j.id, None)
         for j in old:
@@ -917,6 +1163,26 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json({"logs": rows, "last": last})
         if path == "/api/diag":
             return self.send_json(diagnostics())
+        if path == "/api/suggest":
+            q = (parse_qs(urlparse(self.path).query).get("q") or [""])[0].strip()[:100]
+            if len(q) < 2:
+                return self.send_json({"items": []})
+            try:
+                return self.send_json({"items": suggest(q)})
+            except Exception as ex:  # noqa: BLE001
+                return self.send_json({"items": [], "error": clean_error(ex)})
+        if path == "/api/library":
+            try:
+                return self.send_json(library_list())
+            except Exception as ex:  # noqa: BLE001
+                slog("library: " + repr(ex), "error")
+                return self.send_json({"items": [], "roots": [], "total": 0, "error": clean_error(ex)})
+        m = re.match(r"^/lib/([0-9a-f]{16})$", path)
+        if m:
+            fp = library_path(m.group(1))
+            if not fp:
+                return self.send_json({"error": "file not found"}, 404)
+            return self.send_file(fp, os.path.basename(fp))
         if path in ("/dashboard", "/admin", "/control"):
             return self.serve_dashboard()
         if path == "/api/jobs":
@@ -1000,7 +1266,11 @@ class Handler(BaseHTTPRequestHandler):
                 fmt = "mp4"
             if mode not in ("auto", "audio", "mute"):
                 mode = "auto"
-            job = Job(url, {"quality": q, "format": fmt, "mode": mode})
+            limit = str(data.get("limit") or "")
+            if limit not in RATE_LIMITS:
+                limit = ""
+            job = Job(url, {"quality": q, "format": fmt, "mode": mode, "limit": limit,
+                            "subs": bool(data.get("subs")), "tags": bool(data.get("tags"))})
             with JOBS_LOCK:
                 JOBS[job.id] = job
             threading.Thread(target=run_job, args=(job,), daemon=True).start()
@@ -1026,8 +1296,76 @@ class Handler(BaseHTTPRequestHandler):
         if m:
             j = JOBS.get(m.group(1))
             if j:
+                j.pausing = False
                 j.cancel.set()
+                if j.state == "paused":  # إلغاء مهمة موقوفة مؤقتاً
+                    j.state, j.phase, j.error, j.finished = "cancelled", "cancelled", "أُلغي", time.time()
             return self.send_json({"ok": bool(j)})
+
+        m = re.match(r"^/api/pause/([0-9a-f]{16})$", path)
+        if m:
+            j = JOBS.get(m.group(1))
+            if not j or j.state not in ("queued", "running"):
+                return self.send_json({"ok": False, "error": "لا يمكن إيقاف هذه المهمة الآن"}, 409)
+            j.pausing = True
+            j.cancel.set()
+            return self.send_json({"ok": True})
+
+        m = re.match(r"^/api/resume/([0-9a-f]{16})$", path)
+        if m:
+            j = JOBS.get(m.group(1))
+            if not j or j.state != "paused":
+                return self.send_json({"ok": False, "error": "المهمة ليست موقوفة"}, 409)
+            j.pausing = False
+            j.resumed = True
+            j.cancel.clear()
+            j.state, j.phase, j.finished = "queued", "queued", None
+            threading.Thread(target=run_job, args=(j,), daemon=True).start()
+            return self.send_json({"ok": True})
+
+        if path == "/api/probe":
+            url = str(data.get("url") or "").strip()
+            query = str(data.get("query") or "").strip()[:150]
+            if not query and (not re.match(r"^https?://", url, re.I) or len(url) > 2048):
+                return self.send_json({"error": "رابط غير صالح"}, 400)
+            try:
+                n = int(data.get("n") or 12)
+            except (TypeError, ValueError):
+                n = 12
+            try:
+                return self.send_json(probe(url, query or None, n))
+            except Exception as ex:  # noqa: BLE001
+                msg = clean_error(ex) or "تعذّرت المعاينة"
+                slog("probe فشل: " + msg, "warn")
+                return self.send_json({"error": msg, "hint": explain(msg), "login": login_needed(msg, url), "site": site_of(url)}, 502)
+
+        if path == "/api/library/delete":
+            fp = library_path(str(data.get("id") or ""))
+            if not fp:
+                return self.send_json({"error": "الملف غير موجود"}, 404)
+            try:
+                os.remove(fp)
+                slog("حُذف من ملفاتي: " + fp, "info")
+            except OSError as ex:
+                return self.send_json({"error": clean_error(ex)}, 500)
+            return self.send_json({"ok": True})
+
+        if path == "/api/library/rename":
+            fp = library_path(str(data.get("id") or ""))
+            new = re.sub(r'[\\/:*?"<>|\x00-\x1f]', "_", str(data.get("name") or "")).strip().strip(".")[:180]
+            if not fp or not new:
+                return self.send_json({"error": "اسم أو ملف غير صالح"}, 400)
+            ext = os.path.splitext(fp)[1]
+            if not os.path.splitext(new)[1].lower() == ext.lower():
+                new += ext  # يحافظ على الامتداد الأصلي
+            dest = os.path.join(os.path.dirname(fp), new)
+            if os.path.exists(dest):
+                return self.send_json({"error": "يوجد ملف بهذا الاسم"}, 409)
+            try:
+                os.rename(fp, dest)
+            except OSError as ex:
+                return self.send_json({"error": clean_error(ex)}, 500)
+            return self.send_json({"ok": True, "name": new})
 
         if path == "/api/jobs/clear":
             # clear finished / cancelled / error jobs
@@ -1055,8 +1393,10 @@ class Handler(BaseHTTPRequestHandler):
             count = 0
             with JOBS_LOCK:
                 for j in JOBS.values():
-                    if j.state in ("queued", "running"):
+                    if j.state in ("queued", "running", "paused"):
                         j.cancel.set()
+                        if j.state == "paused":
+                            j.state, j.phase, j.error, j.finished = "cancelled", "cancelled", "أُلغي", time.time()
                         count += 1
             return self.send_json({"ok": True, "cancelled": count})
 
@@ -1155,6 +1495,7 @@ def main():
     ap.add_argument("--cache", help="مجلد الملفات المؤقتة")
     ap.add_argument("--keep", type=int, default=60, help="مدة حفظ الملفات المؤقتة بالدقائق")
     ap.add_argument("--save-dir", help="مجلد حفظ نسخة نهائية (افتراضياً: معرض الجوال في Termux)، أو off للتعطيل")
+    ap.add_argument("--gallery", action="store_true", help="إظهار الملفات في معرض/استوديو الجوال (افتراضياً مخفية في مجلد ALTRA-DAWNLOADER)")
     ap.add_argument("--update", action="store_true", help="حدّث yt-dlp قبل التشغيل")
     ap.add_argument("--jobs", type=int, default=10, help="عدد التحميلات المتزامنة في المساعد")
     a = ap.parse_args()
@@ -1168,6 +1509,7 @@ def main():
     CFG["cookies"] = a.cookies
     CFG["browser"] = a.browser
     CFG["keep"] = a.keep
+    CFG["gallery"] = bool(a.gallery)
     CFG["save"] = os.path.abspath(a.save_dir) if a.save_dir and a.save_dir != "off" else ("off" if a.save_dir == "off" else None)
     CFG["loopback"] = a.host in ("127.0.0.1", "localhost", "::1")
     for o in a.origin:
@@ -1209,7 +1551,7 @@ def main():
     print(f" ALTRA Helper v{VERSION}")
     print(f" yt-dlp : {ver or 'غير مثبّت  ←  pip install -U \"yt-dlp[default]\"'}")
     g = detect_gallery_base()
-    print(f" الحفظ  : {(g + '/Movies/ALTRA (المعرض)') if g and not CFG['save'] else g or '~/altra-downloads  (لتظهر في المعرض نفّذ: termux-setup-storage ثم أعد التشغيل)'}")
+    print(f" الحفظ  : {(g + ('/Movies/ALTRA (المعرض)' if CFG['gallery'] else '/ALTRA-DAWNLOADER (مخفي عن المعرض)')) if g and not CFG['save'] else g or '~/altra-downloads  (للحفظ في التخزين الداخلي نفّذ: termux-setup-storage ثم أعد التشغيل)'}")
     if ytdlp_old():
         print(" ⚠ نسخة yt-dlp قديمة: شغّل مع --update أو  pip install -U yt-dlp")
     print(f" ffmpeg : {'متوفر' if CFG['has_ffmpeg'] else 'غير موجود (الدمج والتحويل معطّلان)'}")

@@ -70,9 +70,9 @@ body::before{content:"";position:fixed;inset:-20% -10% auto -10%;height:60%;poin
 .prompt textarea:focus{box-shadow:none}
 .prompt textarea::placeholder{color:#777;font-family:var(--font)}
 .p-bar{display:flex;align-items:center;gap:8px;direction:ltr}
-.rb{width:44px;height:44px;border-radius:50%;border:1px solid #3a3a3a;background:transparent;color:#ddd;display:grid;place-items:center;cursor:pointer;transition:.2s}
+.rb{flex:none;width:42px;height:42px;border-radius:50%;border:1px solid #3a3a3a;background:transparent;color:#ddd;display:grid;place-items:center;cursor:pointer;transition:.2s}
 .rb:active{transform:scale(.9);background:var(--s3)}
-.qsel{position:relative;margin-inline-start:auto;direction:rtl}
+.qsel{position:relative;direction:rtl}.qsel select{max-width:96px;padding:10px 26px 10px 10px;font-size:13px}.p-bar{gap:6px}#go{flex:none}
 .qsel select{width:auto;appearance:none;-webkit-appearance:none;background:var(--s2);border:1px solid #3a3a3a;border-radius:14px;padding:10px 34px 10px 14px;font-size:14px;color:#ddd;cursor:pointer}
 .qsel .i{position:absolute;left:8px;top:50%;width:16px;height:16px;transform:translateY(-50%);pointer-events:none;color:#aaa}
 #go{width:48px;height:48px;border-radius:16px;border:0;background:var(--blue);color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 6px 22px #3588fe66;transition:.2s;padding:0;font-size:0}
@@ -200,6 +200,8 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
 <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
 <symbol id="i-share" viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v14"/></symbol>
 <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
 </defs></svg>
 <div class="app">
   <header class="top">
@@ -236,7 +238,8 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
       <div class="p-bar">
         <button class="rb" id="paste" title="لصق من الحافظة"><svg class="i " viewBox="0 0 24 24"><use href="#i-clip"/></svg></button>
         <button class="rb" data-sheet-link="search" title="بحث متقدم"><svg class="i " viewBox="0 0 24 24"><use href="#i-search"/></svg></button>
-        <div class="qsel"><select id="qQuality" aria-label="الجودة"><option value="max">أقصى جودة</option><option value="2160">4K</option><option value="1440">1440p</option><option value="1080">1080p</option><option value="720">720p</option><option value="480">480p</option><option value="360">360p</option></select><svg class="i " viewBox="0 0 24 24"><use href="#i-chev"/></svg></div>
+        <div class="qsel" style="margin-inline-start:auto"><select id="qFormat" aria-label="الصيغة"><option value="mp4">MP4</option><option value="mkv">MKV</option><option value="webm">WEBM</option><option value="mov">MOV</option><option value="avi">AVI</option><option value="flv">FLV</option><option value="gif">GIF</option><option value="mp3">MP3</option><option value="m4a">M4A</option><option value="aac">AAC</option><option value="flac">FLAC</option><option value="wav">WAV</option><option value="ogg">OGG</option><option value="opus">OPUS</option><option value="alac">ALAC</option><option value="best">Best</option></select><svg class="i" viewBox="0 0 24 24"><use href="#i-chev"/></svg></div>
+        <div class="qsel" style="margin-inline-start:0"><select id="qQuality" aria-label="الجودة"><option value="max">أقصى جودة</option><option value="2160">4K</option><option value="1440">1440p</option><option value="1080">1080p</option><option value="720">720p</option><option value="480">480p</option><option value="360">360p</option></select><svg class="i " viewBox="0 0 24 24"><use href="#i-chev"/></svg></div>
         <button id="go" title="ابدأ التحميل" aria-label="ابدأ التحميل"><svg class="i sp" viewBox="0 0 24 24"><use href="#i-spark"/></svg></button>
       </div>
       <div class="dropzone" id="dropzone">أسقط الروابط هنا</div>
@@ -247,11 +250,19 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
       <button class="qchip" data-sheet-link="history"><svg class="i " viewBox="0 0 24 24"><use href="#i-hist"/></svg>السجل</button>
       <button class="qchip" data-sheet-link="stats"><svg class="i " viewBox="0 0 24 24"><use href="#i-chart"/></svg>الإحصائيات</button>
       <button class="qchip" data-sheet-link="settings"><svg class="i " viewBox="0 0 24 24"><use href="#i-tune"/></svg>الإعدادات</button>
+      <button class="qchip" data-sheet-link="library"><svg class="i " viewBox="0 0 24 24"><use href="#i-folder"/></svg>ملفاتي</button>
+      <button class="qchip" id="probeBtn"><svg class="i " viewBox="0 0 24 24"><use href="#i-eye"/></svg>معاينة رابط</button>
     </div>
 
     <div class="card">
       <h2>قائمة الانتظار <span id="qcount" class="badge">0</span></h2>
       <div id="queue"><div class="empty">لا مهام بعد — الصق رابطاً أو شارك من تطبيق آخر</div></div>
+      <div id="queueTools" class="row" style="margin-top:12px;flex-wrap:wrap;display:none">
+        <button class="act ghost" id="qtPauseAll">⏸ إيقاف الكل</button>
+        <button class="act ghost" id="qtResumeAll">▶ استئناف الكل</button>
+        <button class="act ghost" id="qtRetry">↻ إعادة الفاشلة</button>
+        <button class="act ghost" id="qtClear">🧹 مسح المنتهية</button>
+      </div>
     </div>
 
     <div class="gal-title">المنصات المدعومة</div>
@@ -290,13 +301,15 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
         </label>
         <label class="small">الصيغة
           <select id="format">
-            <option value="mp4">MP4</option>
-            <option value="webm">WEBM</option>
-            <option value="mp3">MP3</option>
-            <option value="ogg">OGG</option>
-            <option value="opus">OPUS</option>
-            <option value="wav">WAV</option>
-            <option value="best">Best</option>
+            <optgroup label="فيديو">
+              <option value="mp4">MP4</option><option value="mkv">MKV</option><option value="webm">WEBM</option>
+              <option value="mov">MOV</option><option value="avi">AVI</option><option value="flv">FLV</option><option value="gif">GIF</option>
+            </optgroup>
+            <optgroup label="صوت">
+              <option value="mp3">MP3</option><option value="m4a">M4A</option><option value="aac">AAC</option><option value="flac">FLAC</option>
+              <option value="wav">WAV</option><option value="ogg">OGG</option><option value="opus">OPUS</option><option value="alac">ALAC</option>
+            </optgroup>
+            <option value="best">Best · الأصلية بلا تحويل</option>
           </select>
         </label>
         <label class="small">الوضع
@@ -351,6 +364,7 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
 
       <div style="margin-top:14px">
         <div class="small" style="margin-bottom:6px">مجلد الحفظ (تخزين داخلي أو خارجي)</div>
+        <div class="small" style="margin-bottom:8px;color:#a8dab5">مع المساعد المحلي: تُحفظ الملفات في «ALTRA-DAWNLOADER» داخل التخزين الداخلي (Video / Audio) ولا تظهر في المعرض.</div>
         <div class="storage-box" id="storageInfo">لم يُختر مجلد — سيتم السؤال عند كل تحميل أو استخدام التنزيل الافتراضي</div>
         <div class="row" style="margin-top:8px">
           <button class="act good grow" id="pickFolder">📁 اختر مجلد الحفظ</button>
@@ -362,6 +376,32 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
       <label class="small" style="display:block;margin-top:12px">اللغة
         <select id="langSel"><option value="ar">العربية</option><option value="en">English</option></select>
       </label>
+
+      <div class="small" style="margin:18px 0 8px;color:#a8dab5">⚡ خيارات إضافية</div>
+      <div class="grid2">
+        <label class="small">معاينة قبل التحميل
+          <select id="xAsk"><option value="0">لا (مباشرة)</option><option value="1">نعم: اختر الجودة والصيغة</option></select>
+        </label>
+        <label class="small">Wi-Fi فقط
+          <select id="xWifi"><option value="0">لا</option><option value="1">نعم: لا تحمّل بالبيانات</option></select>
+        </label>
+        <label class="small">إعادة المحاولة تلقائياً
+          <select id="xRetry"><option value="0">بدون</option><option value="1">مرة</option><option value="2">مرتان</option><option value="3">3 مرات</option></select>
+        </label>
+        <label class="small">حد السرعة (المساعد)
+          <select id="xLimit"><option value="">بلا حد</option><option value="250K">250 KB/s</option><option value="500K">500 KB/s</option><option value="1M">1 MB/s</option><option value="2M">2 MB/s</option><option value="5M">5 MB/s</option></select>
+        </label>
+        <label class="small">ترجمة الفيديو
+          <select id="xSubs"><option value="0">بدون</option><option value="1">تضمين (عربي/إنجليزي)</option></select>
+        </label>
+        <label class="small">غلاف ووسوم الصوت
+          <select id="xTags"><option value="0">لا</option><option value="1">نعم (MP3 / M4A)</option></select>
+        </label>
+        <label class="small">إشعار عند الاكتمال
+          <select id="xNotify"><option value="0">لا</option><option value="1">نعم</option></select>
+        </label>
+      </div>
+      <div class="small" style="margin-top:8px;line-height:1.7">الترجمة والغلاف والوسوم والحد من السرعة تعمل عبر المساعد المحلي ومع ffmpeg. إن لم تتوفر الترجمة أو فشل تضمينها يُكمل التحميل بدونها.</div>
     </div>
   </div>
 
@@ -393,7 +433,7 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
   <div id="sheet-search" class="sheet">
     <div class="card">
       <h2>🔍 بحث متقدم</h2>
-      <input id="advQ" placeholder="اسم مطرب، أغنية، كلمة في العنوان أو رابط…">
+      <input id="advQ" list="advSug" autocomplete="off" placeholder="اسم مطرب، أغنية، كلمة في العنوان أو رابط…"><datalist id="advSug"></datalist>
       <div class="grid2" style="margin-top:8px">
         <label class="small">الحالة
           <select id="advStatus">
@@ -417,6 +457,7 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
         <button class="act primary grow" id="advGo">بحث محلي</button>
         <button class="act good grow" id="advWebSearch">🔎 بحث يوتيوب</button>
       </div>
+      <div class="row" style="margin-top:8px"><button class="act ghost grow" id="advList">📋 عرض النتائج مع الصور (اختر ما تحمّله)</button></div>
       <div class="small" style="margin-top:8px;line-height:1.6">ابحث محلياً في المهام والسجل، أو ابحث على يوتيوب عبر المساعد المحلي (يتطلب اتصاله) ثم أضف النتائج للتحميل.</div>
       <div id="advResults" style="margin-top:12px"></div>
     </div>
@@ -435,6 +476,19 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
         <div class="plat" data-plat="direct" title="مباشر"><span class="pg">🔗</span><em class="pl">مباشر</em></div>
       </div>
       <div class="plat-hint">اضغط منصة لفتح البحث المتقدم مع فلترها، أو الصق رابطها في الصفحة الرئيسية</div>
+    </div>
+  </div>
+
+  <!-- LIBRARY -->
+  <div id="sheet-library" class="sheet">
+    <div class="card">
+      <h2>📁 ملفاتي <span id="libCount" class="badge">0</span></h2>
+      <div class="search-bar">
+        <input id="libSearch" class="grow" placeholder="بحث في ملفاتك…">
+        <button class="act" id="libRefresh">🔄</button>
+      </div>
+      <div class="small" id="libInfo" style="margin-bottom:8px"></div>
+      <div id="libList"><div class="empty">يتطلب المساعد المحلي — يعرض الملفات المحفوظة في مجلد ALTRA-DAWNLOADER</div></div>
     </div>
   </div>
 
@@ -553,6 +607,7 @@ python altra-server.py</code><button class="act" data-copy="cmd3">نسخ</button
   <button class="ditem active" data-sheet="home"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-home"/></svg></span><span class="lab">الرئيسية · التحميل</span></button>
   <button class="ditem" data-sheet="settings"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-tune"/></svg></span><span class="lab">الإعدادات</span></button>
   <button class="ditem" data-sheet="history"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-hist"/></svg></span><span class="lab">السجل</span></button>
+  <button class="ditem" data-sheet="library"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-folder"/></svg></span><span class="lab">ملفاتي</span></button>
   <button class="ditem" data-sheet="stats"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-chart"/></svg></span><span class="lab">الإحصائيات</span></button>
   <button class="ditem" data-sheet="search"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-search"/></svg></span><span class="lab">بحث متقدم</span></button>
   <div class="dsep"></div>
@@ -589,6 +644,8 @@ const OPEN_ENDPOINTS = [
 ];
 const DIRECT_EXTS = /\.(mp4|webm|mkv|mov|m4v|mp3|m4a|ogg|opus|wav|flac|aac)(\?.*)?$/i;
 const KEY = 'altra_v8';
+const EXT_IDS = ['xAsk','xWifi','xRetry','xLimit','xSubs','xTags','xNotify'];
+const AUDIO_FMTS = ['mp3','m4a','aac','flac','wav','ogg','opus','alac'];
 const IS_MOBILE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 const LOGIN_URLS = {
   instagram: 'https://www.instagram.com/accounts/login/',
@@ -865,10 +922,12 @@ async function helperRun(task, signal) {
   const base = helper.base;
   const r = await hfetch(base + '/api/resolve', {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, signal,
-    body: JSON.stringify({ url: cleanUrl(task.source), quality: $('#quality').value, format: $('#format').value, mode: $('#mode').value })
+    body: JSON.stringify({ url: cleanUrl(task.source), quality: (task.o && task.o.quality) || $('#quality').value, format: (task.o && task.o.format) || $('#format').value, mode: (task.o && task.o.mode) || $('#mode').value,
+      limit: $('#xLimit').value, subs: $('#xSubs').value === '1', tags: $('#xTags').value === '1' })
   });
   const j = await r.json().catch(() => ({}));
   if (!r.ok || !j.id) throw new Error(j.error || ('HTTP ' + r.status));
+  task.jobId = j.id; task.paused = false;
   task.engine = 'helper'; task.status = 'downloading'; task.progress = Math.max(task.progress, 8);
   renderQueue();
   let s, pollFails = 0;
@@ -889,6 +948,8 @@ async function helperRun(task, signal) {
         continue;
       }
       if (!sr.ok) throw new Error(s.error || 'status failed');
+      if (s.state === 'paused') { if (!task.paused) { task.paused = true; task.speed = 0; task.note = 'متوقف مؤقتاً'; renderQueue(); } continue; }
+      if (task.paused) { task.paused = false; }
       task.progress = Math.max(task.progress, Math.min(99, s.progress || 0));
       task.speed = s.speed || 0; task.bytes = s.bytes || 0;
       if (s.title) task.title = s.title;
@@ -905,11 +966,11 @@ async function helperRun(task, signal) {
     }
     throw e;
   }
-  task.filename = s.filename; task.bytes = s.size || task.bytes; task.fileUrl = base + '/file/' + j.id;
+  task.filename = s.filename; task.bytes = s.size || task.bytes; task.fileUrl = base + '/file/' + j.id; task.thumb = s.thumbnail || '';
   task.progress = 100; task.speed = 0;
   log('HELPER DONE ' + task.filename + ' · ' + fmtBytes(task.bytes));
   if (s.saved) {
-    task.note = (s.gallery ? '✓ في المعرض (ألبوم ALTRA): ' : '✓ حُفظ في ' + (s.saved.includes('altra-downloads') ? '~/altra-downloads (ملفات Termux): ' : ': ')) + s.saved.split('/').slice(-2).join('/');
+    task.note = (s.gallery ? '✓ في المعرض: ' : '✓ حُفظ خارج المعرض في: ') + s.saved.split('/').slice(-3).join('/');
     log('GALLERY ' + s.saved);
   } else {
     if (!nativeDownload(task.fileUrl, task.filename)) throw new Error('تعذّر بدء التنزيل من المساعد');
@@ -926,7 +987,8 @@ function save() {
         quality: $('#quality').value, format: $('#format').value,
         mode: $('#mode').value, concurrency: $('#concurrency').value,
         strategy: $('#strategy').value, custom: $('#customEndpoint').value,
-        endpoint: $('#endpoint').value, lang: $('#langSel').value, helper: $('#helperUrl').value
+        endpoint: $('#endpoint').value, lang: $('#langSel').value, helper: $('#helperUrl').value,
+        ext: Object.fromEntries(EXT_IDS.map(id => [id, ($('#' + id) || {}).value]))
       }
     }));
   } catch(e) { log('SAVE ' + e.message); }
@@ -944,6 +1006,7 @@ function load() {
       if (map[k] && $(map[k]) && v) $(map[k]).value = v;
     });
   } catch(e) { log('LOAD ' + e.message); }
+  try { const sx = (JSON.parse(localStorage.getItem(KEY) || '{}').settings || {}).ext || {}; EXT_IDS.forEach(id => { if (sx[id] != null && $('#' + id)) $('#' + id).value = sx[id]; }); } catch {}
   if (!$('#strategy').value) $('#strategy').value = 'auto';
   if (!$('#concurrency').value) $('#concurrency').value = '10';
   applyLang($('#langSel').value || 'ar');
@@ -967,6 +1030,7 @@ function showSheet(id) {
   window.scrollTo({top:0,behavior:'smooth'});
   if (id === 'stats') renderStats();
   if (id === 'history') renderHistory();
+  if (id === 'library') renderLibrary();
   if (id === 'helper') checkHelper(true);
   if (id === 'console') { const b = $('#consoleBtn'); if (b) b.classList.remove('has-err'); renderLog(); pullHelperLog(); }
 }
@@ -1060,10 +1124,10 @@ function buildPayload(url) {
     url: cleanUrl(url),
     videoQuality: q === 'max' ? 'max' : q,
     filenameStyle: 'pretty',
-    downloadMode: (mode === 'audio' || ['mp3','ogg','opus','wav'].includes(fmt)) ? 'audio' : mode
+    downloadMode: (mode === 'audio' || AUDIO_FMTS.includes(fmt)) ? 'audio' : mode
   };
-  if (['mp3','ogg','opus','wav'].includes(fmt)) {
-    p.audioFormat = fmt; p.audioBitrate = '320';
+  if (AUDIO_FMTS.includes(fmt)) {
+    p.audioFormat = ['mp3','ogg','opus','wav'].includes(fmt) ? fmt : 'best'; p.audioBitrate = '320';
   } else if (fmt === 'mp4' || fmt === 'webm') {
     p.youtubeVideoContainer = fmt;
   }
@@ -1280,12 +1344,12 @@ async function fetchToDisk(task, signal) {
 }
 
 /* ── Queue engine ── */
-function addUrls(urls) {
+function addUrls(urls, o) {
   for (const v of urls) {
     state.tasks.push({
       id: uid(), source: v, title: v,
       platform: detectPlat(v), progress: 0, status: 'queued',
-      created: Date.now(), speed: 0, bytes: 0, filename: '', error: '', engine: ''
+      created: Date.now(), speed: 0, bytes: 0, filename: '', error: '', engine: '', o: o || null
     });
     state.stats.started++;
     log('QUEUE  ' + v);
@@ -1303,15 +1367,22 @@ function startFromInput() {
     if (validUrl(raw)) urls = [raw];
     else { toast('رابط غير صالح'); return; }
   }
+  if ($('#xAsk').value === '1' && urls.length === 1 && !isDirect(urls[0])) { $('#url').value = ''; showProbe(urls[0]); return; }
   $('#url').value = '';
   addUrls(urls);
   showSheet('home');
 }
 
+function onCellular() { try { const c = navigator.connection; return !!(c && c.type === 'cellular'); } catch { return false; } }
 async function pump() {
   const max = Math.max(1, Math.min(10, +$('#concurrency').value || 10));
+  if ($('#xWifi').value === '1' && onCellular()) {
+    if (!pump._w && state.tasks.some(x => x.status === 'queued')) { pump._w = 1; toast('Wi-Fi فقط: بانتظار اتصال Wi-Fi'); }
+    return;
+  }
+  pump._w = 0;
   while (state.running < max) {
-    const t = state.tasks.find(x => x.status === 'queued');
+    const t = state.tasks.find(x => x.status === 'queued' && (!x.notBefore || x.notBefore <= Date.now()));
     if (!t) break;
     run(t);
   }
@@ -1381,11 +1452,13 @@ async function run(task) {
     state.history = state.history.slice(0, 250);
     log('DONE  ' + task.filename + ' · ' + fmtBytes(task.bytes));
     toast('✓ ' + task.filename);
+    notifyDone(task);
   } catch (e) {
     if (e.name === 'AbortError') {
       task.status = 'error'; task.error = 'أُلغي';
       log('CANCEL  ' + task.source);
     } else {
+      if (autoRetry(task, e)) return;
       task.status = 'error';
       log('TASK ERROR ' + task.source + ' · ' + (e && (e.stack || e.message) || e));
       let msg = friendlyError(e);
@@ -1455,9 +1528,11 @@ function renderQueue() {
   const labels = { queued:'انتظار', processing:'معالجة', downloading:'تحميل', done:'اكتمل', error:'خطأ' };
   if (!state.tasks.length) {
     $('#queue').innerHTML = '<div class="empty">لا مهام بعد — الصق رابطاً أو شارك من تطبيق آخر</div>';
+    $('#queueTools').style.display = 'none';
     updateLaser();
     return;
   }
+  $('#queueTools').style.display = 'flex';
   $('#queue').innerHTML = state.tasks.slice().reverse().map(t => {
     const canCancel = ['queued','processing','downloading'].includes(t.status);
     const canRetry = t.status === 'error';
@@ -1471,6 +1546,9 @@ function renderQueue() {
       <div class="meta">
         <span>${t.bytes?fmtBytes(t.bytes):''}${t.speed?' · <span class="speed">'+fmtSpeed(t.speed)+'</span>':''}</span>
         <span class="actions">
+          ${t.engine==='helper'&&t.jobId&&!t.paused&&['processing','downloading'].includes(t.status)?`<button class="act" data-act="pause" data-id="${t.id}" style="padding:4px 8px;font-size:11px">⏸ إيقاف</button>`:''}
+          ${t.paused&&['processing','downloading'].includes(t.status)?`<button class="act primary" data-act="resume" data-id="${t.id}" style="padding:4px 8px;font-size:11px">▶ استئناف</button>`:''}
+          ${t.fileUrl&&t.status==='done'?`<button class="act primary" data-act="play" data-id="${t.id}" style="padding:4px 8px;font-size:11px">▶ تشغيل</button>`:''}
           ${canCancel?`<button class="act danger" data-act="cancel" data-id="${t.id}" style="padding:4px 8px;font-size:11px">إلغاء</button>`:''}
           ${t.login&&t.status==='error'?`<button class="login-badge" data-act="login" data-id="${t.id}">🔵 مطلوب تسجيل الدخول</button>`:''}
           ${t.fileUrl&&t.status==='done'?`<a class="act good" href="${esc(t.fileUrl)}" download="${esc(t.filename)}" target="_blank" rel="noopener" style="padding:4px 8px;font-size:11px;text-decoration:none">حفظ</a>`:''}
@@ -1688,7 +1766,7 @@ function handleLaunchParams() {
   }
   // Deep link to a sheet: ?sheet=search
   const sheet = params.get('sheet');
-  if (sheet && ['home','settings','history','search','helper','console','about'].includes(sheet)) {
+  if (sheet && ['home','settings','history','search','helper','console','about','library'].includes(sheet)) {
     showSheet(sheet);
   }
 }
@@ -1819,6 +1897,268 @@ function updateLaser() {
   bar.classList.toggle('active', active);
 }
 
+/* ══ إضافات 8.8: مقارنة SnapTube ══ */
+function fmtDur(s) {
+  s = Math.round(+s || 0); if (!s) return '';
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), x = s % 60;
+  return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(x).padStart(2, '0');
+}
+function hpost(path, body, signal) {
+  return hfetch(helper.base + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}), signal });
+}
+function thumbImg(src, w, h) {
+  return src ? `<img src="${esc(src)}" alt="" loading="lazy" referrerpolicy="no-referrer" style="width:${w};height:${h};object-fit:cover;border-radius:12px;background:#141414;flex:none" onerror="this.style.visibility='hidden'">` : '';
+}
+
+/* إيقاف مؤقت / استئناف (المساعد يحتفظ بالملف الجزئي) */
+async function pauseTask(id) {
+  const t = state.tasks.find(x => x.id === id); if (!t || !t.jobId) return;
+  try { const r = await hpost('/api/pause/' + t.jobId); const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || 'HTTP ' + r.status); t.note = 'جاري الإيقاف…'; renderQueue(); toast('أُوقفت مؤقتاً'); }
+  catch (e) { toast('تعذّر الإيقاف: ' + (e.message || e)); }
+}
+async function resumeTask(id) {
+  const t = state.tasks.find(x => x.id === id); if (!t || !t.jobId) return;
+  try { const r = await hpost('/api/resume/' + t.jobId); const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || 'HTTP ' + r.status); t.paused = false; t.note = 'استئناف…'; renderQueue(); toast('استُؤنف التحميل'); }
+  catch (e) { toast('تعذّر الاستئناف: ' + (e.message || e)); }
+}
+
+/* إعادة المحاولة التلقائية */
+function autoRetry(task, e) {
+  const max = +($('#xRetry').value || 0);
+  const msg = ((task.helperErr || '') + ' ' + ((e && e.message) || '')).toLowerCase();
+  if (!max || (task.retries || 0) >= max || task.login || /unsupported url|private|unavailable|not available|copyright|removed|sign in|log in|login|age-restricted|غير مدعوم|ffmpeg غير/.test(msg)) return false;
+  task.retries = (task.retries || 0) + 1;
+  const wait = 4000 * task.retries;
+  task.status = 'queued'; task.progress = 0; task.error = ''; task.speed = 0; task.paused = false;
+  task.note = 'إعادة محاولة تلقائية ' + task.retries + '/' + max + '…';
+  task.notBefore = Date.now() + wait;
+  log('AUTO-RETRY ' + task.retries + '/' + max + ' · ' + (task.source || '').slice(0, 70) + ' · ' + (task.helperErr || (e && e.message) || ''));
+  setTimeout(pump, wait + 80);
+  return true;
+}
+
+/* إشعار الاكتمال */
+function notifyDone(task) {
+  try {
+    if ($('#xNotify').value !== '1' || !('Notification' in window) || Notification.permission !== 'granted') return;
+    const title = 'ALTRA ✓ اكتمل التحميل', opts = { body: task.filename || task.title || '', icon: 'icon-192.png', tag: 'altra-' + task.id };
+    if (navigator.vibrate) navigator.vibrate(200);
+    if (navigator.serviceWorker && navigator.serviceWorker.getRegistration) {
+      navigator.serviceWorker.getRegistration().then(r => { if (r && r.showNotification) r.showNotification(title, opts); else new Notification(title, opts); }).catch(() => { try { new Notification(title, opts); } catch {} });
+    } else new Notification(title, opts);
+  } catch (e) { log('NOTIFY ' + e.message); }
+}
+
+/* مشغّل مدمج */
+function showPlayer(src, title, poster, name) {
+  const isAudio = /\.(mp3|m4a|aac|flac|wav|ogg|opus|alac|weba|mka)$/i.test(name || title || '');
+  $('#modalRoot').innerHTML = `<div class="modal-bg"><div class="modal">
+    <h3 style="word-break:break-word;font-size:15px">${esc(title || '')}</h3>
+    ${isAudio
+      ? `<audio id="plMedia" controls autoplay src="${esc(src)}" style="width:100%"></audio>`
+      : `<video id="plMedia" controls autoplay playsinline src="${esc(src)}" ${poster ? `poster="${esc(poster)}"` : ''} style="width:100%;max-height:58vh;border-radius:16px;background:#000"></video>`}
+    <div class="small" id="plMsg" style="margin-top:8px"></div>
+    <div class="row" style="margin-top:12px">
+      <button class="act good grow" id="plSave">حفظ</button>
+      <button class="act ghost grow" id="plClose">إغلاق</button>
+    </div></div></div>`;
+  const m = $('#plMedia');
+  m.onerror = () => { $('#plMsg').textContent = 'المتصفح لا يشغّل هذه الصيغة (مثل MKV/AVI/FLV) — اضغط «حفظ» وافتحها بمشغّل جهازك.'; };
+  $('#plClose').onclick = () => { try { m.pause(); } catch {} closeModal(); };
+  $('#plSave').onclick = () => { nativeDownload(src, name || title); toast('بدأ الحفظ'); };
+}
+
+/* معاينة الرابط: صورة وعنوان ومدة وجودات بأحجامها · أو عناصر قائمة تشغيل لاختيار ما يُحمَّل */
+async function showProbe(url) {
+  const root = $('#modalRoot');
+  const direct = () => { closeModal(); addUrls([url]); showSheet('home'); };
+  root.innerHTML = `<div class="modal-bg"><div class="modal"><h3>🔎 معاينة الرابط</h3>
+    <div class="empty" id="pbBody">جاري جلب المعلومات…</div>
+    <div class="row" style="margin-top:10px"><button class="act ghost grow" id="pbClose">إغلاق</button></div></div></div>`;
+  const ctrl = new AbortController();
+  $('#pbClose').onclick = () => { ctrl.abort(); closeModal(); };
+  const body = () => $('#pbBody');
+  if (!(await checkHelper(true))) {
+    body().innerHTML = 'المعاينة تحتاج المساعد المحلي (غير متصل).<div class="row" style="margin-top:10px"><button class="act primary grow" id="pbDirect">تحميل مباشرة بالإعدادات الحالية</button></div>';
+    $('#pbDirect').onclick = direct; return;
+  }
+  let d;
+  const to = setTimeout(() => ctrl.abort(), 90000);
+  try {
+    const r = await hpost('/api/probe', { url: cleanUrl(url) }, ctrl.signal);
+    d = await r.json().catch(() => ({}));
+    if (!r.ok) { const er = new Error(d.error || ('HTTP ' + r.status)); er.hint = d.hint; er.login = d.login; throw er; }
+  } catch (e) {
+    clearTimeout(to);
+    if (e.name === 'AbortError') return;
+    if (!$('#pbBody')) return;
+    body().innerHTML = `<div style="text-align:start;line-height:1.8">⚠️ ${esc(e.message || e)}${e.hint ? '<div class="small">' + esc(e.hint) + '</div>' : ''}</div>
+      <div class="row" style="margin-top:10px"><button class="act primary grow" id="pbDirect">حاول التحميل مباشرة</button></div>`;
+    $('#pbDirect').onclick = direct; return;
+  }
+  clearTimeout(to);
+  if (!$('#pbBody')) return;
+  const FMT = `<optgroup label="فيديو"><option value="mp4">MP4</option><option value="mkv">MKV</option><option value="webm">WEBM</option></optgroup>
+    <optgroup label="صوت"><option value="mp3">MP3</option><option value="m4a">M4A</option><option value="opus">OPUS</option><option value="flac">FLAC</option><option value="wav">WAV</option></optgroup>`;
+  const meta = [d.uploader, fmtDur(d.duration)].filter(Boolean).join(' · ');
+  if (d.kind === 'video') {
+    const hs = d.heights || [];
+    const opts = '<option value="max">أقصى جودة</option>' + hs.map(h => `<option value="${h}">${h}p${d.sizes && d.sizes[h] ? ' · ~' + fmtBytes(d.sizes[h]) : ''}</option>`).join('');
+    body().innerHTML = `<div style="text-align:start">
+      ${d.thumbnail ? `<div style="margin-bottom:10px">${thumbImg(d.thumbnail, '100%', 'auto').replace('object-fit:cover', 'aspect-ratio:16/9;object-fit:cover')}</div>` : ''}
+      <div style="font-weight:500;line-height:1.6;word-break:break-word">${esc(d.title)}</div>
+      <div class="small">${esc(meta)}${d.live ? ' · 🔴 بث مباشر' : ''}</div>
+      <div class="grid2" style="margin-top:12px">
+        <label class="small" style="grid-column:1/-1">الجودة<select id="pbQ">${opts}</select></label>
+        <label class="small" style="grid-column:1/-1">الصيغة<select id="pbF">${FMT}</select></label>
+      </div>
+      <div class="small" id="pbSize" style="margin-top:8px"></div></div>
+      <div class="row" style="margin-top:12px"><button class="act btn-blue grow" id="pbGo">⬇ تحميل</button><button class="act good" id="pbMp3">🎵 MP3</button></div>`;
+    $('#pbF').value = ($('#format').value && /^(mp4|mkv|webm|mp3|m4a|opus|flac|wav)$/.test($('#format').value)) ? $('#format').value : 'mp4';
+    const cur = $('#quality').value; if (cur && [...$('#pbQ').options].some(o => o.value === cur)) $('#pbQ').value = cur;
+    const upd = () => {
+      const f = $('#pbF').value, audio = /^(mp3|m4a|opus|flac|wav)$/.test(f);
+      $('#pbQ').disabled = audio;
+      const sz = audio ? d.audio_size : (d.sizes || {})[$('#pbQ').value === 'max' ? hs[0] : $('#pbQ').value];
+      $('#pbSize').textContent = sz ? 'الحجم التقريبي: ' + fmtBytes(sz) : '';
+    };
+    $('#pbQ').onchange = upd; $('#pbF').onchange = upd; upd();
+    const go = (o) => { closeModal(); addUrls([url], o); showSheet('home'); };
+    $('#pbGo').onclick = () => { const f = $('#pbF').value; go({ quality: $('#pbQ').value, format: f, mode: 'auto' }); };
+    $('#pbMp3').onclick = () => go({ quality: 'max', format: 'mp3', mode: 'audio' });
+    return;
+  }
+  // قائمة تشغيل أو نتائج بحث
+  const ents = d.entries || [];
+  if (!ents.length) { body().innerHTML = 'لا عناصر في هذه القائمة.'; return; }
+  const pre = d.kind === 'playlist';
+  body().innerHTML = `<div style="text-align:start">
+    <div style="font-weight:500;line-height:1.6">${esc(d.title || 'قائمة')} <span class="badge">${ents.length}</span></div>
+    <div class="small">${esc(d.uploader || '')}</div>
+    <div class="grid2" style="margin-top:10px">
+      <label class="small">الجودة<select id="pbQ"><option value="max">أقصى جودة</option><option value="1080">1080p</option><option value="720">720p</option><option value="480">480p</option><option value="360">360p</option></select></label>
+      <label class="small">الصيغة<select id="pbF">${FMT}</select></label>
+    </div>
+    <div class="row" style="margin:10px 0 4px"><button class="act ghost grow" id="pbAll">تحديد/إلغاء الكل</button></div>
+    <div id="pbList">${ents.map((x, i) => `<label class="task" style="display:flex;gap:10px;align-items:center;cursor:pointer">
+      <input type="checkbox" data-i="${i}" ${pre ? 'checked' : ''} style="width:20px;height:20px;flex:none">
+      ${thumbImg(x.thumbnail, '64px', '44px')}
+      <span style="min-width:0;flex:1"><span class="tasktitle" style="display:block">${esc(x.title || x.url)}</span><span class="small">${esc([x.uploader, fmtDur(x.duration)].filter(Boolean).join(' · '))}</span></span></label>`).join('')}</div></div>
+    <div class="row" style="margin-top:12px"><button class="act btn-blue grow" id="pbGo">⬇ تحميل المحدد</button></div>`;
+  $('#pbF').value = /^(mp4|mkv|webm|mp3|m4a|opus|flac|wav)$/.test($('#format').value) ? $('#format').value : 'mp4';
+  const cnt = () => { const n = $$('#pbList input:checked').length; $('#pbGo').textContent = '⬇ تحميل المحدد (' + n + ')'; };
+  cnt();
+  $('#pbList').addEventListener('change', cnt);
+  $('#pbAll').onclick = () => { const boxes = $$('#pbList input'); const all = boxes.every(b => b.checked); boxes.forEach(b => { b.checked = !all; }); cnt(); };
+  $('#pbGo').onclick = () => {
+    const urls = $$('#pbList input:checked').map(b => ents[+b.dataset.i].url).filter(Boolean);
+    if (!urls.length) { toast('اختر عنصراً واحداً على الأقل'); return; }
+    const f = $('#pbF').value, q = $('#pbQ').value;
+    closeModal(); addUrls(urls, { quality: q, format: f, mode: 'auto' }); showSheet('home');
+  };
+}
+
+/* نتائج بحث يوتيوب بالصور (دون تنزيل تلقائي) */
+async function advList() {
+  const q = ($('#advQ').value || '').trim();
+  if (!q) { toast('اكتب كلمة بحث'); $('#advQ').focus(); return; }
+  if (validUrl(q)) { showProbe(q); return; }
+  const box = $('#advResults');
+  box.innerHTML = '<div class="empty">جاري البحث…</div>';
+  if (!(await checkHelper(true))) { box.innerHTML = '<div class="empty">المساعد المحلي غير متصل.<br><button class="act primary" data-sheet-link="helper" style="margin-top:10px">كيف أشغّل المساعد؟</button></div>'; return; }
+  try {
+    const r = await hpost('/api/probe', { query: q, n: 15 });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || ('HTTP ' + r.status));
+    const ents = d.entries || [];
+    if (!ents.length) { box.innerHTML = '<div class="empty">لا نتائج</div>'; return; }
+    box.innerHTML = ents.map(x => `<div class="task"><div style="display:flex;gap:10px;align-items:center">${thumbImg(x.thumbnail, '84px', '56px')}
+      <div style="min-width:0;flex:1"><div class="tasktitle" style="white-space:normal;line-height:1.5">${esc(x.title)}</div><div class="small">${esc([x.uploader, fmtDur(x.duration)].filter(Boolean).join(' · '))}</div></div></div>
+      <div class="actions" style="margin-top:8px"><button class="act good" data-q-dl="${esc(x.url)}">⬇ تحميل</button><button class="act" data-q-mp3="${esc(x.url)}">🎵 MP3</button><button class="act ghost" data-q-prev="${esc(x.url)}">👁 معاينة</button></div></div>`).join('');
+  } catch (e) { box.innerHTML = '<div class="empty">فشل البحث: ' + esc(e.message || e) + '</div>'; }
+}
+let sugT;
+function sugInput() {
+  clearTimeout(sugT);
+  const q = ($('#advQ').value || '').trim();
+  if (q.length < 2 || validUrl(q) || !helper.ok) return;
+  sugT = setTimeout(async () => {
+    try {
+      const r = await hfetch(helper.base + '/api/suggest?q=' + encodeURIComponent(q), { cache: 'no-store' });
+      const j = await r.json();
+      $('#advSug').innerHTML = (j.items || []).map(s => '<option value="' + esc(s) + '"></option>').join('');
+    } catch {}
+  }, 350);
+}
+
+/* أدوات القائمة */
+async function pauseAll() {
+  const ts = state.tasks.filter(t => t.jobId && !t.paused && t.engine === 'helper' && ['processing', 'downloading'].includes(t.status));
+  if (!ts.length) { toast('لا مهام جارية للإيقاف'); return; }
+  await Promise.all(ts.map(t => hpost('/api/pause/' + t.jobId).catch(() => {})));
+  toast('أُوقفت ' + ts.length + ' مهام');
+}
+async function resumeAll() {
+  const ts = state.tasks.filter(t => t.jobId && t.paused);
+  if (!ts.length) { toast('لا مهام موقوفة'); return; }
+  await Promise.all(ts.map(t => hpost('/api/resume/' + t.jobId).then(() => { t.paused = false; }).catch(() => {})));
+  renderQueue(); toast('استُؤنفت ' + ts.length + ' مهام');
+}
+function retryFailed() {
+  const ts = state.tasks.filter(t => t.status === 'error' && !t.demo && t.error !== 'أُلغي');
+  if (!ts.length) { toast('لا مهام فاشلة'); return; }
+  ts.forEach(t => { t.retries = 0; retry(t.id); });
+  toast('أُعيدت ' + ts.length + ' مهام');
+}
+function clearFinished() {
+  const n = state.tasks.filter(t => ['done', 'error'].includes(t.status)).length;
+  if (!n) { toast('لا مهام منتهية'); return; }
+  state.tasks = state.tasks.filter(t => !['done', 'error'].includes(t.status));
+  renderQueue(); save(); toast('مُسحت ' + n);
+}
+
+/* ملفاتي: الملفات المحفوظة عبر المساعد (تشغيل · حفظ · إعادة تسمية · حذف) */
+let libItems = [];
+function libKind(k) { return k === 'audio' ? '🎵' : (k === 'zip' ? '🗜' : '🎬'); }
+function drawLibrary() {
+  const f = ($('#libSearch').value || '').trim().toLowerCase();
+  const list = libItems.filter(x => !f || x.name.toLowerCase().includes(f));
+  $('#libCount').textContent = list.length;
+  if (!list.length) { $('#libList').innerHTML = '<div class="empty">' + (libItems.length ? 'لا نتائج' : 'لا ملفات محفوظة بعد') + '</div>'; return; }
+  $('#libList').innerHTML = list.map(x => `<div class="task">
+    <div class="tasktitle" style="white-space:normal;line-height:1.5">${libKind(x.kind)} ${esc(x.name)}</div>
+    <div class="meta"><span>${new Date(x.mtime * 1000).toLocaleString()}</span><span>${fmtBytes(x.size)}</span></div>
+    <div class="actions" style="margin-top:6px">
+      ${x.kind !== 'zip' ? `<button class="act primary" data-lib="play" data-id="${x.id}" style="padding:4px 10px;font-size:11px">▶ تشغيل</button>` : ''}
+      <button class="act good" data-lib="save" data-id="${x.id}" style="padding:4px 10px;font-size:11px">حفظ</button>
+      <button class="act" data-lib="rename" data-id="${x.id}" style="padding:4px 10px;font-size:11px">✎ تسمية</button>
+      <button class="act danger" data-lib="del" data-id="${x.id}" style="padding:4px 10px;font-size:11px">🗑 حذف</button>
+    </div></div>`).join('');
+}
+async function renderLibrary() {
+  if (!(await checkHelper(false))) { $('#libList').innerHTML = '<div class="empty">يتطلب المساعد المحلي (غير متصل)</div>'; $('#libInfo').textContent = ''; return; }
+  try {
+    const r = await hfetch(helper.base + '/api/library', { cache: 'no-store' });
+    const j = await r.json();
+    libItems = j.items || [];
+    $('#libInfo').textContent = libItems.length ? ('الإجمالي: ' + fmtBytes(j.total || 0) + ' · ' + (j.roots || []).join('، ')) : ((j.roots || []).length ? '' : 'لم يُعثر على مجلد حفظ بعد');
+    drawLibrary();
+  } catch (e) { $('#libList').innerHTML = '<div class="empty">تعذّر تحميل القائمة: ' + esc(e.message || e) + '</div>'; }
+}
+function libRename(it) {
+  $('#modalRoot').innerHTML = `<div class="modal-bg"><div class="modal"><h3>✎ إعادة تسمية</h3>
+    <input id="rnIn" value="${esc(it.name)}" style="direction:ltr;text-align:left">
+    <div class="row" style="margin-top:10px"><button class="act btn-blue grow" id="rnOk">حفظ</button><button class="act ghost grow" id="rnNo">إلغاء</button></div></div></div>`;
+  $('#rnNo').onclick = closeModal;
+  $('#rnOk').onclick = async () => {
+    try {
+      const r = await hpost('/api/library/rename', { id: it.id, name: $('#rnIn').value });
+      const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || 'HTTP ' + r.status);
+      closeModal(); toast('تمت إعادة التسمية'); renderLibrary();
+    } catch (e) { toast(e.message || e); }
+  };
+}
+
 /* ── Events ── */
 $('#menuBtn').onclick = openDrawer;
 $('#overlay').onclick = closeDrawer;
@@ -1852,6 +2192,9 @@ $('#queue').addEventListener('click', e => {
   else if (act === 'retry') retry(id);
   else if (act === 'remove') removeTask(id);
   else if (act === 'login') { const t = state.tasks.find(x => x.id === id); if (t) showLoginHelp(t); }
+  else if (act === 'pause') pauseTask(id);
+  else if (act === 'resume') resumeTask(id);
+  else if (act === 'play') { const t = state.tasks.find(x => x.id === id); if (t && t.fileUrl) showPlayer(t.fileUrl, t.filename || t.title, t.thumb, t.filename); }
   else if (act === 'save') { const t = state.tasks.find(x => x.id === id); if (t && t.demo) { toast('عرض تجريبي، لا يوجد ملف حقيقي'); } else if (t && t.fileUrl) { nativeDownload(t.fileUrl, t.filename); toast('بدأ الحفظ'); } }
 });
 
@@ -1904,6 +2247,13 @@ document.addEventListener('click', e => {
     toast('فلتر: ' + label);
     return;
   }
+  const qd = e.target.closest('[data-q-dl],[data-q-mp3],[data-q-prev]');
+  if (qd) {
+    if (qd.dataset.qPrev) showProbe(qd.dataset.qPrev);
+    else if (qd.dataset.qMp3) { addUrls([qd.dataset.qMp3], { quality: 'max', format: 'mp3', mode: 'audio' }); showSheet('home'); }
+    else if (qd.dataset.qDl) { addUrls([qd.dataset.qDl]); showSheet('home'); }
+    return;
+  }
   const add = e.target.closest('[data-add-url]');
   if (add) {
     const u = add.getAttribute('data-add-url');
@@ -1913,6 +2263,44 @@ document.addEventListener('click', e => {
 
 ['quality','format','mode','concurrency','strategy','endpoint'].forEach(id => {
   $('#'+id).onchange = save;
+});
+EXT_IDS.forEach(id => { $('#' + id).onchange = save; });
+$('#xNotify').addEventListener('change', async () => {
+  if ($('#xNotify').value !== '1') return;
+  try {
+    if (!('Notification' in window)) { toast('المتصفح لا يدعم الإشعارات'); $('#xNotify').value = '0'; save(); return; }
+    const p = await Notification.requestPermission();
+    if (p !== 'granted') { toast('لم يُمنح إذن الإشعارات'); $('#xNotify').value = '0'; save(); }
+  } catch (e) { log('NOTIFY ' + e.message); }
+});
+$('#xWifi').addEventListener('change', () => pump());
+try { if (navigator.connection && navigator.connection.addEventListener) navigator.connection.addEventListener('change', () => pump()); } catch {}
+$('#probeBtn').onclick = async () => {
+  let u = extractUrls($('#url').value)[0];
+  if (!u) { try { u = extractUrls(await navigator.clipboard.readText())[0]; } catch {} }
+  if (!u) { toast('الصق رابطاً في الحقل أولاً'); $('#url').focus(); return; }
+  showProbe(u);
+};
+$('#qtPauseAll').onclick = pauseAll;
+$('#qtResumeAll').onclick = resumeAll;
+$('#qtRetry').onclick = retryFailed;
+$('#qtClear').onclick = clearFinished;
+$('#advList').onclick = advList;
+$('#advQ').addEventListener('input', sugInput);
+$('#libRefresh').onclick = renderLibrary;
+$('#libSearch').addEventListener('input', drawLibrary);
+$('#libList').addEventListener('click', async e => {
+  const b = e.target.closest('[data-lib]'); if (!b) return;
+  const it = libItems.find(x => x.id === b.dataset.id); if (!it) return;
+  const url = helper.base + '/lib/' + it.id;
+  if (b.dataset.lib === 'play') showPlayer(url, it.name, '', it.name);
+  else if (b.dataset.lib === 'save') { nativeDownload(url, it.name); toast('بدأ الحفظ'); }
+  else if (b.dataset.lib === 'rename') libRename(it);
+  else if (b.dataset.lib === 'del') {
+    if (!(await askConfirm('حذف «' + it.name + '» نهائياً من الجهاز؟'))) return;
+    try { const r = await hpost('/api/library/delete', { id: it.id }); const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || 'HTTP ' + r.status); toast('حُذف الملف'); renderLibrary(); }
+    catch (er) { toast('تعذّر الحذف: ' + (er.message || er)); }
+  }
 });
 $('#customEndpoint').onchange = save;
 $('#langSel').onchange = () => { applyLang($('#langSel').value); save(); };
@@ -1992,11 +2380,11 @@ updateLaser();
 log('للمنصات الاجتماعية: ضع خادمك في الإعدادات لتحقيق الاستقلالية.');
 log('للملفات المباشرة: يعمل فوراً بدون أي خادم خارجي.');
 $('#helperChip').addEventListener('click',e=>{if(e.target.closest('button,a'))return;$('#helperChip').classList.toggle('open');});
-/* Quick quality pill ⇄ settings */
-(function(){const q=$('#quality'),qq=$('#qQuality');if(!q||!qq)return;
- const pull=()=>{if(q.value)qq.value=q.value;};
- qq.addEventListener('change',()=>{q.value=qq.value;q.dispatchEvent(new Event('change'));});
- q.addEventListener('change',pull);pull();setTimeout(pull,400);window.addEventListener('load',pull);})();
+/* Quick pills (quality/format) ⇄ settings */
+[['#quality','#qQuality'],['#format','#qFormat']].forEach(([m,q])=>{const A=$(m),B=$(q);if(!A||!B)return;
+ const pull=()=>{if(A.value)B.value=A.value;};
+ B.addEventListener('change',()=>{A.value=B.value;A.dispatchEvent(new Event('change'));});
+ A.addEventListener('change',pull);pull();setTimeout(pull,400);window.addEventListener('load',pull);});
 })();
 
 </script>
