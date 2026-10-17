@@ -433,7 +433,7 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
   <div id="sheet-search" class="sheet">
     <div class="card">
       <h2>🔍 بحث متقدم</h2>
-      <input id="advQ" list="advSug" autocomplete="off" placeholder="اسم مطرب، أغنية، كلمة في العنوان أو رابط…"><datalist id="advSug"></datalist>
+      <div class="search-bar" style="margin-bottom:0"><input id="advQ" class="grow" enterkeyhint="search" autocomplete="off" placeholder="اسم مطرب، أغنية، كلمة في العنوان أو رابط…"><button class="act primary" id="advSend" aria-label="بحث" style="padding:10px 18px;font-size:18px">🔎</button></div>
       <div class="grid2" style="margin-top:8px">
         <label class="small">الحالة
           <select id="advStatus">
@@ -1801,7 +1801,7 @@ function advSearch() {
   });
   const box = $('#advResults');
   if (!res.length) {
-    box.innerHTML = '<div class="empty">لا نتائج محلية' + (q ? ' — جرّب «بحث يوتيوب» إن كان المساعد متصلاً' : '') + '</div>';
+    box.innerHTML = '<div class="empty">لا نتائج في مهامك وسجلك' + (q ? '<br><button class="act btn-blue" id="advYtGo" style="margin-top:12px">🔎 ابحث عن «' + esc(q) + '» على يوتيوب</button>' : '') + '</div>';
     return;
   }
   box.innerHTML = res.slice(0, 60).map(h => `
@@ -1867,6 +1867,12 @@ function fmtDur(s) {
   const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), x = s % 60;
   return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(x).padStart(2, '0');
 }
+function helperOld() {
+  const v = String((helper.info && helper.info.version) || '0').split('.').map(Number);
+  return !(v[0] > 8 || (v[0] === 8 && (v[1] || 0) >= 8));
+}
+const OLD_HELPER_MSG = 'المساعد المحلي في Termux نسخة قديمة (' + '%V%' + ') ولا يدعم هذه الميزة. حدّثه: افتح «المساعد المحلي» في التطبيق، انسخ الأمر الأول والصقه في Termux (يعيد تنزيل altra-server.py الجديد)، ثم أعد تشغيله. الأمر «altra» وحده يحدّث yt-dlp فقط.';
+function oldHelperText() { return OLD_HELPER_MSG.replace('%V%', (helper.info && helper.info.version) || '؟'); }
 function hpost(path, body, signal) {
   return hfetch(helper.base + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}), signal });
 }
@@ -1944,6 +1950,10 @@ async function showProbe(url) {
   const body = () => $('#pbBody');
   if (!(await checkHelper(true))) {
     body().innerHTML = 'المعاينة تحتاج المساعد المحلي (غير متصل).<div class="row" style="margin-top:10px"><button class="act primary grow" id="pbDirect">تحميل مباشرة بالإعدادات الحالية</button></div>';
+    $('#pbDirect').onclick = direct; return;
+  }
+  if (helperOld()) {
+    body().innerHTML = '<div style="text-align:start;line-height:1.9">⚠️ ' + esc(oldHelperText()) + '</div><div class="row" style="margin-top:10px"><button class="act primary grow" id="pbDirect">تحميل مباشرة بالإعدادات الحالية</button></div>';
     $('#pbDirect').onclick = direct; return;
   }
   let d;
@@ -2031,11 +2041,20 @@ async function advList(more) {
   const src = $('#advSrc').value;
   advS.n = more === true ? Math.min(50, advS.n + 20) : 30;
   const box = $('#advResults');
+  log('SEARCH start q=' + q + ' src=' + src + ' n=' + advS.n);
+  toast('جاري البحث…');
   box.innerHTML = '<div class="empty">جاري البحث عن «' + esc(q) + '»… (قد يستغرق بضع ثوانٍ)</div>';
-  if (!(await checkHelper(true))) { box.innerHTML = '<div class="empty">البحث يحتاج المساعد المحلي وهو غير متصل.<br><button class="act primary" data-sheet-link="helper" style="margin-top:10px">كيف أشغّل المساعد؟</button></div>'; return; }
+  const okH = await checkHelper(true);
+  log('SEARCH helper ok=' + okH + ' ver=' + ((helper.info && helper.info.version) || '?'));
+  if (!okH) { box.innerHTML = '<div class="empty">البحث يحتاج المساعد المحلي وهو غير متصل.<br><button class="act primary" data-sheet-link="helper" style="margin-top:10px">كيف أشغّل المساعد؟</button></div>'; return; }
   try {
-    const r = await hpost('/api/probe', { query: q, n: advS.n, type: src === 'ytpl' ? 'playlist' : 'video', source: src === 'sc' ? 'sc' : 'yt' });
+    if (helperOld()) { box.innerHTML = '<div class="empty" style="line-height:1.9">⚠️ ' + esc(oldHelperText()) + '<br><button class="act primary" data-sheet-link="helper" style="margin-top:10px">فتح صفحة المساعد المحلي</button></div>'; return; }
+    const sc = new AbortController(); const st = setTimeout(() => sc.abort(), 75000);
+    let r; try { r = await hpost('/api/probe', { query: q, n: advS.n, type: src === 'ytpl' ? 'playlist' : 'video', source: src === 'sc' ? 'sc' : 'yt' }, sc.signal); }
+    catch (fe) { throw new Error(fe.name === 'AbortError' ? 'انتهت المهلة (75 ثانية) — يوتيوب لم يرد عبر المساعد' : fe.message); }
+    finally { clearTimeout(st); }
     const d = await r.json().catch(() => ({}));
+    log('SEARCH probe status=' + r.status + ' entries=' + ((d.entries || []).length) + (d.error ? ' err=' + d.error : ''));
     if (!r.ok) throw new Error(d.error || ('HTTP ' + r.status));
     const ents = d.entries || [];
     if (!ents.length) { box.innerHTML = '<div class="empty">لا نتائج لـ «' + esc(q) + '». جرّب تهجئة أخرى أو مصدراً آخر.</div>'; return; }
@@ -2076,7 +2095,7 @@ function sugInput() {
     try {
       const r = await hfetch(helper.base + '/api/suggest?q=' + encodeURIComponent(q), { cache: 'no-store' });
       const j = await r.json();
-      $('#advSug').innerHTML = (j.items || []).map(s => '<option value="' + esc(s) + '"></option>').join('');
+      const dl = $('#advSug'); if (dl) dl.innerHTML = (j.items || []).map(s => '<option value="' + esc(s) + '"></option>').join('');
     } catch {}
   }, 350);
 }
@@ -2127,6 +2146,7 @@ function drawLibrary() {
 }
 async function renderLibrary() {
   if (!(await checkHelper(false))) { $('#libList').innerHTML = '<div class="empty">يتطلب المساعد المحلي (غير متصل)</div>'; $('#libInfo').textContent = ''; return; }
+  if (helperOld()) { $('#libList').innerHTML = '<div class="empty" style="line-height:1.9">⚠️ ' + esc(oldHelperText()) + '</div>'; return; }
   try {
     const r = await hfetch(helper.base + '/api/library', { cache: 'no-store' });
     const j = await r.json();
@@ -2219,7 +2239,7 @@ $('#histSearchBtn').onclick = () => renderHistory($('#histSearch').value);
 $('#histSearch').addEventListener('keydown', e => { if (e.key==='Enter') renderHistory($('#histSearch').value); });
 $('#advGo').onclick = advSearch;
 $('#advWebSearch').onclick = advWebSearch;
-$('#advQ').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); advSearch(); } });
+$('#advQ').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('#advQ').blur(); advList(); } });
 $('#advQ').addEventListener('input', () => { if (($('#advQ').value || '').trim().length >= 2) advSearch(); });
 // Platform shortcuts
 document.addEventListener('click', e => {
@@ -2237,6 +2257,7 @@ document.addEventListener('click', e => {
     toast('فلتر: ' + label);
     return;
   }
+  if (e.target.closest('#advYtGo')) { advList(); return; }
   const qd = e.target.closest('[data-q-dl],[data-q-mp3],[data-q-prev]');
   if (qd) {
     if (qd.dataset.qPrev) showProbe(qd.dataset.qPrev);
@@ -2275,8 +2296,8 @@ $('#qtPauseAll').onclick = pauseAll;
 $('#qtResumeAll').onclick = resumeAll;
 $('#qtRetry').onclick = retryFailed;
 $('#qtClear').onclick = clearFinished;
-$('#advList').onclick = advList;
-$('#advQ').addEventListener('input', sugInput);
+$('#advList').onclick = () => advList();
+$('#advSend').onclick = () => advList();
 $('#libRefresh').onclick = renderLibrary;
 $('#libSearch').addEventListener('input', drawLibrary);
 $('#libList').addEventListener('click', async e => {
