@@ -457,7 +457,10 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
         <button class="act primary grow" id="advGo">بحث محلي</button>
         <button class="act good grow" id="advWebSearch">🔎 بحث يوتيوب</button>
       </div>
-      <div class="row" style="margin-top:8px"><button class="act ghost grow" id="advList">📋 عرض النتائج مع الصور (اختر ما تحمّله)</button></div>
+      <div class="row" style="margin-top:8px">
+        <div class="qsel grow" style="margin-inline-start:0"><select id="advSrc" aria-label="مصدر البحث" style="max-width:none;width:100%;padding:10px 14px"><option value="yt">يوتيوب · أغاني ومقاطع</option><option value="ytpl">يوتيوب · ألبومات وقوائم تشغيل</option><option value="sc">ساوندكلاود</option></select><svg class="i" viewBox="0 0 24 24"><use href="#i-chev"/></svg></div>
+        <button class="act ghost" id="advList">📋 عرض النتائج</button>
+      </div>
       <div class="small" style="margin-top:8px;line-height:1.6">ابحث محلياً في المهام والسجل، أو ابحث على يوتيوب عبر المساعد المحلي (يتطلب اتصاله) ثم أضف النتائج للتحميل.</div>
       <div id="advResults" style="margin-top:12px"></div>
     </div>
@@ -1813,47 +1816,8 @@ function advSearch() {
 }
 
 async function advWebSearch() {
-  const q = ($('#advQ').value || '').trim();
-  if (!q) { toast('اكتب اسم مطرب أو أغنية أو كلمة بحث'); $('#advQ').focus(); return; }
-  if (validUrl(q)) {
-    toast('هذا رابط — استخدم الصفحة الرئيسية للتحميل');
-    return;
-  }
-  const box = $('#advResults');
-  box.innerHTML = '<div class="empty">جاري البحث على يوتيوب عبر المساعد…</div>';
-  if (!(await checkHelper(true))) {
-    box.innerHTML = '<div class="empty">المساعد المحلي غير متصل. شغّله ثم أعد المحاولة.<br><button class="act primary" data-sheet-link="helper" style="margin-top:10px">كيف أشغّل المساعد؟</button></div>';
-    return;
-  }
-  // Use yt-dlp ytsearch via helper: queue top results as separate jobs
-  const n = 5;
-  const searchUrl = 'ytsearch' + n + ':' + q;
-  try {
-    const base = helper.base;
-    const r = await hfetch(base + '/api/resolve', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: searchUrl, quality: $('#quality').value || 'max', format: $('#format').value || 'mp4', mode: $('#mode').value || 'auto' })
-    });
-    const j = await r.json().catch(() => ({}));
-    if (!r.ok || !j.id) throw new Error(j.error || 'فشل بدء البحث');
-    box.innerHTML = '<div class="empty">تم إرسال البحث «' + esc(q) + '» إلى المساعد (أعلى ' + n + ' نتائج).<br>تابع التقدم في قائمة الانتظار أو لوحة التحكم.</div>';
-    // Also add a visible task in the UI queue
-    state.tasks.push({
-      id: j.id, source: searchUrl, title: 'بحث يوتيوب: ' + q,
-      platform: 'YouTube', progress: 5, status: 'downloading',
-      created: Date.now(), speed: 0, bytes: 0, filename: '', error: '', engine: 'helper',
-      helperSearch: true
-    });
-    state.stats.started++;
-    renderQueue(); save();
-    // Poll helper status into this task
-    pollHelperSearch(j.id);
-    toast('بدأ بحث يوتيوب · راقب قائمة الانتظار');
-    showSheet('home');
-  } catch (e) {
-    box.innerHTML = '<div class="empty">فشل البحث: ' + esc(e.message || String(e)) + '</div>';
-    toast('فشل بحث يوتيوب');
-  }
+  // 8.8: لا تحميل تلقائي — يعرض النتائج لتختار منها (الكود القديم للتحميل التلقائي بقي دون استدعاء)
+  return advList();
 }
 
 async function pollHelperSearch(id) {
@@ -2058,24 +2022,50 @@ async function showProbe(url) {
   };
 }
 
-/* نتائج بحث يوتيوب بالصور (دون تنزيل تلقائي) */
-async function advList() {
+/* نتائج البحث بالصور: اختر ما تحمّله (أغاني) أو افتح ألبوماً/قائمة تشغيل — لا تحميل تلقائي */
+const advS = { n: 30 };
+async function advList(more) {
   const q = ($('#advQ').value || '').trim();
-  if (!q) { toast('اكتب كلمة بحث'); $('#advQ').focus(); return; }
+  if (!q) { toast('اكتب اسم فنان أو أغنية أو كلمة بحث'); $('#advQ').focus(); return; }
   if (validUrl(q)) { showProbe(q); return; }
+  const src = $('#advSrc').value;
+  advS.n = more === true ? Math.min(50, advS.n + 20) : 30;
   const box = $('#advResults');
-  box.innerHTML = '<div class="empty">جاري البحث…</div>';
-  if (!(await checkHelper(true))) { box.innerHTML = '<div class="empty">المساعد المحلي غير متصل.<br><button class="act primary" data-sheet-link="helper" style="margin-top:10px">كيف أشغّل المساعد؟</button></div>'; return; }
+  box.innerHTML = '<div class="empty">جاري البحث عن «' + esc(q) + '»… (قد يستغرق بضع ثوانٍ)</div>';
+  if (!(await checkHelper(true))) { box.innerHTML = '<div class="empty">البحث يحتاج المساعد المحلي وهو غير متصل.<br><button class="act primary" data-sheet-link="helper" style="margin-top:10px">كيف أشغّل المساعد؟</button></div>'; return; }
   try {
-    const r = await hpost('/api/probe', { query: q, n: 15 });
+    const r = await hpost('/api/probe', { query: q, n: advS.n, type: src === 'ytpl' ? 'playlist' : 'video', source: src === 'sc' ? 'sc' : 'yt' });
     const d = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(d.error || ('HTTP ' + r.status));
     const ents = d.entries || [];
-    if (!ents.length) { box.innerHTML = '<div class="empty">لا نتائج</div>'; return; }
-    box.innerHTML = ents.map(x => `<div class="task"><div style="display:flex;gap:10px;align-items:center">${thumbImg(x.thumbnail, '84px', '56px')}
-      <div style="min-width:0;flex:1"><div class="tasktitle" style="white-space:normal;line-height:1.5">${esc(x.title)}</div><div class="small">${esc([x.uploader, fmtDur(x.duration)].filter(Boolean).join(' · '))}</div></div></div>
-      <div class="actions" style="margin-top:8px"><button class="act good" data-q-dl="${esc(x.url)}">⬇ تحميل</button><button class="act" data-q-mp3="${esc(x.url)}">🎵 MP3</button><button class="act ghost" data-q-prev="${esc(x.url)}">👁 معاينة</button></div></div>`).join('');
-  } catch (e) { box.innerHTML = '<div class="empty">فشل البحث: ' + esc(e.message || e) + '</div>'; }
+    if (!ents.length) { box.innerHTML = '<div class="empty">لا نتائج لـ «' + esc(q) + '». جرّب تهجئة أخرى أو مصدراً آخر.</div>'; return; }
+    const moreBtn = (ents.length >= advS.n && advS.n < 50) ? '<div class="row" style="margin-top:10px"><button class="act ghost grow" id="advMore">عرض المزيد</button></div>' : '';
+    if (src === 'ytpl') {
+      box.innerHTML = '<div class="small" style="margin-bottom:6px">' + ents.length + ' قائمة/ألبوم — افتح القائمة لتختار أغانيها</div>' + ents.map(x => `<div class="task"><div style="display:flex;gap:10px;align-items:center">${thumbImg(x.thumbnail, '84px', '56px')}
+        <div style="min-width:0;flex:1"><div class="tasktitle" style="white-space:normal;line-height:1.5">${esc(x.title)}</div><div class="small">${esc(x.uploader || '')}</div></div></div>
+        <div class="actions" style="margin-top:8px"><button class="act primary" data-q-prev="${esc(x.url)}">📃 فتح القائمة واختيار الأغاني</button></div></div>`).join('') + moreBtn;
+    } else {
+      box.innerHTML = `<div class="grid2" style="margin-bottom:8px">
+          <label class="small">الصيغة<select id="advFmt"><option value="mp3">MP3 (صوت)</option><option value="m4a">M4A (صوت)</option><option value="mp4">MP4 (فيديو)</option></select></label>
+          <div style="display:flex;align-items:end"><button class="act ghost" id="advAll" style="width:100%">تحديد/إلغاء الكل</button></div></div>
+        <div id="advPick">${ents.map((x, i) => `<label class="task" style="display:flex;gap:10px;align-items:center;cursor:pointer">
+          <input type="checkbox" data-i="${i}" style="width:20px;height:20px;flex:none">
+          ${thumbImg(x.thumbnail, '72px', '48px')}
+          <span style="min-width:0;flex:1"><span class="tasktitle" style="display:block;white-space:normal;line-height:1.5">${esc(x.title)}</span><span class="small">${esc([x.uploader, fmtDur(x.duration)].filter(Boolean).join(' · '))}</span></span></label>`).join('')}</div>
+        <div class="row" style="margin-top:10px"><button class="act btn-blue grow" id="advDl">⬇ تحميل المحدد (0)</button></div>` + moreBtn;
+      const cnt = () => { $('#advDl').textContent = '⬇ تحميل المحدد (' + $$('#advPick input:checked').length + ')'; };
+      $('#advPick').addEventListener('change', cnt);
+      $('#advAll').onclick = () => { const bx = $$('#advPick input'); const all = bx.every(b => b.checked); bx.forEach(b => { b.checked = !all; }); cnt(); };
+      $('#advDl').onclick = () => {
+        const urls = $$('#advPick input:checked').map(b => ents[+b.dataset.i].url).filter(Boolean);
+        if (!urls.length) { toast('اختر أغنية واحدة على الأقل'); return; }
+        const f = $('#advFmt').value;
+        addUrls(urls, { quality: $('#quality').value, format: f, mode: f === 'mp4' ? 'auto' : 'audio' });
+        showSheet('home');
+      };
+    }
+    const mb = $('#advMore'); if (mb) mb.onclick = () => advList(true);
+  } catch (e) { box.innerHTML = '<div class="empty">فشل البحث: ' + esc(e.message || e) + '<div class="small" style="margin-top:8px">إن تكرر الفشل: افتح ⌘ Console ← «📋 نسخ السجل» وأرسله لي، وحدّث yt-dlp (<code>altra</code> في Termux يحدّثه تلقائياً).</div></div>'; }
 }
 let sugT;
 function sugInput() {

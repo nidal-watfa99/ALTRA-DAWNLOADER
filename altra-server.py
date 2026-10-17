@@ -492,7 +492,7 @@ def probe_opts():
     return o
 
 
-def probe(url, query=None, n=12):
+def probe(url, query=None, n=12, kind="video", source="yt"):
     """معاينة رابط: العنوان والصورة والمدة والجودات المتاحة بأحجامها التقريبية، أو عناصر قائمة تشغيل/نتائج بحث."""
     if yt_dlp is None:
         raise RuntimeError("yt-dlp غير مثبّت. نفّذ: pip install -U \"yt-dlp[default]\"")
@@ -507,17 +507,30 @@ def probe(url, query=None, n=12):
             th = (ts[-1].get("url") if ts else "") or ""
         if not th and e.get("id") and (e.get("ie_key") or "").lower().startswith("youtube"):
             th = "https://i.ytimg.com/vi/%s/mqdefault.jpg" % e["id"]
-        return {"id": e.get("id"), "title": (e.get("title") or "")[:200], "url": u,
+        is_list = bool(re.search(r"[?&]list=|/playlist\?|/sets/|/album/", u or "")) and "watch?v=" not in (u or "")
+        return {"id": e.get("id"), "title": (e.get("title") or "")[:200], "url": u, "is_list": is_list,
                 "duration": e.get("duration"), "thumbnail": th,
                 "uploader": (e.get("uploader") or e.get("channel") or "")[:80]}
 
     o = probe_opts()
     if query:
-        src = "ytsearch%d:%s" % (max(1, min(int(n), 25)), query)
+        n = max(1, min(int(n), 50))
+        if source == "sc":
+            src = "scsearch%d:%s" % (n, query)
+        elif kind == "playlist":
+            # بحث يوتيوب مفلتر على «قوائم التشغيل» (ألبومات الفنانين وقوائمهم)
+            from urllib.parse import quote_plus
+            src = "https://www.youtube.com/results?search_query=%s&sp=EgIQAw%%3D%%3D" % quote_plus(query)
+            o["playlistend"] = n
+        else:
+            src = "ytsearch%d:%s" % (n, query)
         o["extract_flat"] = "in_playlist"
         with yt_dlp.YoutubeDL(o) as ydl:
             info = ydl.extract_info(src, download=False)
-        return {"kind": "search", "title": query, "entries": [x for x in (ent(e) for e in (info.get("entries") or []) if e) if x["url"]]}
+        res = [x for x in (ent(e) for e in (info.get("entries") or []) if e) if x["url"]]
+        if kind == "playlist":
+            res = [x for x in res if x["is_list"]] or res
+        return {"kind": "search", "title": query, "entries": res}
 
     o["extract_flat"] = "in_playlist"
     with yt_dlp.YoutubeDL(o) as ydl:
@@ -1333,7 +1346,9 @@ class Handler(BaseHTTPRequestHandler):
             except (TypeError, ValueError):
                 n = 12
             try:
-                return self.send_json(probe(url, query or None, n))
+                kind = "playlist" if str(data.get("type") or "") == "playlist" else "video"
+                source = "sc" if str(data.get("source") or "") == "sc" else "yt"
+                return self.send_json(probe(url, query or None, n, kind, source))
             except Exception as ex:  # noqa: BLE001
                 msg = clean_error(ex) or "تعذّرت المعاينة"
                 slog("probe فشل: " + msg, "warn")
