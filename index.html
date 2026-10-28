@@ -1,0 +1,2412 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=5">
+<meta name="theme-color" content="#191919">
+<meta name="description" content="ALTRA-DAWNLOADER — محمل وسائط مستقل قابل للتثبيت">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ALTRA">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400;500;600&display=swap">
+<title>ALTRA-DAWNLOADER</title>
+<style>
+@property --a{syntax:'<angle>';initial-value:0deg;inherits:false}
+:root{--bg:#191919;--s1:#1f1f1f;--s2:#252525;--s3:#323232;--tint:#393e51;--line:#333;--card:#252525;--drawer:#1f1f1f;
+--c:#8ab4f8;--blue:#3588fe;--g:#81c995;--r:#f28b82;--o:#fdd663;--warn:#fdd663;--txt:#e3e3e3;--muted:#8a8a8a;color-scheme:dark;
+--font:'Google Sans Flex','Google Sans','Google Sans Text','Noto Sans Arabic','Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+--rainbow:conic-gradient(from var(--a),#4285f4,#34a853,#fbbc04,#ea4335,#4285f4)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--txt);font:14.5px/1.55 var(--font)}
+body{min-height:100dvh;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:-20% -10% auto -10%;height:60%;pointer-events:none;z-index:0;
+ background:radial-gradient(40% 50% at 20% 30%,#3588fe26,transparent 70%),radial-gradient(35% 45% at 80% 20%,#34a85318,transparent 70%),radial-gradient(30% 40% at 55% 60%,#ea433512,transparent 70%)}
+.app{max-width:560px;margin:0 auto;min-height:100dvh;padding-bottom:28px;position:relative;z-index:1}
+.i{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.i.sp{fill:currentColor;stroke:none}
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:#191919e6;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:10px 14px;display:flex;align-items:center;gap:12px;direction:ltr}
+.menu-btn,.icon-btn{width:46px;height:46px;border:0;background:var(--s3);border-radius:15px;color:var(--txt);cursor:pointer;display:grid;place-items:center;flex-shrink:0;position:relative;transition:.2s}
+.menu-btn:active,.icon-btn:active{transform:scale(.92);background:#3d3d3d}
+.menu-btn:hover,.icon-btn:hover{background:#3a3a3a}
+.brand{flex:1;min-width:0;direction:ltr;text-align:left}
+.logo{display:inline-block;font-weight:600;letter-spacing:.5px;font-size:17px;color:#ececec}
+.logo b{background:linear-gradient(90deg,#8ab4f8,#81c995,#fdd663,#f28b82,#8ab4f8);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:flow 8s linear infinite}
+@keyframes flow{to{background-position:300% 0}}
+.sub{font-size:10.5px;color:var(--muted);letter-spacing:.3px}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:var(--g);background:#81c99514;border-radius:99px;padding:4px 10px;direction:ltr}
+.live::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 8px var(--g);animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.35}}
+.laser-bar{height:2px;width:calc(100% - 28px);margin:0 auto;border-radius:9px;background:linear-gradient(90deg,transparent,#4285f4,#34a853,#fbbc04,#ea4335,transparent);background-size:200% 100%;animation:laser 2.6s linear infinite;opacity:.25;transition:.4s}
+.laser-bar.active{opacity:1;height:3px;box-shadow:0 0 14px #4285f499}
+@keyframes laser{to{background-position:-200% 0}}
+.err-dot{position:absolute;top:8px;inset-inline-end:8px;width:9px;height:9px;border-radius:50%;background:#f28b82;display:none;box-shadow:0 0 8px #f28b82}
+.icon-btn.has-err .err-dot{display:block}
+/* glow ring */
+.glow{position:relative}
+.glow::before,.glow::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;background:var(--rainbow);pointer-events:none;animation:spin 7s linear infinite;
+ -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+.glow::before{filter:blur(14px);opacity:.65;padding:4px}
+.glow::after{opacity:.9}
+@keyframes spin{to{--a:360deg}}
+/* hero */
+.hero{text-align:center;padding:34px 20px 8px;animation:up .7s cubic-bezier(.2,.8,.2,1) both}
+@keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.badge-pill{display:inline-flex;align-items:center;gap:10px;padding:6px 16px 6px 7px;border:1px solid #2f2f2f;border-radius:99px;background:#1c1c1c;font-size:13px;color:#ddd;direction:rtl}
+.orb{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;color:#fff;background:radial-gradient(circle at 32% 28%,#cfe3ff,#4f8dfa 45%,#16327a);box-shadow:0 0 14px #3588fe88,inset 0 -3px 6px #0a1a4a}
+.hero h1{font-size:clamp(28px,8vw,38px);font-weight:500;line-height:1.3;margin:22px 0 10px;color:#f1f1f1;letter-spacing:-.3px}
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,#8ab4f8,#81c995,#fdd663,#f28b82);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--muted);font-size:14px;line-height:1.8;max-width:380px;margin:0 auto}
+/* prompt card */
+.prompt{margin:22px 14px 0;padding:16px 16px 12px;background:var(--s1);border-radius:28px;animation:up .8s .1s cubic-bezier(.2,.8,.2,1) both;box-shadow:0 18px 50px #0007}
+.prompt textarea{background:transparent;border:0;box-shadow:none;padding:4px 4px 8px;min-height:92px;font-size:15px;color:#e8e8e8;font-family:ui-monospace,Menlo,monospace}
+.prompt textarea:focus{box-shadow:none}
+.prompt textarea::placeholder{color:#777;font-family:var(--font)}
+.p-bar{display:flex;align-items:center;gap:8px;direction:ltr}
+.rb{flex:none;width:42px;height:42px;border-radius:50%;border:1px solid #3a3a3a;background:transparent;color:#ddd;display:grid;place-items:center;cursor:pointer;transition:.2s}
+.rb:active{transform:scale(.9);background:var(--s3)}
+.qsel{position:relative;direction:rtl}.qsel select{max-width:96px;padding:10px 26px 10px 10px;font-size:13px}.p-bar{gap:6px}#go{flex:none}
+.qsel select{width:auto;appearance:none;-webkit-appearance:none;background:var(--s2);border:1px solid #3a3a3a;border-radius:14px;padding:10px 34px 10px 14px;font-size:14px;color:#ddd;cursor:pointer}
+.qsel .i{position:absolute;left:8px;top:50%;width:16px;height:16px;transform:translateY(-50%);pointer-events:none;color:#aaa}
+#go{width:48px;height:48px;border-radius:16px;border:0;background:var(--blue);color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 6px 22px #3588fe66;transition:.2s;padding:0;font-size:0}
+#go:active{transform:scale(.9)}
+#go:hover{filter:brightness(1.12)}
+.dropzone{border:1.5px dashed #3a3a3a;border-radius:16px;padding:9px;text-align:center;color:#777;font-size:12px;margin-top:10px;transition:.2s}
+.dropzone.over{border-color:var(--blue);background:#3588fe14;color:var(--c)}
+.hintline{text-align:center;color:#6f6f6f;font-size:11.5px;margin:10px 22px 0;line-height:1.7}
+.chips-row{display:flex;gap:10px;overflow-x:auto;padding:16px 14px 4px;scrollbar-width:none}
+.chips-row::-webkit-scrollbar{display:none}
+.qchip{display:inline-flex;align-items:center;gap:9px;white-space:nowrap;padding:12px 18px;border-radius:99px;background:var(--s2);border:0;color:#e0e0e0;font-size:14px;cursor:pointer;transition:.2s}
+.qchip .i{color:#6ea8fe;width:20px;height:20px}
+.qchip:active{transform:scale(.95);background:var(--s3)}
+/* cards */
+.card{margin:14px;padding:18px;background:var(--s2);border:1px solid #2e2e2e;border-radius:26px;box-shadow:0 10px 34px #0005;animation:up .6s both}
+h2{font-size:15px;font-weight:500;margin:0 0 14px;color:#f0f0f0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.row{display:flex;gap:8px;align-items:stretch}.grow{flex:1;min-width:0}
+input,select,button,textarea{font:inherit;color:var(--txt)}
+input,select,textarea{width:100%;background:var(--bg);border:1px solid #3a3a3a;border-radius:16px;padding:12px 14px;outline:none;transition:.2s;font-size:16px}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 4px #3588fe22}
+textarea{resize:none;min-height:72px;font-family:ui-monospace,monospace;font-size:14px;direction:ltr;text-align:start;user-select:text;-webkit-user-select:text}
+label.small{color:#9a9a9a}
+.env-warn{margin:12px 14px;padding:14px 16px;background:#fdd6631a;border:1px solid #fdd66340;border-radius:20px;font-size:12px;line-height:1.7;color:#ffe9a3;display:none}.env-warn.show{display:block}
+button.act{border:0;background:var(--s3);border-radius:99px;padding:10px 16px;cursor:pointer;white-space:nowrap;transition:.2s;color:#e6e6e6}
+button.act:active,.act:active{transform:scale(.95)}button.act:disabled{opacity:.4}
+a.act{border-radius:99px;background:var(--s3);padding:10px 16px;display:inline-block;color:#e6e6e6}
+button.primary,a.primary{background:var(--tint);color:#aecbfa}
+button.good,a.good{background:#81c9951f;color:#a8dab5}
+button.danger{background:#f28b821f;color:#f6aea9}
+button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.small{font-size:11.5px;color:var(--muted)}
+.status{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}.dot.ok{background:var(--g);box-shadow:0 0 8px var(--g)}.dot.bad{background:var(--r)}.dot.warn{background:var(--warn)}
+.task{border-top:1px solid #333;padding:14px 0}.task:first-child{border-top:0;padding-top:0}
+.tasktitle{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13.5px;color:#f0f0f0}
+.bar{height:7px;background:#1a1a1a;border-radius:99px;overflow:hidden;margin:9px 0}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#4285f4,#34a853,#fbbc04);background-size:200% 100%;animation:laser 2.5s linear infinite;transition:width .25s;border-radius:99px;box-shadow:0 0 10px #4285f488}
+.meta{font-size:11.5px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.badge{font-size:11px;padding:2px 10px;border-radius:99px;background:var(--tint);color:#aecbfa;font-weight:600}
+.tag{font-size:10px;padding:2px 8px;border-radius:99px;background:var(--s3);color:#aecbfa;margin-inline-start:6px}
+.speed{color:var(--g)}
+.empty{text-align:center;padding:26px 10px;color:#777}
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(16px);background:#3a3a3a;border-radius:99px;padding:12px 22px;font-size:13px;opacity:0;pointer-events:none;transition:.3s;z-index:80;max-width:90%;text-align:center;box-shadow:0 10px 30px #0009}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* drawer (left, like AI Studio) */
+.overlay{position:fixed;inset:0;background:#000a;backdrop-filter:blur(3px);z-index:50;opacity:0;pointer-events:none;transition:opacity .3s}.overlay.show{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;bottom:0;left:0;right:auto;width:min(310px,86vw);background:var(--s1);border-radius:0 28px 28px 0;z-index:60;transform:translateX(-105%);transition:transform .32s cubic-bezier(.2,.8,.2,1);overflow-y:auto;padding:22px 12px 40px;box-shadow:20px 0 60px #000a}
+.drawer.open{transform:translateX(0)}
+.drawer h3{padding:4px 12px 16px;font-size:20px;font-weight:500;color:#f1f1f1;direction:ltr}
+.ditem{display:flex;align-items:center;gap:14px;width:100%;padding:13px 16px;border:0;background:transparent;color:#d6d6d6;font:inherit;text-align:start;cursor:pointer;border-radius:99px;margin-bottom:2px;transition:.2s}
+.ditem:active{background:var(--s3)}.ditem.active{background:var(--tint);color:#c9dcff}
+.ditem .ic{display:grid;place-items:center}.ditem .lab{flex:1}
+.dsep{height:1px;background:#303030;margin:10px 8px}
+.dfoot{padding:16px 14px;font-size:11px;color:#666;line-height:1.7}
+.sheet{display:none}.sheet.active{display:block;animation:up .35s ease both}
+.console{height:280px;overflow:auto;background:#141414;border:1px solid #2c2c2c;border-radius:18px;padding:12px;font:11px/1.55 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-all}
+.console .l-error{color:#f28b82}.console .l-warn{color:#fdd663}.console .l-ok{color:#81c995}.console .l-h{color:#8ab4f8}
+.console div{padding:1px 0;border-bottom:1px solid #1f1f1f}
+.console-bar{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}.console-bar .act{padding:8px 12px;font-size:12px}
+.contact a{color:#aecbfa;text-decoration:none;display:block;padding:12px 0;border-bottom:1px solid #333}
+.modal-bg{position:fixed;inset:0;background:#000b;backdrop-filter:blur(4px);z-index:70;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:var(--s2);border-radius:30px 30px 0 0;padding:22px 18px 26px;width:100%;max-width:560px;max-height:80vh;overflow:auto;animation:sheetup .35s cubic-bezier(.2,.8,.2,1)}
+.modal::before{content:"";display:block;width:40px;height:4px;border-radius:9px;background:#555;margin:-10px auto 16px}
+@keyframes sheetup{from{transform:translateY(60px);opacity:0}}
+.modal h3{margin-bottom:12px;color:#f0f0f0;font-weight:500}
+.share-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.share-grid button{padding:16px 8px;border-radius:20px;border:0;background:var(--s3);color:var(--txt);font-size:12px;cursor:pointer}
+.share-grid button span{display:block;font-size:24px;margin-bottom:6px}
+.install-banner{margin:12px 14px;padding:14px 16px;background:var(--tint);border-radius:22px;display:none;align-items:center;gap:12px;font-size:13px;color:#d5e3ff}.install-banner.show{display:flex}.install-banner button{margin-inline-start:auto}
+.storage-box{padding:12px 14px;border-radius:16px;background:var(--bg);margin-top:8px;font-size:12px}
+.search-bar{display:flex;gap:8px;margin-bottom:10px}
+.sd{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--g);box-shadow:0 0 10px var(--g);flex-shrink:0;animation:pulse 2.4s infinite}.sd.wn{background:var(--o);box-shadow:0 0 10px var(--o)}
+.chip{margin:6px 14px 0;padding:12px 16px;border-radius:22px;font-size:12px;line-height:1.7;background:var(--s2);display:flex;gap:10px;align-items:center;flex-wrap:wrap;color:#ccc}
+.chip.ok{background:#81c9951a;color:#b7e4c2}.chip.warn{background:#fdd6631a;color:#ffe9a3}.chip .grow{min-width:140px}
+.chip code{background:#141414;padding:2px 6px;border-radius:8px}
+.step-box{border-radius:20px;padding:14px;margin-top:12px;background:var(--bg)}.step-box b{color:#aecbfa}
+.login-badge{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:99px;padding:7px 14px;background:var(--blue);color:#fff;font-weight:600;font-size:12px;cursor:pointer;box-shadow:0 4px 16px #3588fe55}
+.btn-blue{background:var(--blue)!important;color:#fff!important;font-weight:600}
+.modal textarea{min-height:110px;margin-top:8px}
+.code-box{display:flex;gap:8px;align-items:stretch;margin-top:8px}
+.code-box code{flex:1;min-width:0;direction:ltr;text-align:left;background:#141414;border-radius:16px;padding:12px;font:12px/1.5 ui-monospace,Menlo,monospace;color:#aecbfa;overflow-x:auto;white-space:pre;user-select:all;-webkit-user-select:all}
+/* platform gallery cards */
+.gal-title{margin:26px 20px 0;font-size:15px;font-weight:500;color:#f0f0f0}
+.platforms{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px}
+.plat{position:relative;min-height:150px;border-radius:26px;overflow:hidden;cursor:pointer;border:1.5px solid #3a3a3a;isolation:isolate;transition:transform .3s,border-color .3s,box-shadow .3s;
+ background:radial-gradient(120% 90% at 85% 0%,var(--p1,#3588fe),transparent 62%),radial-gradient(100% 100% at 5% 100%,var(--p2,#34a853),transparent 58%),#121212}
+.plat:first-child,.plat:last-child{grid-column:1/-1;min-height:190px}.plat:last-child{min-height:120px}
+.plat::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.35;background:repeating-linear-gradient(0deg,#ffffff10 0 1px,transparent 1px 22px),repeating-linear-gradient(90deg,#ffffff10 0 1px,transparent 1px 22px);-webkit-mask:radial-gradient(90% 90% at 70% 20%,#000,transparent);mask:radial-gradient(90% 90% at 70% 20%,#000,transparent)}
+.plat:hover,.plat:active{transform:translateY(-4px) scale(1.015);border-color:#6a6a6a;box-shadow:0 18px 40px #000a,0 0 30px var(--p1,#3588fe)33}
+.pg{position:absolute;top:50%;left:50%;transform:translate(-50%,-62%);font-size:54px;line-height:1;filter:drop-shadow(0 8px 18px #000a);transition:.4s}
+.plat:first-child .pg{font-size:76px}.plat:hover .pg{transform:translate(-50%,-68%) scale(1.12) rotate(-4deg)}
+.pl{position:absolute;inset-inline-start:12px;bottom:12px;font-style:normal;font-size:13px;padding:8px 16px;border-radius:16px;background:#262626d9;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#f1f1f1}
+[data-plat=youtube]{--p1:#ff2d4d;--p2:#7a0a25}[data-plat=instagram]{--p1:#dd2a7b;--p2:#f58529}[data-plat=tiktok]{--p1:#25f4ee;--p2:#fe2c55}
+[data-plat=x]{--p1:#5a5a5a;--p2:#1a1a1a}[data-plat=facebook]{--p1:#1877f2;--p2:#0a2f6b}[data-plat=reddit]{--p1:#ff4500;--p2:#7a2200}
+[data-plat=soundcloud]{--p1:#ff7700;--p2:#a02c00}[data-plat=vimeo]{--p1:#1ab7ea;--p2:#0a4a66}[data-plat=twitch]{--p1:#9146ff;--p2:#2c1060}[data-plat=direct]{--p1:#3588fe;--p2:#34a853}
+.platforms.compact{display:flex;overflow-x:auto;gap:10px;padding:4px 0 2px;scrollbar-width:none}.platforms.compact::-webkit-scrollbar{display:none}
+.platforms.compact .plat,.platforms.compact .plat:first-child,.platforms.compact .plat:last-child{min-height:0;border-radius:99px;border:0;background:var(--s3);padding:11px 18px;display:inline-flex;align-items:center;gap:9px;white-space:nowrap;flex:none}
+.platforms.compact .plat::before{display:none}.platforms.compact .pg,.platforms.compact .plat:first-child .pg{position:static;transform:none;font-size:17px;filter:none}.platforms.compact .pl{position:static;background:none;padding:0;backdrop-filter:none;font-size:13.5px}
+.plat-hint{font-size:11.5px;color:#6f6f6f;text-align:center;margin:0 20px;line-height:1.7}
+.logo{white-space:nowrap;font-size:14px;letter-spacing:0}.brand{min-width:0}.brand{overflow:hidden}
+.live{font-size:0;padding:0;width:10px;height:10px;background:none}.live::before{width:8px;height:8px}
+.top{gap:10px;padding:10px 12px}.menu-btn,.icon-btn{width:44px;height:44px;border-radius:14px}
+#helperChip.warn .grow{max-height:3.4em;overflow:hidden;position:relative;-webkit-mask:linear-gradient(#000 55%,transparent);mask:linear-gradient(#000 55%,transparent);cursor:pointer}
+#helperChip.warn.open .grow{max-height:none;-webkit-mask:none;mask:none}
+@media(hover:none){.dropzone{display:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+<symbol id="i-tune" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+<symbol id="i-term" viewBox="0 0 24 24"><path d="m4 17 6-6-6-6M12 19h8"/></symbol>
+<symbol id="i-dl" viewBox="0 0 24 24"><path d="M12 3v12m0 0 5-5m-5 5-5-5M4 21h16"/></symbol>
+<symbol id="i-clip" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 2c.6 5.6 4.4 9.4 10 10-5.6.6-9.4 4.4-10 10-.6-5.6-4.4-9.4-10-10 5.6-.6 9.4-4.4 10-10z"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8M5 10v10h14V10"/></symbol>
+<symbol id="i-hist" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol>
+<symbol id="i-cpu" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+<symbol id="i-share" viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v14"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+</defs></svg>
+<div class="app">
+  <header class="top">
+    <button class="menu-btn" id="menuBtn" aria-label="القائمة"><svg class="i " viewBox="0 0 24 24"><use href="#i-menu"/></svg></button>
+    <div class="brand">
+      <div class="logo"><b>ALTRA</b>-DAWNLOADER</div>
+      <div class="sub" id="subTitle">v8.6 · محمل مستقل</div>
+    </div>
+    <span class="live">LIVE</span>
+    <button class="icon-btn" id="consoleBtn" title="Console" style="position:relative" data-sheet-link="console"><svg class="i " viewBox="0 0 24 24"><use href="#i-term"/></svg><span class="err-dot"></span></button>
+    <button class="icon-btn" id="quickInstall" title="تثبيت" style="display:none"><svg class="i " viewBox="0 0 24 24"><use href="#i-dl"/></svg></button>
+    <button class="icon-btn" title="الإعدادات" data-sheet-link="settings"><svg class="i " viewBox="0 0 24 24"><use href="#i-tune"/></svg></button>
+  </header>
+  <div class="laser-bar" id="laserBar"></div>
+
+  <div class="install-banner" id="installBanner">
+    <span>ثبّت ALTRA ليظهر في قائمة «مشاركة» بأي تطبيق — شارك الرابط فيبدأ التحميل تلقائياً</span>
+    <button class="act primary" id="installBtn">تثبيت</button>
+  </div>
+
+  <div class="env-warn" id="envWarn"></div>
+
+  <div class="chip" id="helperChip"><i class="sd wn"></i> فحص المساعد المحلي…</div>
+
+  <!-- HOME -->
+  <div id="sheet-home" class="sheet active">
+    <section class="hero">
+      <div class="badge-pill"><span class="orb">A</span>نقدّم لكم ALTRA · الإصدار 8.6</div>
+      <h1>حمّل أي شيء<br>مع <em>ALTRA</em></h1>
+      <p>الصق الرابط وسيتولى المحمّل الباقي — فيديو وصوت من أكثر من ١٠٠٠ موقع، بأعلى جودة وبلا حسابات.</p>
+    </section>
+    <div class="prompt glow">
+      <textarea id="url" rows="3" placeholder="الصق رابط الفيديو أو الصوت هنا…"></textarea>
+      <div class="p-bar">
+        <button class="rb" id="paste" title="لصق من الحافظة"><svg class="i " viewBox="0 0 24 24"><use href="#i-clip"/></svg></button>
+        <button class="rb" data-sheet-link="search" title="بحث متقدم"><svg class="i " viewBox="0 0 24 24"><use href="#i-search"/></svg></button>
+        <div class="qsel" style="margin-inline-start:auto"><select id="qFormat" aria-label="الصيغة"><option value="mp4">MP4</option><option value="mkv">MKV</option><option value="webm">WEBM</option><option value="mov">MOV</option><option value="avi">AVI</option><option value="flv">FLV</option><option value="gif">GIF</option><option value="mp3">MP3</option><option value="m4a">M4A</option><option value="aac">AAC</option><option value="flac">FLAC</option><option value="wav">WAV</option><option value="ogg">OGG</option><option value="opus">OPUS</option><option value="alac">ALAC</option><option value="best">Best</option></select><svg class="i" viewBox="0 0 24 24"><use href="#i-chev"/></svg></div>
+        <div class="qsel" style="margin-inline-start:0"><select id="qQuality" aria-label="الجودة"><option value="max">أقصى جودة</option><option value="2160">4K</option><option value="1440">1440p</option><option value="1080">1080p</option><option value="720">720p</option><option value="480">480p</option><option value="360">360p</option></select><svg class="i " viewBox="0 0 24 24"><use href="#i-chev"/></svg></div>
+        <button id="go" title="ابدأ التحميل" aria-label="ابدأ التحميل"><svg class="i sp" viewBox="0 0 24 24"><use href="#i-spark"/></svg></button>
+      </div>
+      <div class="dropzone" id="dropzone">أسقط الروابط هنا</div>
+    </div>
+    <div class="hintline" id="hint">حتى 10 مهام · بعد التثبيت: شارك أي رابط من يوتيوب/إنستغرام/تيك توك ← اختر ALTRA ← يبدأ فوراً</div>
+    <div class="chips-row">
+      <button class="qchip" data-sheet-link="helper"><svg class="i " viewBox="0 0 24 24"><use href="#i-cpu"/></svg>المساعد المحلي</button>
+      <button class="qchip" data-sheet-link="history"><svg class="i " viewBox="0 0 24 24"><use href="#i-hist"/></svg>السجل</button>
+      <button class="qchip" data-sheet-link="stats"><svg class="i " viewBox="0 0 24 24"><use href="#i-chart"/></svg>الإحصائيات</button>
+      <button class="qchip" data-sheet-link="settings"><svg class="i " viewBox="0 0 24 24"><use href="#i-tune"/></svg>الإعدادات</button>
+      <button class="qchip" data-sheet-link="library"><svg class="i " viewBox="0 0 24 24"><use href="#i-folder"/></svg>ملفاتي</button>
+      <button class="qchip" id="probeBtn"><svg class="i " viewBox="0 0 24 24"><use href="#i-eye"/></svg>معاينة رابط</button>
+    </div>
+
+    <div class="card">
+      <h2>قائمة الانتظار <span id="qcount" class="badge">0</span></h2>
+      <div id="queue"><div class="empty">لا مهام بعد — الصق رابطاً أو شارك من تطبيق آخر</div></div>
+      <div id="queueTools" class="row" style="margin-top:12px;flex-wrap:wrap;display:none">
+        <button class="act ghost" id="qtPauseAll">⏸ إيقاف الكل</button>
+        <button class="act ghost" id="qtResumeAll">▶ استئناف الكل</button>
+        <button class="act ghost" id="qtRetry">↻ إعادة الفاشلة</button>
+        <button class="act ghost" id="qtClear">🧹 مسح المنتهية</button>
+      </div>
+    </div>
+
+    <div class="gal-title">المنصات المدعومة</div>
+    <div>
+      <div class="platforms" id="homePlatforms">
+        <div class="plat" data-plat="youtube" title="YouTube"><span class="pg">▶️</span><em class="pl">يوتيوب</em></div>
+        <div class="plat" data-plat="instagram" title="Instagram"><span class="pg">📸</span><em class="pl">إنستغرام</em></div>
+        <div class="plat" data-plat="tiktok" title="TikTok"><span class="pg">🎵</span><em class="pl">تيك توك</em></div>
+        <div class="plat" data-plat="x" title="X / Twitter"><span class="pg">𝕏</span><em class="pl">إكس</em></div>
+        <div class="plat" data-plat="facebook" title="Facebook"><span class="pg">👤</span><em class="pl">فيسبوك</em></div>
+        <div class="plat" data-plat="reddit" title="Reddit"><span class="pg">🔴</span><em class="pl">ريديت</em></div>
+        <div class="plat" data-plat="soundcloud" title="SoundCloud"><span class="pg">☁️</span><em class="pl">ساوندكلاود</em></div>
+        <div class="plat" data-plat="vimeo" title="Vimeo"><span class="pg">🎬</span><em class="pl">فيميو</em></div>
+        <div class="plat" data-plat="twitch" title="Twitch"><span class="pg">🟣</span><em class="pl">تويتش</em></div>
+        <div class="plat" data-plat="direct" title="رابط مباشر"><span class="pg">🔗</span><em class="pl">مباشر</em></div>
+      </div>
+      <div class="plat-hint">اضغط أيقونة لتجهيز البحث أو الصق رابط المنصة · المساعد المحلي يدعم أكثر من 1000 موقع</div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="sheet-settings" class="sheet">
+    <div class="card">
+      <h2>⚙️ الإعدادات</h2>
+      <div class="grid2">
+        <label class="small">الجودة
+          <select id="quality">
+            <option value="max">أقصى</option>
+            <option value="2160">4K</option>
+            <option value="1440">1440p</option>
+            <option value="1080" selected>1080p</option>
+            <option value="720">720p</option>
+            <option value="480">480p</option>
+            <option value="360">360p</option>
+          </select>
+        </label>
+        <label class="small">الصيغة
+          <select id="format">
+            <optgroup label="فيديو">
+              <option value="mp4">MP4</option><option value="mkv">MKV</option><option value="webm">WEBM</option>
+              <option value="mov">MOV</option><option value="avi">AVI</option><option value="flv">FLV</option><option value="gif">GIF</option>
+            </optgroup>
+            <optgroup label="صوت">
+              <option value="mp3">MP3</option><option value="m4a">M4A</option><option value="aac">AAC</option><option value="flac">FLAC</option>
+              <option value="wav">WAV</option><option value="ogg">OGG</option><option value="opus">OPUS</option><option value="alac">ALAC</option>
+            </optgroup>
+            <option value="best">Best · الأصلية بلا تحويل</option>
+          </select>
+        </label>
+        <label class="small">الوضع
+          <select id="mode">
+            <option value="auto">تلقائي</option>
+            <option value="audio">صوت فقط</option>
+            <option value="mute">فيديو صامت</option>
+          </select>
+        </label>
+        <label class="small">التزامن (1–10)
+          <select id="concurrency">
+            <option>1</option><option>2</option><option>3</option>
+            <option>4</option><option>5</option><option>6</option>
+            <option>7</option><option>8</option><option>9</option><option selected>10</option>
+          </select>
+        </label>
+      </div>
+
+      <label class="small" style="display:block;margin-top:12px">محرك الاستخراج
+        <select id="strategy">
+          <option value="auto" selected>تلقائي: المساعد المحلي ← Cobalt ← مباشر (موصى به)</option>
+          <option value="helper">المساعد المحلي فقط</option>
+          <option value="cobalt">Cobalt فقط</option>
+          <option value="direct">مباشر (ملفات mp4/mp3 فقط)</option>
+        </select>
+      </label>
+
+      <label class="small" style="display:block;margin-top:8px">عنوان المساعد المحلي (altra-server)
+        <input id="helperUrl" value="http://127.0.0.1:8787" inputmode="url" autocapitalize="off" autocomplete="off" spellcheck="false" style="margin-top:4px;direction:ltr;text-align:left">
+      </label>
+      <div class="row" style="margin-top:6px">
+        <button class="act good" id="helperTest">فحص الاتصال</button>
+        <button class="act ghost grow" data-sheet-link="helper">كيف أشغّل المساعد؟</button>
+      </div>
+      <div class="small" style="margin-top:6px;line-height:1.7">إن بقي «غير متصل» رغم تشغيله: Chrome يمنع المواقع من الوصول لجهازك. افتح <b>http://localhost:8787</b> مباشرة من متصفحك وثبّت التطبيق من هناك، أو فعّل «الشبكة المحلية» لهذا الموقع من إعدادات الموقع.</div>
+      <div class="small" id="helperState" style="margin-top:6px"></div>
+
+      <label class="small" style="display:block;margin-top:8px">رابط خادم Cobalt خاص (اختياري)
+        <input id="customEndpoint" placeholder="https://my-server.example" style="margin-top:4px;direction:ltr;text-align:left">
+      </label>
+
+      <label class="small" style="display:block;margin-top:8px">خادم Cobalt احتياطي
+        <select id="endpoint">
+          <option value="auto">تجربة عدة خوادم (موصى)</option>
+          <option value="https://nuko-c.meowing.de">nuko-c.meowing.de</option>
+          <option value="https://apicobalt.girlskissing.top">apicobalt.girlskissing.top</option>
+          <option value="https://api.cobalt.rpkiinval.id">api.cobalt.rpkiinval.id</option>
+          <option value="https://cobalt-alpha.wolfy.love">cobalt-alpha.wolfy.love</option>
+          <option value="https://rue-cobalt.xenon.zone">rue-cobalt.xenon.zone</option>
+        </select>
+      </label>
+
+      <div style="margin-top:14px">
+        <div class="small" style="margin-bottom:6px">مجلد الحفظ (تخزين داخلي أو خارجي)</div>
+        <div class="small" style="margin-bottom:8px;color:#a8dab5">مع المساعد المحلي: تُحفظ الملفات في «ALTRA-DAWNLOADER» داخل التخزين الداخلي (Video / Audio) ولا تظهر في المعرض.</div>
+        <div class="storage-box" id="storageInfo">لم يُختر مجلد — سيتم السؤال عند كل تحميل أو استخدام التنزيل الافتراضي</div>
+        <div class="row" style="margin-top:8px">
+          <button class="act good grow" id="pickFolder">📁 اختر مجلد الحفظ</button>
+          <button class="act ghost" id="clearFolder">مسح</button>
+        </div>
+        <div class="small" style="margin-top:6px">اختيار مجلد ثابت متاح في Chrome / Edge على الكمبيوتر. على الجوال تُحفظ الملفات تلقائياً في مجلد <b>التنزيلات</b> وتظهر في <b>المعرض</b>. إن سأل المتصفح عن مكان الحفظ فعطّل «Ask where to save files» من إعدادات التنزيلات في Chrome.</div>
+      </div>
+
+      <label class="small" style="display:block;margin-top:12px">اللغة
+        <select id="langSel"><option value="ar">العربية</option><option value="en">English</option></select>
+      </label>
+
+      <div class="small" style="margin:18px 0 8px;color:#a8dab5">⚡ خيارات إضافية</div>
+      <div class="grid2">
+        <label class="small">معاينة قبل التحميل
+          <select id="xAsk"><option value="0">لا (مباشرة)</option><option value="1">نعم: اختر الجودة والصيغة</option></select>
+        </label>
+        <label class="small">Wi-Fi فقط
+          <select id="xWifi"><option value="0">لا</option><option value="1">نعم: لا تحمّل بالبيانات</option></select>
+        </label>
+        <label class="small">إعادة المحاولة تلقائياً
+          <select id="xRetry"><option value="0">بدون</option><option value="1">مرة</option><option value="2">مرتان</option><option value="3">3 مرات</option></select>
+        </label>
+        <label class="small">حد السرعة (المساعد)
+          <select id="xLimit"><option value="">بلا حد</option><option value="250K">250 KB/s</option><option value="500K">500 KB/s</option><option value="1M">1 MB/s</option><option value="2M">2 MB/s</option><option value="5M">5 MB/s</option></select>
+        </label>
+        <label class="small">ترجمة الفيديو
+          <select id="xSubs"><option value="0">بدون</option><option value="1">تضمين (عربي/إنجليزي)</option></select>
+        </label>
+        <label class="small">غلاف ووسوم الصوت
+          <select id="xTags"><option value="0">لا</option><option value="1">نعم (MP3 / M4A)</option></select>
+        </label>
+        <label class="small">إشعار عند الاكتمال
+          <select id="xNotify"><option value="0">لا</option><option value="1">نعم</option></select>
+        </label>
+      </div>
+      <div class="small" style="margin-top:8px;line-height:1.7">الترجمة والغلاف والوسوم والحد من السرعة تعمل عبر المساعد المحلي ومع ffmpeg. إن لم تتوفر الترجمة أو فشل تضمينها يُكمل التحميل بدونها.</div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="sheet-history" class="sheet">
+    <div class="card">
+      <h2>▣ السجل</h2>
+      <div class="search-bar">
+        <input id="histSearch" class="grow" placeholder="بحث في السجل…">
+        <button class="act" id="histSearchBtn">🔍</button>
+      </div>
+      <div id="history"><div class="empty">السجل فارغ</div></div>
+      <div class="row" style="margin-top:12px">
+        <button class="act danger grow" id="clearHistory">مسح السجل</button>
+        <button class="act ghost" id="exportHistory">تصدير</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div id="sheet-stats" class="sheet">
+    <div class="card">
+      <h2>◈ إحصائيات</h2>
+      <div id="statsBox" class="grid2"></div>
+    </div>
+  </div>
+
+  <!-- SEARCH -->
+  <div id="sheet-search" class="sheet">
+    <div class="card">
+      <h2>🔍 بحث متقدم</h2>
+      <div class="search-bar" style="margin-bottom:0"><input id="advQ" class="grow" enterkeyhint="search" autocomplete="off" placeholder="اسم مطرب، أغنية، كلمة في العنوان أو رابط…"><button class="act primary" id="advSend" aria-label="بحث" style="padding:10px 18px;font-size:18px">🔎</button></div>
+      <div class="grid2" style="margin-top:8px">
+        <label class="small">الحالة
+          <select id="advStatus">
+            <option value="">الكل</option>
+            <option value="done">مكتمل</option>
+            <option value="error">خطأ</option>
+            <option value="queued">انتظار</option>
+            <option value="downloading">تحميل</option>
+          </select>
+        </label>
+        <label class="small">المنصة
+          <select id="advPlat">
+            <option value="">الكل</option>
+            <option>YouTube</option><option>TikTok</option><option>Instagram</option>
+            <option>X/Twitter</option><option>Reddit</option><option>Facebook</option>
+            <option>SoundCloud</option><option>Direct</option><option>Unknown</option>
+          </select>
+        </label>
+      </div>
+      <div class="row" style="margin-top:10px;gap:8px">
+        <button class="act primary grow" id="advGo">بحث محلي</button>
+        <button class="act good grow" id="advWebSearch">🔎 بحث يوتيوب</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <div class="qsel grow" style="margin-inline-start:0"><select id="advSrc" aria-label="مصدر البحث" style="max-width:none;width:100%;padding:10px 14px"><option value="yt">يوتيوب · أغاني ومقاطع</option><option value="ytpl">يوتيوب · ألبومات وقوائم تشغيل</option><option value="sc">ساوندكلاود</option></select><svg class="i" viewBox="0 0 24 24"><use href="#i-chev"/></svg></div>
+        <button class="act ghost" id="advList">📋 عرض النتائج</button>
+      </div>
+      <div class="small" style="margin-top:8px;line-height:1.6">ابحث محلياً في المهام والسجل، أو ابحث على يوتيوب عبر المساعد المحلي (يتطلب اتصاله) ثم أضف النتائج للتحميل.</div>
+      <div id="advResults" style="margin-top:12px"></div>
+    </div>
+    <div class="card">
+      <h2>اختصارات المنصات</h2>
+      <div class="platforms compact">
+        <div class="plat" data-plat="youtube" title="YouTube"><span class="pg">▶️</span><em class="pl">يوتيوب</em></div>
+        <div class="plat" data-plat="instagram" title="Instagram"><span class="pg">📸</span><em class="pl">إنستغرام</em></div>
+        <div class="plat" data-plat="tiktok" title="TikTok"><span class="pg">🎵</span><em class="pl">تيك توك</em></div>
+        <div class="plat" data-plat="x" title="X"><span class="pg">𝕏</span><em class="pl">إكس</em></div>
+        <div class="plat" data-plat="facebook" title="Facebook"><span class="pg">👤</span><em class="pl">فيسبوك</em></div>
+        <div class="plat" data-plat="reddit" title="Reddit"><span class="pg">🔴</span><em class="pl">ريديت</em></div>
+        <div class="plat" data-plat="soundcloud" title="SoundCloud"><span class="pg">☁️</span><em class="pl">ساوندكلاود</em></div>
+        <div class="plat" data-plat="vimeo" title="Vimeo"><span class="pg">🎬</span><em class="pl">فيميو</em></div>
+        <div class="plat" data-plat="twitch" title="Twitch"><span class="pg">🟣</span><em class="pl">تويتش</em></div>
+        <div class="plat" data-plat="direct" title="مباشر"><span class="pg">🔗</span><em class="pl">مباشر</em></div>
+      </div>
+      <div class="plat-hint">اضغط منصة لفتح البحث المتقدم مع فلترها، أو الصق رابطها في الصفحة الرئيسية</div>
+    </div>
+  </div>
+
+  <!-- LIBRARY -->
+  <div id="sheet-library" class="sheet">
+    <div class="card">
+      <h2>📁 ملفاتي <span id="libCount" class="badge">0</span></h2>
+      <div class="search-bar">
+        <input id="libSearch" class="grow" placeholder="بحث في ملفاتك…">
+        <button class="act" id="libRefresh">🔄</button>
+      </div>
+      <div class="small" id="libInfo" style="margin-bottom:8px"></div>
+      <div id="libList"><div class="empty">يتطلب المساعد المحلي — يعرض الملفات المحفوظة في مجلد ALTRA-DAWNLOADER</div></div>
+    </div>
+  </div>
+
+  <!-- HELPER -->
+  <div id="sheet-helper" class="sheet">
+    <div class="card">
+      <h2>🧩 المساعد المحلي · تحميل من كل المواقع</h2>
+      <div class="small" style="line-height:1.8">
+        المتصفح لا يستطيع وحده استخراج فيديو يوتيوب أو إنستغرام أو تيك توك. المساعد برنامج صغير يعمل على جهازك
+        ويستخدم <b>yt-dlp</b> (أكثر من 1000 موقع)، والتطبيق يرسل له الرابط ويستلم الملف. لا خوادم خارجية ولا حسابات.
+      </div>
+      <div class="chip" id="helperChip2" style="margin:10px 0 0"><i class="sd wn"></i></div>
+      <div class="small" style="margin-top:8px;line-height:1.7">
+        بعد تشغيل المساعد يمكنك فتح <b>لوحة التحكم</b> على
+        <a href="http://127.0.0.1:8787/dashboard" target="_blank" rel="noopener" style="color:var(--c)">http://127.0.0.1:8787/dashboard</a>
+        لمتابعة المهام وإلغائها وتفريغ الكاش.
+      </div>
+
+      <div class="step-box">
+        <b>أندرويد (Termux)</b>
+        <div class="small" style="line-height:1.8;margin-top:6px">
+          ١) ثبّت <b>Termux</b> من متجر F-Droid (نسخة Google Play قديمة).<br>
+          ٢) افتح Termux والصق الأمر التالي مرة واحدة، وانتظر حتى يظهر «ALTRA Helper»:
+        </div>
+        <div class="code-box"><code id="cmd1">curl -fsSL https://nidal-watfa99.github.io/setup-termux.sh | bash</code><button class="act" data-copy="cmd1">نسخ</button></div>
+        <div class="small" style="line-height:1.8;margin-top:8px">
+          ٣) اترك Termux يعمل في الخلفية، وارجع إلى ALTRA. سيتحول الشريط في الأعلى إلى أخضر 🟢.<br>
+          في المرات القادمة شغّله بالأمر:
+        </div>
+        <div class="code-box"><code id="cmd2">cd ~/altra &amp;&amp; python altra-server.py</code><button class="act" data-copy="cmd2">نسخ</button></div>
+        <div class="small" style="line-height:1.8;margin-top:8px">
+          إذا سأل Chrome عن «الوصول إلى الشبكة المحلية» فاختر <b>سماح</b>. بدلاً من ذلك يمكنك فتح
+          <b>http://localhost:8787</b> وتثبيت التطبيق من هناك، فلا يحتاج أي إذن.
+        </div>
+      </div>
+
+      <div class="step-box">
+        <b>الكمبيوتر (Windows / Mac / Linux)</b>
+        <div class="small" style="line-height:1.8;margin-top:6px">
+          ثبّت Python وffmpeg، ثم نزّل الملف altra-server.py من المستودع وشغّله:
+        </div>
+        <div class="code-box"><code id="cmd3">pip install -U "yt-dlp[default]"
+python altra-server.py</code><button class="act" data-copy="cmd3">نسخ</button></div>
+      </div>
+
+      <div class="step-box">
+        <b>إنستغرام وفيسبوك ومحتوى يطلب تسجيل دخول</b>
+        <div class="small" style="line-height:1.8;margin-top:6px">
+          عندما يظهر على المهمة شارة 🔵 «مطلوب تسجيل الدخول» اضغطها: تفتح لك صفحة الدخول، ثم تلصق جلسة حسابك
+          مرة واحدة وتُعاد المحاولة تلقائياً. يمكنك أيضاً الضغط على «🔑 جلسة الدخول» أدناه في أي وقت.
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:12px">
+        <button class="act primary grow" id="helperTest2">🔄 فحص الاتصال الآن</button>
+        <button class="act btn-blue" id="openCookies">🔑 جلسة الدخول</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <div id="sheet-about" class="sheet">
+    <div class="card">
+      <h2>ℹ عن التطبيق</h2>
+      <div class="small" style="line-height:1.75">
+        <b style="color:var(--c);font-size:15px">ALTRA-DAWNLOADER v8.6</b><br>
+        محمل وسائط قابل للتثبيت (PWA) يعمل كتطبيق على الجهاز.<br><br>
+        <b>القدرات المستقلة:</b><br>
+        • تحميل الملفات المباشرة (mp4, mp3, …) بأقصى سرعة عبر البث إلى القرص<br>
+        • استقبال الروابط من تطبيقات أخرى عبر <b>المشاركة إلى ALTRA</b><br>
+        • حتى 10 مهام متزامنة<br>
+        • اختيار مجلد حفظ (داخلي / بطاقة / قرص خارجي حيث يدعم النظام)<br><br>
+        <b>للمنصات (يوتيوب، إنستغرام، …):</b><br>
+        يحتاج التطبيق خادماً خاصاً بك (Cobalt أو yt-dlp) لأنه لا يمكن استخراج روابط هذه المواقع من المتصفح وحده بسبب الحماية وCORS.<br>
+        ضع رابط خادمك في الإعدادات → «خادمي الخاص» ليعمل التطبيق باعتمادك أنت فقط.<br><br>
+        لا يتجاوز DRM. استخدم المحتوى الذي يحق لك تحميله فقط.
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div id="sheet-contact" class="sheet">
+    <div class="card contact">
+      <h2>✉ التواصل مع المطور</h2>
+      <div class="small" style="margin-bottom:10px">نضال وطفة · Nidal Watfa — ملاحظات واقتراحات</div>
+      <a href="mailto:nidalwatfa99@gmail.com">📧 nidalwatfa99@gmail.com</a>
+      <a href="https://wa.me/96998854450" target="_blank" rel="noopener">💬 واتساب · 0096998854450</a>
+      <a href="https://wa.me/96998854450?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D8%8C%20%D8%A8%D8%AE%D8%B5%D9%88%D8%B5%20%D8%AA%D8%B7%D8%A8%D9%8A%D9%82%20ALTRA-DAWNLOADER" target="_blank" rel="noopener">💬 رسالة جاهزة على واتساب</a>
+    </div>
+  </div>
+
+  <!-- CONSOLE -->
+  <div id="sheet-console" class="sheet">
+    <div class="card">
+      <h2>⌘ Console · تتبع النظام</h2>
+      <div id="log" class="console"></div>
+      <div class="console-bar">
+        <button class="act primary" id="logCopy">📋 نسخ السجل</button>
+        <button class="act" id="logDiag">🩺 تشخيص شامل</button>
+        <button class="act" id="logHelper">🔄 سجل المساعد</button>
+        <button class="act" id="logClear">🗑 مسح</button>
+      </div>
+      <div class="small" id="logHint" style="margin-top:6px;color:var(--muted)">السطور الزرقاء [H] قادمة من المساعد المحلي (أخطاء yt-dlp وffmpeg الكاملة). انسخ السجل وأرسله عند أي مشكلة.</div>
+      <div class="row" style="margin-top:8px">
+        <input id="cmd" class="grow" placeholder="help · diag · status · queue · clear · storage">
+        <button class="act" id="cmdGo">RUN</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Drawer -->
+<div class="overlay" id="overlay"></div>
+<aside class="drawer" id="drawer">
+  <h3>ALTRA</h3>
+  <button class="ditem active" data-sheet="home"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-home"/></svg></span><span class="lab">الرئيسية · التحميل</span></button>
+  <button class="ditem" data-sheet="settings"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-tune"/></svg></span><span class="lab">الإعدادات</span></button>
+  <button class="ditem" data-sheet="history"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-hist"/></svg></span><span class="lab">السجل</span></button>
+  <button class="ditem" data-sheet="library"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-folder"/></svg></span><span class="lab">ملفاتي</span></button>
+  <button class="ditem" data-sheet="stats"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-chart"/></svg></span><span class="lab">الإحصائيات</span></button>
+  <button class="ditem" data-sheet="search"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-search"/></svg></span><span class="lab">بحث متقدم</span></button>
+  <div class="dsep"></div>
+  <button class="ditem" id="shareAppBtn"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-share"/></svg></span><span class="lab">مشاركة التطبيق</span></button>
+  <button class="ditem" id="installMenuBtn"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-dl"/></svg></span><span class="lab">تثبيت على سطح المكتب</span></button>
+  <div class="dsep"></div>
+  <button class="ditem" data-sheet="helper"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-cpu"/></svg></span><span class="lab">المساعد المحلي</span></button>
+  <button class="ditem" data-sheet="about"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-info"/></svg></span><span class="lab">نبذة عن التطبيق</span></button>
+  <button class="ditem" data-sheet="contact"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-mail"/></svg></span><span class="lab">التواصل مع المطور</span></button>
+  <button class="ditem" data-sheet="console"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-term"/></svg></span><span class="lab">Console</span></button>
+  <div class="dfoot">ALTRA-DAWNLOADER v8.6<br>nidalwatfa99@gmail.com<br>WhatsApp 0096998854450</div>
+</aside>
+
+<div id="toast" class="toast"></div>
+<div id="modalRoot"></div>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+const OPEN_ENDPOINTS = [
+  'https://nuko-c.meowing.de',
+  'https://apicobalt.girlskissing.top',
+  'https://api.cobalt.rpkiinval.id',
+  'https://cobalt-alpha.wolfy.love',
+  'https://rue-cobalt.xenon.zone',
+  'https://melon.clxxped.lol',
+  'https://lime.clxxped.lol',
+  'https://grapefruit.clxxped.lol',
+  'https://api.qwkuns.me',
+  'https://kitty.tame.gg'
+];
+const DIRECT_EXTS = /\.(mp4|webm|mkv|mov|m4v|mp3|m4a|ogg|opus|wav|flac|aac)(\?.*)?$/i;
+const KEY = 'altra_v8';
+const EXT_IDS = ['xAsk','xWifi','xRetry','xLimit','xSubs','xTags','xNotify'];
+const AUDIO_FMTS = ['mp3','m4a','aac','flac','wav','ogg','opus','alac'];
+const IS_MOBILE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+const LOGIN_URLS = {
+  instagram: 'https://www.instagram.com/accounts/login/',
+  facebook: 'https://www.facebook.com/login/',
+  youtube: 'https://accounts.google.com/ServiceLogin?service=youtube',
+  tiktok: 'https://www.tiktok.com/login',
+  x: 'https://x.com/i/flow/login',
+  reddit: 'https://www.reddit.com/login/'
+};
+const SITE_NAMES = { instagram:'إنستغرام', facebook:'فيسبوك', youtube:'يوتيوب', tiktok:'تيك توك', x:'X', reddit:'ريديت', soundcloud:'ساوندكلاود', vimeo:'فيميو', dailymotion:'ديلي موشن', twitch:'تويتش', bilibili:'بيليبيلي', pinterest:'بينتيريست', snapchat:'سناب شات', tumblr:'تمبلر', vk:'في كيه', ok:'أوك' };
+
+const state = {
+  tasks: [], history: [],
+  stats: { started: 0, success: 0, failed: 0, bytes: 0 },
+  running: 0, logs: [],
+  controllers: new Map(),
+  dirHandle: null,
+  deferredPrompt: null
+};
+
+/* ── Utils ── */
+function logClass(l) {
+  if (/^\S+\s+\[H\]/.test(l)) return /\berror\b|✗|فشل/i.test(l) ? 'l-error' : (/\bwarn\b|⚠/i.test(l) ? 'l-warn' : 'l-h');
+  if (/ERROR|UNHANDLED|FAIL|فشل|تعذّر|blocked|CSP/i.test(l)) return 'l-error';
+  if (/DONE|OK\b|✓/.test(l)) return 'l-ok';
+  return '';
+}
+function renderLog() {
+  const el = $('#log');
+  if (!el) return;
+  const stick = el.scrollTop + el.clientHeight >= el.scrollHeight - 30;
+  el.innerHTML = state.logs.map(l => '<div class="' + logClass(l) + '">' + esc(l) + '</div>').join('');
+  if (stick) el.scrollTop = el.scrollHeight;
+}
+function log(m) {
+  const line = new Date().toLocaleTimeString() + '  ' + m;
+  state.logs.push(line);
+  if (state.logs.length > 800) state.logs = state.logs.slice(-800);
+  if (logClass(line) === 'l-error') { const b = $('#consoleBtn'); if (b) b.classList.add('has-err'); }
+  clearTimeout(log._t); log._t = setTimeout(renderLog, 80);
+}
+function toast(m) {
+  const el = $('#toast');
+  el.textContent = m;
+  el.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove('show'), 2800);
+}
+function uid() {
+  try { if (crypto && crypto.randomUUID) return crypto.randomUUID(); } catch {}
+  return 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+}
+function askConfirm(msg) {
+  return new Promise(resolve => {
+    const root = $('#modalRoot');
+    root.innerHTML = `<div class="modal-bg"><div class="modal"><h3>${esc(msg)}</h3>
+      <div class="row"><button class="act danger grow" id="cYes">نعم</button><button class="act grow" id="cNo">إلغاء</button></div></div></div>`;
+    $('#cYes').onclick = () => { root.innerHTML = ''; resolve(true); };
+    $('#cNo').onclick = () => { root.innerHTML = ''; resolve(false); };
+  });
+}
+function showEnvWarn(msg) {
+  const el = $('#envWarn'); if (!el) return;
+  el.innerHTML = msg; el.classList.add('show');
+}
+function friendlyError(e) {
+  const m = (e && e.message) || String(e);
+  if (/failed to fetch|networkerror|load failed/i.test(m)) {
+    return 'تعذّر الاتصال بالمصدر. السبب غالباً منع CORS من موقع الملف، أو انقطاع الإنترنت، أو أن بيئة التشغيل (مثل شاشة المعاينة) تمنع الاتصالات الخارجية.';
+  }
+  if (/auth|jwt|turnstile/i.test(m)) return 'هذا الخادم العام يطلب تسجيلاً أو تحققاً. استخدم خادم Cobalt الخاص بك في الإعدادات.';
+  return m;
+}
+function sleep(ms, signal) {
+  return new Promise((res, rej) => {
+    const t = setTimeout(res, ms);
+    if (signal) signal.addEventListener('abort', () => { clearTimeout(t); rej(new DOMException('Aborted', 'AbortError')); }, { once: true });
+  });
+}
+function loginSiteOf(u) {
+  try {
+    const h = new URL(u).hostname.toLowerCase();
+    if (/instagram|instagr\.am/.test(h)) return 'instagram';
+    if (/facebook|fb\.watch|fb\.com/.test(h)) return 'facebook';
+    if (/(^|\.)x\.com$|twitter\.com/.test(h)) return 'x';
+    if (/tiktok/.test(h)) return 'tiktok';
+  } catch {}
+  return '';
+}
+function cleanUrl(u) {
+  try {
+    const x = new URL(u), h = x.hostname;
+    if (/(^|\.)instagram\.com$/.test(h)) x.search = '';
+    if (/(^|\.)facebook\.com$/.test(h)) {
+      x.hostname = h.replace(/^(m|web|mbasic|touch|l|lm)\./, 'www.');
+      ['fbclid','mibextid','rdid','__cft__[0]','__tn__','sfnsn','refsrc'].forEach(k => x.searchParams.delete(k));
+      x.hash = '';
+    }
+    return x.toString();
+  } catch { return u; }
+}
+const PHASE = { analyzing:'جاري تحليل الرابط…', starting:'تحضير…', downloading:'جاري التحميل…', processing:'دمج الصوت والفيديو…' };
+function hfetch(url, opts = {}) {
+  const o = { ...opts };
+  if (!/^https?:\/\/(127\.|localhost)/i.test(location.origin)) o.targetAddressSpace = /^https?:\/\/(127\.|localhost|\[::1\])/i.test(url) ? 'loopback' : 'local';
+  return fetch(url, o).catch(e => { if (e.name === 'AbortError' || !o.targetAddressSpace) throw e; delete o.targetAddressSpace; return fetch(url, o); });
+}
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function validUrl(v) {
+  try { const u = new URL(v); return u.protocol === 'http:' || u.protocol === 'https:'; } catch { return false; }
+}
+function isDirect(url) {
+  try { return DIRECT_EXTS.test(new URL(url).pathname) || DIRECT_EXTS.test(url); } catch { return false; }
+}
+const PLAT_TABLE = [["YouTube", "youtu|youtube"], ["TikTok", "tiktok"], ["Instagram", "instagram|instagr\\.am"], ["X/Twitter", "twitter\\.com|(^|\\.)x\\.com|t\\.co"], ["Reddit", "reddit|redd\\.it"], ["Facebook", "facebook|fb\\.watch|fb\\.com|fb\\.gg"], ["SoundCloud", "soundcloud"], ["Vimeo", "vimeo"], ["Dailymotion", "dailymotion|dai\\.ly"], ["Twitch", "twitch"], ["Bilibili", "bilibili|b23\\.tv"], ["Pinterest", "pinterest|pin\\.it"], ["Snapchat", "snapchat"], ["Tumblr", "tumblr"], ["VK", "(^|\\.)vk\\.(com|ru)|vkvideo"], ["OK", "(^|\\.)ok\\.ru"], ["Telegram", "(^|\\.)t\\.me|telegram"], ["LinkedIn", "linkedin|lnkd\\.in"], ["Threads", "threads\\.(net|com)"], ["Bluesky", "bsky"], ["Mastodon", "mastodon"], ["Kick", "(^|\\.)kick\\.com"], ["Rumble", "rumble"], ["Odysee", "odysee"], ["BitChute", "bitchute"], ["Streamable", "streamable"], ["Imgur", "imgur"], ["Giphy", "giphy"], ["Flickr", "flickr"], ["Bandcamp", "bandcamp"], ["Mixcloud", "mixcloud"], ["Spotify", "spotify"], ["Deezer", "deezer"], ["Audiomack", "audiomack"], ["Likee", "likee"], ["Kuaishou", "kuaishou|kwai"], ["Douyin", "douyin"], ["Weibo", "weibo"], ["Niconico", "nicovideo|nico\\.ms"], ["Naver", "naver"], ["Coub", "coub"], ["9GAG", "9gag"], ["Vevo", "vevo"], ["TED", "(^|\\.)ted\\.com"], ["Archive.org", "archive\\.org"], ["Loom", "loom\\.com"], ["Dropbox", "dropbox"], ["Google Drive", "drive\\.google|docs\\.google"], ["Mega", "(^|\\.)mega\\.(nz|io)"], ["Mediafire", "mediafire"], ["Aparat", "aparat"], ["Shahid", "shahid"], ["BBC", "bbc\\.(co\\.uk|com)"], ["CNN", "cnn\\.com"], ["Al Jazeera", "aljazeera"], ["Arte", "arte\\.tv"], ["ESPN", "espn"], ["NBC", "nbc\\.com"], ["ABC", "abc\\.(net\\.au|go\\.com)"], ["CBS", "cbs"], ["PBS", "pbs\\.org"], ["Crunchyroll", "crunchyroll"], ["Dailymail", "dailymail"], ["Yahoo", "yahoo"], ["Lbry", "lbry"], ["PeerTube", "peertube"], ["Rutube", "rutube"], ["Yandex", "yandex"], ["Zee5", "zee5"], ["Hotstar", "hotstar"], ["JioSaavn", "jiosaavn"], ["Gaana", "gaana"], ["Anghami", "anghami"]];
+function detectPlat(url) {
+  try {
+    const h = new URL(url).hostname.replace(/^www\./,'').toLowerCase();
+    for (const [n,p] of PLAT_TABLE) if (new RegExp(p).test(h)) return n;
+    if (isDirect(url)) return 'Direct';
+    const d = h.split('.').slice(-2,-1)[0] || h;
+    return d.charAt(0).toUpperCase() + d.slice(1);
+  } catch { return 'Unknown'; }
+}
+function safeName(n, ext='mp4') {
+  let s = (n || 'altra-download').replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').trim().slice(0,180) || 'altra-download';
+  if (!/\.[a-z0-9]{2,5}$/i.test(s)) s += '.' + ext;
+  return s;
+}
+function fmtBytes(n) {
+  if (!n) return '0 B';
+  const u=['B','KB','MB','GB','TB']; let i=0,v=n;
+  while(v>=1024&&i<4){v/=1024;i++}
+  return v.toFixed(i?1:0)+' '+u[i];
+}
+function fmtSpeed(b){ return b>0 ? fmtBytes(b)+'/s' : ''; }
+function extractUrls(text) {
+  if (!text) return [];
+  // Broad match for http(s) URLs, including those glued to punctuation or Arabic text
+  const re = /https?:\/\/[^\s<>"'`\[\]{}|\\^]+/gi;
+  const found = String(text).match(re) || [];
+  return [...new Set(found.map(u => u.replace(/[.,;:!?)\]}>'"»]+$/g, '')).filter(validUrl))];
+}
+function guessExt(url) {
+  const m = url.match(/\.(mp4|webm|mkv|mov|mp3|m4a|ogg|opus|wav|flac|aac)(\?|$)/i);
+  return m ? m[1].toLowerCase() : 'mp4';
+}
+
+/* ── Local helper (altra-server) ── */
+const helper = { base: '', ok: false, info: null, checkedAt: 0, err: '', reason: '' };
+function helperBase() {
+  let b = ($('#helperUrl').value || '').trim().replace(/\/+$/, '');
+  if (b && !/^https?:\/\//i.test(b)) b = 'http://' + b;
+  return b || 'http://127.0.0.1:8787';
+}
+async function checkHelper(force) {
+  const base = helperBase();
+  if (!force && helper.base === base && Date.now() - helper.checkedAt < 15000) return helper.ok;
+  helper.base = base; helper.checkedAt = Date.now();
+  const c = new AbortController();
+  // أول فحص من موقع خارجي قد تظهر معه نافذة إذن «الشبكة المحلية» في Chrome، فنمنح المستخدم وقتاً للرد عليها
+  const t = setTimeout(() => c.abort(), (helper.everOk || helper.asked) ? 4000 : 20000);
+  helper.asked = true;
+  try {
+    const r = await hfetch(base + '/health', { signal: c.signal, cache: 'no-store' });
+    const j = await r.json();
+    helper.reason = (j && /origin not allowed/.test(j.error || '')) ? 'origin' : '';
+    helper.ok = !!(j && j.ok && j.altra);
+    if (helper.ok) helper.everOk = true;
+    helper.info = helper.ok ? j : null;
+    helper.err = helper.ok ? '' : 'استجابة غير متوقعة';
+  } catch (e) {
+    log('HELPER CHECK FAIL ' + base + ' · ' + (e.name || '') + ' ' + (e.message || e));
+    helper.ok = false; helper.info = null; helper.err = /failed to fetch|load failed|networkerror/i.test(e.message || '') ? 'المتصفح منع الاتصال أو المساعد متوقف' : (e.name === 'AbortError' ? 'انتهت المهلة' : (e.message || String(e)));
+    // تشخيص السبب: هل الخادم يصل إليه المتصفح أصلاً؟
+    helper.reason = 'blocked';
+    try { await fetch(base + '/health', { mode: 'no-cors', cache: 'no-store', signal: AbortSignal.timeout ? AbortSignal.timeout(2500) : undefined }); helper.reason = 'cors'; } catch {}
+  } finally { clearTimeout(t); }
+  if (!helper.ok && /127\.0\.0\.1/.test(base) && !checkHelper._alt) {
+    checkHelper._alt = 1; $('#helperUrl').value = base.replace('127.0.0.1', 'localhost');
+    const ok = await checkHelper(true); checkHelper._alt = 0;
+    if (!ok) { $('#helperUrl').value = base; helper.base = base; renderHelperChip(); }
+    else save();
+    return ok;
+  }
+  renderHelperChip();
+  return helper.ok;
+}
+let helperLogLast = 0;
+async function pullHelperLog() {
+  if (!helper.base) return;
+  try {
+    const r = await hfetch(helper.base + '/api/log?since=' + helperLogLast, { cache: 'no-store', signal: AbortSignal.timeout ? AbortSignal.timeout(4000) : undefined });
+    if (!r.ok) return;
+    const j = await r.json();
+    if (j.last < helperLogLast) helperLogLast = 0;  // أُعيد تشغيل المساعد
+    (j.logs || []).forEach(x => { log('[H] ' + x.lvl + ' ' + x.t + '  ' + x.msg); });
+    helperLogLast = Math.max(helperLogLast, j.last || 0);
+  } catch (e) { /* المساعد غير متصل: يظهر ذلك في التشخيص */ }
+}
+async function fullDiag() {
+  log('══ تشخيص شامل ══');
+  log('صفحة: ' + location.href);
+  log('secureContext=' + window.isSecureContext + ' · online=' + navigator.onLine + ' · LNA(targetAddressSpace)=' + ('targetAddressSpace' in Request.prototype));
+  log('UA: ' + navigator.userAgent);
+  log('عنوان المساعد: ' + helperBase());
+  try { const regs = navigator.serviceWorker ? await Promise.race([navigator.serviceWorker.getRegistrations(), new Promise(r => setTimeout(() => r([]), 1500))]) : []; log('ServiceWorker: ' + (regs.length ? 'مسجّل (' + regs.map(r => r.scope).join(', ') + ')' : 'غير مسجّل')); } catch (e) { log('ServiceWorker ERROR ' + e.message); }
+  const ok = await checkHelper(true);
+  log('المساعد: ' + (ok ? 'متصل ✓ v' + (helper.info && helper.info.version) : 'غير متصل ✗ · السبب=' + (helper.reason || '؟') + ' · ' + (helper.err || '')));
+  if (ok) {
+    try {
+      const d = await (await hfetch(helper.base + '/api/diag', { cache: 'no-store' })).json();
+      Object.keys(d).forEach(k => log('[H] info ' + k + ' = ' + JSON.stringify(d[k])));
+      if (!d.yt_dlp) log('[H] error yt-dlp غير مثبّت: pip install -U "yt-dlp[default]"');
+      if (!d.ffprobe) log('[H] warn ffprobe غير موجود: pkg install ffmpeg');
+      if (!d.gallery_writable) log('[H] warn مجلد المعرض غير قابل للكتابة: termux-setup-storage');
+    } catch (e) { log('diag ERROR ' + (e.message || e)); }
+    await pullHelperLog();
+  } else if (helper.reason === 'blocked') {
+    log('→ Chrome يمنع الاتصال بالمساعد (إذن «الشبكة المحلية») أو المساعد متوقف. افتح http://localhost:8787 مباشرة.');
+  } else if (helper.reason === 'origin') {
+    log('→ المساعد يعمل لكنه يرفض هذا الموقع. شغّله مع: --origin ' + location.origin);
+  } else if (helper.reason === 'cors') {
+    log('→ المساعد يعمل والمنفذ مفتوح، لكن Chrome يحجب الرد (إذن «الشبكة المحلية» مرفوض أو أُغلق). اضغط 🔒 ← إعدادات الموقع ← الشبكة المحلية ← سماح، ثم أعد تحميل الصفحة. أو افتح http://localhost:8787');
+  }
+  log('══ انتهى ══');
+}
+function renderHelperChip() {
+  let html, cls;
+  if (helper.ok) {
+    const i = helper.info || {};
+    cls = 'chip ok';
+    html = '<i class="sd"></i><span class="grow">المساعد المحلي متصل · كل المواقع مدعومة'
+      + (i.ytdlp ? ' · yt-dlp ' + esc(i.ytdlp) : ' · <b>yt-dlp غير مثبّت</b>')
+      + (i.ytdlp_old ? ' · ⚠ yt-dlp قديم، حدّثه' : '')
+      + (i.ffmpeg ? '' : ' · بدون ffmpeg')
+      + (i.cookies ? ' · 🔑 جلسات: ' + esc((i.cookie_domains || []).slice(0, 3).join('، ')) : '') + '</span>'
+      + ' <a href="' + esc(helper.base) + '/dashboard" target="_blank" rel="noopener" style="color:var(--c);font-size:12px;margin-right:6px;text-decoration:none">⚙️ لوحة التحكم</a>';
+  } else {
+    cls = 'chip warn';
+    const O = esc(location.origin);
+    const why = helper.reason === 'origin'
+      ? '<i class="sd wn"></i> المساعد <b>يعمل</b> لكنه يرفض هذا الموقع <b dir="ltr" style="user-select:text">' + O + '</b>. أوقفه في Termux (Ctrl+C) وشغّله هكذا:<br><code dir="ltr" style="user-select:text;display:block;margin-top:4px">python altra-server.py --origin ' + O + '</code>'
+      : helper.reason === 'cors'
+      ? '<i class="sd wn"></i> المساعد <b>يعمل</b> لكن Chrome يحجب الاتصال به من هذا الموقع (إذن «الشبكة المحلية»). اضغط 🔒 بجانب الرابط ← إعدادات الموقع ← «الشبكة المحلية» ← سماح، ثم أعد تحميل الصفحة. أو الحل المضمون: «افتح من المساعد» وثبّت التطبيق من هناك.'
+      : helper.reason === 'blocked'
+      ? '<i class="sd wn"></i> المتصفح يمنع هذا الموقع من الوصول إلى المساعد على جهازك (إذن «الشبكة المحلية» أو حماية Chrome)، أو أن المساعد متوقف. جرّب: 1) تأكد أن المساعد يعمل في Termux. 2) اضغط 🔒 بجانب الرابط ← إعدادات الموقع ← اسمح بـ«الشبكة المحلية». أو الحل المضمون: «افتح من المساعد» وثبّت التطبيق من هناك.'
+      : '<i class="sd wn"></i> المساعد المحلي غير متصل · تعمل الملفات المباشرة فقط. لتحميل يوتيوب وإنستغرام وغيرهما شغّل المساعد.';
+    html = '<span class="grow">' + why + '</span>'
+      + '<button class="act primary" data-sheet-link="helper" style="padding:6px 10px">كيف؟</button>'
+      + '<button class="act" data-sheet-link="console" style="padding:6px 10px">⌘ سجل</button>'
+      + (location.origin !== 'http://localhost:8787' ? ' <a class="act primary" href="http://localhost:8787/" style="padding:6px 10px;text-decoration:none">افتح من المساعد ↗</a>' : '');
+  }
+  ['#helperChip', '#helperChip2'].forEach(id => { const el = $(id); if (el) { el.className = cls; el.innerHTML = html; } });
+  const st = $('#helperState');
+  if (st) st.textContent = helper.ok ? ('✓ متصل: ' + helper.base) : ('✗ غير متصل (' + helper.base + ')' + (helper.err ? ' · ' + helper.err : ''));
+}
+async function initHelper() {
+  // التطبيق مفتوح من المساعد نفسه؟
+  try {
+    const r = await fetch('health', { cache: 'no-store' });
+    if (r.ok) {
+      const j = await r.json();
+      if (j && j.altra) { $('#helperUrl').value = location.origin; save(); }
+    }
+  } catch {}
+  await checkHelper(true);
+  setInterval(() => { if (!document.hidden && !checkHelper._busy) { checkHelper._busy = 1; checkHelper(true).finally(() => { checkHelper._busy = 0; }); } }, 30000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && !helper.ok) checkHelper(true); });
+}
+async function helperRun(task, signal) {
+  const base = helper.base;
+  const r = await hfetch(base + '/api/resolve', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, signal,
+    body: JSON.stringify({ url: cleanUrl(task.source), quality: (task.o && task.o.quality) || $('#quality').value, format: (task.o && task.o.format) || $('#format').value, mode: (task.o && task.o.mode) || $('#mode').value,
+      limit: $('#xLimit').value, subs: $('#xSubs').value === '1', tags: $('#xTags').value === '1' })
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || !j.id) throw new Error(j.error || ('HTTP ' + r.status));
+  task.jobId = j.id; task.paused = false;
+  task.engine = 'helper'; task.status = 'downloading'; task.progress = Math.max(task.progress, 8);
+  renderQueue();
+  let s, pollFails = 0;
+  try {
+    while (true) {
+      await sleep(700, signal);
+      let sr;
+      try {
+        sr = await hfetch(base + '/api/status/' + j.id, { signal, cache: 'no-store' });
+        s = await sr.json();
+        pollFails = 0;
+      } catch (pe) {
+        if (pe.name === 'AbortError') throw pe;
+        // تعثّر لحظي (تجميد أندرويد للخلفية، تبديل شبكة…): أعد المحاولة بدل إفشال المهمة
+        if (++pollFails > 10) throw new Error('انقطع الاتصال بالمساعد أثناء التحميل (تأكد أن Termux يعمل)');
+        task.note = 'إعادة الاتصال بالمساعد… (' + pollFails + ')'; renderQueue();
+        await sleep(Math.min(800 * pollFails, 4000), signal);
+        continue;
+      }
+      if (!sr.ok) throw new Error(s.error || 'status failed');
+      if (s.state === 'paused') { if (!task.paused) { task.paused = true; task.speed = 0; task.note = 'متوقف مؤقتاً'; renderQueue(); } continue; }
+      if (task.paused) { task.paused = false; }
+      task.progress = Math.max(task.progress, Math.min(99, s.progress || 0));
+      task.speed = s.speed || 0; task.bytes = s.bytes || 0;
+      if (s.title) task.title = s.title;
+      if (s.filename) task.filename = s.filename;
+      task.note = PHASE[s.phase] || '';
+      renderQueue();
+      if (s.state === 'done') break;
+      if (s.state === 'cancelled') throw new DOMException('Aborted', 'AbortError');
+      if (s.state === 'error') { const e = new Error(s.error || 'فشل'); e.hint = s.hint; e.login = !!s.login; e.site = s.site || ''; throw e; }
+    }
+  } catch (e) {
+    if (e.name === 'AbortError') {
+      hfetch(base + '/api/cancel/' + j.id, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).catch(() => {});
+    }
+    throw e;
+  }
+  task.filename = s.filename; task.bytes = s.size || task.bytes; task.fileUrl = base + '/file/' + j.id; task.thumb = s.thumbnail || '';
+  task.progress = 100; task.speed = 0;
+  log('HELPER DONE ' + task.filename + ' · ' + fmtBytes(task.bytes));
+  if (s.saved) {
+    task.note = (s.gallery ? '✓ في المعرض: ' : '✓ حُفظ خارج المعرض في: ') + s.saved.split('/').slice(-3).join('/');
+    log('GALLERY ' + s.saved);
+  } else {
+    if (!nativeDownload(task.fileUrl, task.filename)) throw new Error('تعذّر بدء التنزيل من المساعد');
+    task.note = 'بدأ التنزيل في المتصفح (مجلد التنزيلات)، وإن لم يبدأ اضغط «حفظ»' + (s.save_error ? ' · تعذّر النسخ للمعرض: ' + s.save_error : '');
+  }
+}
+
+/* ── Persist ── */
+function save() {
+  try {
+    localStorage.setItem(KEY, JSON.stringify({
+      history: state.history, stats: state.stats,
+      settings: {
+        quality: $('#quality').value, format: $('#format').value,
+        mode: $('#mode').value, concurrency: $('#concurrency').value,
+        strategy: $('#strategy').value, custom: $('#customEndpoint').value,
+        endpoint: $('#endpoint').value, lang: $('#langSel').value, helper: $('#helperUrl').value,
+        ext: Object.fromEntries(EXT_IDS.map(id => [id, ($('#' + id) || {}).value]))
+      }
+    }));
+  } catch(e) { log('SAVE ' + e.message); }
+}
+function load() {
+  try {
+    const x = JSON.parse(localStorage.getItem(KEY) || '{}');
+    state.history = x.history || [];
+    state.stats = x.stats || state.stats;
+    const s = x.settings || {};
+    if (s.strategy === 'selfhost') s.strategy = 'auto';
+    Object.entries(s).forEach(([k,v]) => {
+      const map = { quality:'#quality', format:'#format', mode:'#mode', concurrency:'#concurrency',
+        strategy:'#strategy', custom:'#customEndpoint', endpoint:'#endpoint', lang:'#langSel', helper:'#helperUrl' };
+      if (map[k] && $(map[k]) && v) $(map[k]).value = v;
+    });
+  } catch(e) { log('LOAD ' + e.message); }
+  try { const sx = (JSON.parse(localStorage.getItem(KEY) || '{}').settings || {}).ext || {}; EXT_IDS.forEach(id => { if (sx[id] != null && $('#' + id)) $('#' + id).value = sx[id]; }); } catch {}
+  if (!$('#strategy').value) $('#strategy').value = 'auto';
+  if (!$('#concurrency').value) $('#concurrency').value = '10';
+  applyLang($('#langSel').value || 'ar');
+}
+
+function applyLang(lang) {
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  $('#subTitle').textContent = lang === 'ar' ? 'v8.6 · محمل مستقل' : 'v8.6 · Independent downloader';
+}
+
+/* ── Navigation ── */
+function openDrawer(){ $('#drawer').classList.add('open'); $('#overlay').classList.add('show'); }
+function closeDrawer(){ $('#drawer').classList.remove('open'); $('#overlay').classList.remove('show'); }
+function showSheet(id) {
+  $$('.sheet').forEach(s => s.classList.remove('active'));
+  const el = $('#sheet-' + id);
+  if (el) el.classList.add('active');
+  closeDrawer();
+  $$('.ditem[data-sheet]').forEach(b => b.classList.toggle('active', b.dataset.sheet === id));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if (id === 'stats') renderStats();
+  if (id === 'history') renderHistory();
+  if (id === 'library') renderLibrary();
+  if (id === 'helper') checkHelper(true);
+  if (id === 'console') { const b = $('#consoleBtn'); if (b) b.classList.remove('has-err'); renderLog(); pullHelperLog(); }
+}
+
+/* ── Storage folder ── */
+async function pickFolder() {
+  if (IS_MOBILE) {
+    toast('على الجوال تُحفظ الملفات تلقائياً في مجلد التنزيلات وتظهر في المعرض');
+    return;
+  }
+  if (!window.showDirectoryPicker) {
+    toast('متصفحك لا يدعم اختيار مجلد ثابت — سيُستخدم حفظ الملف العادي');
+    log('No showDirectoryPicker');
+    return;
+  }
+  try {
+    const h = await showDirectoryPicker({ mode: 'readwrite' });
+    // verify permission
+    const p = await h.requestPermission({ mode: 'readwrite' });
+    if (p !== 'granted') throw new Error('Permission denied');
+    state.dirHandle = h;
+    $('#storageInfo').textContent = '📁 ' + (h.name || 'مجلد محدد') + ' — الحفظ هنا مباشرة';
+    log('FOLDER  ' + h.name);
+    toast('تم اختيار مجلد الحفظ');
+  } catch (e) {
+    if (e.name !== 'AbortError') { log('FOLDER ERR ' + e.message); toast(e.message); }
+  }
+}
+function clearFolder() {
+  state.dirHandle = null;
+  $('#storageInfo').textContent = 'لم يُختر مجلد — سيتم السؤال عند كل تحميل أو استخدام التنزيل الافتراضي';
+  toast('تم مسح مجلد الحفظ');
+}
+
+/* ── Cobalt / self-host resolve ── */
+async function cobaltPost(base, payload, signal) {
+  const b = base.replace(/\/$/,'');
+  const urls = [b + '/', b + '/api/json'];
+  let last;
+  for (const u of urls) {
+    const tc = new AbortController();
+    const tm = setTimeout(() => tc.abort(), 8000);
+    const fwd = () => tc.abort();
+    if (signal) signal.addEventListener('abort', fwd, { once: true });
+    try {
+      const r = await fetch(u, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: tc.signal
+      });
+      const text = await r.text();
+      let d; try { d = JSON.parse(text); } catch { d = { status:'error', error:{ message: text.slice(0,200) } }; }
+      if (r.ok) return d;
+      if (d && d.status === 'error') return d;
+      const msg = d.error?.message || d.error?.code || ('HTTP ' + r.status);
+      last = new Error(msg);
+      last.code = d.error?.code || '';
+      if (/auth|jwt|turnstile/i.test(last.code + msg)) { last.auth = true; throw last; }
+    } catch (e) {
+      if (e.name === 'AbortError') {
+        if (signal && signal.aborted) throw e;
+        last = new Error('انتهت مهلة الخادم (8 ثوانٍ)');
+      } else {
+        last = e;
+      }
+      if (e.auth) break;
+    } finally {
+      clearTimeout(tm);
+      if (signal) signal.removeEventListener('abort', fwd);
+    }
+  }
+  throw last || new Error('API failed');
+}
+function normalize(d) {
+  if (!d) return { type:'error', message:'Empty' };
+  if (d.status === 'error' || d.error) {
+    return { type:'error', message: String(d.error?.message || d.error?.code || d.error || 'error') };
+  }
+  if (d.status === 'picker') {
+    return { type:'picker', items: (d.picker||[]).map(x=>({url:x.url,filename:x.filename||''})).filter(x=>x.url) };
+  }
+  if (d.status === 'tunnel' || d.status === 'redirect' || d.url) {
+    return { type: d.status || 'redirect', url: d.url || d.redirect, filename: d.filename || '' };
+  }
+  return { type:'error', message:'Unrecognized response' };
+}
+function buildPayload(url) {
+  const fmt = $('#format').value, q = $('#quality').value, mode = $('#mode').value;
+  const p = {
+    url: cleanUrl(url),
+    videoQuality: q === 'max' ? 'max' : q,
+    filenameStyle: 'pretty',
+    downloadMode: (mode === 'audio' || AUDIO_FMTS.includes(fmt)) ? 'audio' : mode
+  };
+  if (AUDIO_FMTS.includes(fmt)) {
+    p.audioFormat = ['mp3','ogg','opus','wav'].includes(fmt) ? fmt : 'best'; p.audioBitrate = '320';
+  } else if (fmt === 'mp4' || fmt === 'webm') {
+    p.youtubeVideoContainer = fmt;
+  }
+  return p;
+}
+
+async function resolveUrl(task, signal) {
+  const strategy = $('#strategy').value;
+  const plat = detectPlat(task.source);
+  task.platform = plat;
+  log('PLAT  ' + plat + ' · ' + task.source.slice(0, 70));
+
+  // Always allow direct files
+  if (isDirect(task.source)) {
+    log('ENGINE direct');
+    return {
+      type: 'redirect',
+      url: task.source,
+      filename: safeName(task.source.split('/').pop()?.split('?')[0], guessExt(task.source)),
+      engine: 'direct'
+    };
+  }
+
+  if (strategy === 'direct') {
+    throw new Error('هذا الرابط ليس ملفاً مباشراً. غيّر محرك الاستخراج إلى «تلقائي» وشغّل المساعد المحلي، أو ضع رابط ملف mp4/mp3.');
+  }
+
+  // Cobalt: custom first, then the chosen public instance, then all the others (failover)
+  const endpoints = [];
+  let custom = ($('#customEndpoint').value || '').trim().replace(/\/$/, '');
+  if (custom && !/^https?:\/\//i.test(custom)) custom = 'https://' + custom;
+  if (custom && !validUrl(custom)) throw new Error('رابط الخادم الخاص غير صالح: ' + custom);
+  if (custom) endpoints.push(custom);
+  const ep = $('#endpoint').value;
+  if (ep !== 'auto') endpoints.push(ep);
+  OPEN_ENDPOINTS.forEach(o => { if (!endpoints.includes(o)) endpoints.push(o); });
+
+  if (!endpoints.length) {
+    throw new Error('لا يوجد خادم. أضف رابط خادمك في الإعدادات لتحقيق الاستقلالية الكاملة.');
+  }
+
+  let lastErr;
+  const t0 = Date.now();
+  for (const [bi, base] of endpoints.entries()) {
+    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+    if (Date.now() - t0 > 45000) break;
+    task.note = 'خادم عام ' + (bi + 1) + '/' + endpoints.length; renderQueue();
+    try {
+      log('API → ' + base);
+      const raw = await cobaltPost(base, buildPayload(task.source), signal);
+      const data = normalize(raw);
+      if (data.type === 'error') {
+        lastErr = new Error(data.message);
+        log('API-ERR ' + base + ' · ' + data.message);
+        continue;
+      }
+      data.engine = new URL(base).hostname;
+      return data;
+    } catch (e) {
+      if (e.name === 'AbortError') throw e;
+      lastErr = e;
+      log('FAIL ' + base + ' · ' + (e.message||'').slice(0,80));
+    }
+  }
+  throw lastErr || new Error('فشلت كل المحاولات');
+}
+
+/* ── Download to disk ── */
+async function writeToDir(dirHandle, filename, stream, signal, onProgress) {
+  const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
+  const writable = await fileHandle.createWritable();
+  const reader = stream.getReader();
+  let got = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (signal?.aborted) { await writable.abort(); throw new DOMException('Aborted','AbortError'); }
+      await writable.write(value);
+      got += value.byteLength;
+      onProgress(got);
+    }
+    await writable.close();
+  } catch (e) {
+    try { await writable.abort(); } catch {}
+    throw e;
+  }
+  return got;
+}
+
+function triggerBlob(blob, filename) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename || 'download';
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 60000);
+}
+
+function nativeDownload(url, filename) {
+  if (state.restricted) return false;
+  try {
+    const a = document.createElement('a');
+    a.href = url; a.download = filename || ''; a.target = '_blank'; a.rel = 'noopener';
+    a.style.display = 'none';
+    document.body.appendChild(a); a.click();
+    setTimeout(() => a.remove(), 1000);
+    return true;
+  } catch { return false; }
+}
+
+async function fetchToDisk(task, signal) {
+  if (!validUrl(task.downloadUrl)) throw new Error('رابط تحميل غير صالح');
+  let r;
+  try {
+    r = await fetch(task.downloadUrl, { redirect: 'follow', signal });
+  } catch (e) {
+    if (e.name === 'AbortError') throw e;
+    // CORS / network: let the browser download it natively
+    log('FETCH BLOCKED → native download · ' + e.message);
+    await new Promise(res => setTimeout(res, 120)); // let CSP event set state.restricted
+    if (nativeDownload(task.downloadUrl, task.filename)) {
+      task.progress = 100; task.bytes = 0; task.note = 'سُلّم لتنزيل المتصفح (تحقق من مجلد التنزيلات)';
+      return;
+    }
+    throw e;
+  }
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const total = Number(r.headers.get('content-length')) || 0;
+  let got = 0, lastT = performance.now(), lastB = 0;
+
+  const tick = () => {
+    const now = performance.now();
+    const dt = (now - lastT) / 1000;
+    if (dt >= 0.3) {
+      task.speed = (got - lastB) / dt;
+      lastT = now; lastB = got;
+    }
+    task.bytes = got;
+    task.progress = total ? Math.min(99, got/total*100) : Math.min(96, task.progress + 0.7);
+    renderQueue();
+  };
+
+  // Preferred: directory handle (internal or external volume)
+  if (!IS_MOBILE && state.dirHandle && r.body) {
+    try {
+      const n = await writeToDir(state.dirHandle, task.filename, r.body, signal, g => { got = g; tick(); });
+      task.bytes = n; task.progress = 100;
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') throw e;
+      log('DIR WRITE FALLBACK · ' + e.message);
+    }
+  }
+
+  // File picker once
+  if (!IS_MOBILE && window.showSaveFilePicker && r.body) {
+    try {
+      const handle = await showSaveFilePicker({
+        suggestedName: task.filename,
+        types: [{ description: 'Media', accept: {
+          'video/*': ['.mp4','.webm','.mkv'],
+          'audio/*': ['.mp3','.m4a','.ogg','.opus','.wav'],
+          'application/octet-stream': ['.mp4','.mp3','.webm']
+        }}]
+      });
+      const w = await handle.createWritable();
+      const reader = r.body.getReader();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (signal?.aborted) { await w.abort(); throw new DOMException('Aborted','AbortError'); }
+        await w.write(value);
+        got += value.byteLength;
+        tick();
+      }
+      await w.close();
+      task.bytes = got; task.progress = 100;
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') throw e;
+      log('SAVE PICKER FALLBACK');
+    }
+  }
+
+  // ملف كبير بلا مجلد حفظ: لا نخزّنه في الذاكرة، بل نسلّمه لتنزيل المتصفح مباشرة
+  if (total > 150 * 1024 * 1024 && nativeDownload(task.downloadUrl, task.filename)) {
+    try { r.body && r.body.cancel(); } catch {}
+    task.progress = 100; task.note = 'سُلّم لتنزيل المتصفح (ملف كبير) — تحقق من مجلد التنزيلات';
+    return;
+  }
+
+  // Blob fallback (memory)
+  if (!r.body) {
+    const b = await r.blob();
+    task.bytes = b.size; task.progress = 100;
+    triggerBlob(b, task.filename);
+    return;
+  }
+  const reader = r.body.getReader();
+  const chunks = [];
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (signal?.aborted) throw new DOMException('Aborted','AbortError');
+    chunks.push(value);
+    got += value.byteLength;
+    tick();
+  }
+  const blob = new Blob(chunks);
+  task.bytes = blob.size; task.progress = 100;
+  triggerBlob(blob, task.filename);
+}
+
+/* ── Queue engine ── */
+function addUrls(urls, o) {
+  for (const v of urls) {
+    state.tasks.push({
+      id: uid(), source: v, title: v,
+      platform: detectPlat(v), progress: 0, status: 'queued',
+      created: Date.now(), speed: 0, bytes: 0, filename: '', error: '', engine: '', o: o || null
+    });
+    state.stats.started++;
+    log('QUEUE  ' + v);
+  }
+  renderQueue(); save(); pump();
+  if (urls.length > 1) toast(urls.length + ' مهام');
+  else if (urls.length === 1) toast('بدأت المهمة');
+}
+
+function startFromInput() {
+  const raw = $('#url').value.trim();
+  if (!raw) { toast('أدخل رابطاً'); return; }
+  let urls = extractUrls(raw);
+  if (!urls.length) {
+    if (validUrl(raw)) urls = [raw];
+    else { toast('رابط غير صالح'); return; }
+  }
+  if ($('#xAsk').value === '1' && urls.length === 1 && !isDirect(urls[0])) { $('#url').value = ''; showProbe(urls[0]); return; }
+  $('#url').value = '';
+  addUrls(urls);
+  showSheet('home');
+}
+
+function onCellular() { try { const c = navigator.connection; return !!(c && c.type === 'cellular'); } catch { return false; } }
+async function pump() {
+  const max = Math.max(1, Math.min(10, +$('#concurrency').value || 10));
+  if ($('#xWifi').value === '1' && onCellular()) {
+    if (!pump._w && state.tasks.some(x => x.status === 'queued')) { pump._w = 1; toast('Wi-Fi فقط: بانتظار اتصال Wi-Fi'); }
+    return;
+  }
+  pump._w = 0;
+  while (state.running < max) {
+    const t = state.tasks.find(x => x.status === 'queued' && (!x.notBefore || x.notBefore <= Date.now()));
+    if (!t) break;
+    run(t);
+  }
+}
+
+async function run(task) {
+  state.running++;
+  task.status = 'processing';
+  task.error = '';
+  task.helperErr = '';
+  task.login = false;
+  task.note = '';
+  task.progress = 4;
+  renderQueue();
+  const ctrl = new AbortController();
+  state.controllers.set(task.id, ctrl);
+
+  try {
+    let viaHelper = false;
+    const strategy = $('#strategy').value;
+    if (strategy !== 'direct' && strategy !== 'cobalt' && !isDirect(task.source)) {
+      if (await checkHelper(true)) {
+        try { await helperRun(task, ctrl.signal); viaHelper = true; }
+        catch (e) {
+          if (e.name === 'AbortError') throw e;
+          task.helperErr = (e.message || String(e)) + (e.hint ? ' — ' + e.hint : '');
+          task.login = !!e.login; task.loginSite = e.site || '';
+          log('HELPER FAIL · ' + task.helperErr);
+          if (strategy === 'helper') throw new Error(task.helperErr);
+          task.status = 'processing'; task.progress = 5; renderQueue();
+        }
+      } else if (strategy === 'helper') {
+        throw new Error('المساعد المحلي غير متصل. شغّله ثم أعد المحاولة (القائمة ← المساعد المحلي).');
+      } else { task.note = 'المساعد غير متصل — أجرّب خوادم عامة (قد تفشل مع فيسبوك/إنستغرام)'; renderQueue(); }
+    }
+    if (!viaHelper) await (async () => {
+    const data = await resolveUrl(task, ctrl.signal);
+    if (data.type === 'picker') {
+      if (!data.items?.length) throw new Error('لا عناصر');
+      if (data.items.length === 1) {
+        task.downloadUrl = data.items[0].url;
+        task.filename = data.items[0].filename || safeName('', $('#format').value);
+      } else {
+        const ch = await showPicker(data.items);
+        if (!ch) throw new Error('أُلغي الاختيار');
+        task.downloadUrl = ch.url;
+        task.filename = ch.filename || safeName('', 'mp4');
+      }
+    } else {
+      task.downloadUrl = data.url;
+      task.filename = data.filename || safeName('', $('#format').value === 'best' ? 'mp4' : $('#format').value);
+    }
+    task.engine = data.engine || '';
+    task.status = 'downloading';
+    task.progress = 10;
+    renderQueue();
+    await fetchToDisk(task, ctrl.signal);
+    })();
+    task.status = 'done';
+    task.progress = 100;
+    state.stats.success++;
+    state.stats.bytes += task.bytes || 0;
+    state.history.unshift({
+      id: task.id, title: task.filename, url: task.source,
+      at: Date.now(), bytes: task.bytes, platform: task.platform, engine: task.engine
+    });
+    state.history = state.history.slice(0, 250);
+    log('DONE  ' + task.filename + ' · ' + fmtBytes(task.bytes));
+    toast('✓ ' + task.filename);
+    notifyDone(task);
+  } catch (e) {
+    if (e.name === 'AbortError') {
+      task.status = 'error'; task.error = 'أُلغي';
+      log('CANCEL  ' + task.source);
+    } else {
+      if (autoRetry(task, e)) return;
+      task.status = 'error';
+      log('TASK ERROR ' + task.source + ' · ' + (e && (e.stack || e.message) || e));
+      let msg = friendlyError(e);
+      if (task.helperErr) msg = 'المساعد: ' + task.helperErr;
+      else if (!helper.ok && !isDirect(task.source) && $('#strategy').value !== 'direct') {
+        msg += ' ← شغّل المساعد المحلي لتحميل هذا الرابط (القائمة ← المساعد المحلي).';
+      }
+      task.error = msg;
+      // احتياط: الشارة الزرقاء حتى مع نسخة مساعد قديمة
+      if (task.helperErr && !task.login && !/unsupported url|name or service|timed out|urlopen|ffmpeg|connection/i.test(task.helperErr)) {
+        const site = loginSiteOf(task.source);
+        if (site) { task.login = true; task.loginSite = site; }
+      }
+      state.stats.failed++;
+      log('ERR  ' + task.error);
+    }
+  } finally {
+    state.controllers.delete(task.id);
+    state.running--;
+    renderQueue(); save(); pump();
+  }
+}
+
+function showPicker(items) {
+  return new Promise(resolve => {
+    const root = $('#modalRoot');
+    root.innerHTML = `<div class="modal-bg"><div class="modal">
+      <h3>اختر ملفاً</h3>
+      ${items.map((it,i)=>`<button class="act" data-i="${i}" style="display:block;width:100%;text-align:start;margin-bottom:8px">
+        ${esc(it.filename||('ملف '+(i+1)))}<div class="small">${esc((it.url||'').slice(0,70))}…</div></button>`).join('')}
+      <button class="act danger" style="width:100%" id="pc">إلغاء</button>
+    </div></div>`;
+    root.querySelectorAll('[data-i]').forEach(b => b.onclick = () => { root.innerHTML=''; resolve(items[+b.dataset.i]); });
+    $('#pc').onclick = () => { root.innerHTML=''; resolve(null); };
+  });
+}
+
+function cancelTask(id) {
+  state.controllers.get(id)?.abort();
+  const ht = state.tasks.find(x => x.id === id);
+  if (ht && ht.helperSearch && helper.base) {
+    hfetch(helper.base + '/api/cancel/' + id, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).catch(() => {});
+  }
+  const t = state.tasks.find(x => x.id === id);
+  if (t && ['queued','processing','downloading'].includes(t.status)) {
+    t.status = 'error'; t.error = 'أُلغي';
+    renderQueue();
+  }
+}
+function retry(id) {
+  const t = state.tasks.find(x => x.id === id);
+  if (!t) return;
+  if (t.demo) { toast('هذه مهمة تجريبية. الصق رابطاً حقيقياً للتحميل'); return; }
+  t.status = 'queued'; t.progress = 0; t.error = ''; t.note = ''; t.fileUrl = ''; t.speed = 0; t.bytes = 0;
+  pump(); renderQueue();
+}
+function removeTask(id) {
+  cancelTask(id);
+  state.tasks = state.tasks.filter(x => x.id !== id);
+  renderQueue(); save();
+}
+
+/* ── Render ── */
+function renderQueue() {
+  const active = state.tasks.filter(x => !['done','error'].includes(x.status)).length;
+  $('#qcount').textContent = active;
+  const labels = { queued:'انتظار', processing:'معالجة', downloading:'تحميل', done:'اكتمل', error:'خطأ' };
+  if (!state.tasks.length) {
+    $('#queue').innerHTML = '<div class="empty">لا مهام بعد — الصق رابطاً أو شارك من تطبيق آخر</div>';
+    $('#queueTools').style.display = 'none';
+    updateLaser();
+    return;
+  }
+  $('#queueTools').style.display = 'flex';
+  $('#queue').innerHTML = state.tasks.slice().reverse().map(t => {
+    const canCancel = ['queued','processing','downloading'].includes(t.status);
+    const canRetry = t.status === 'error';
+    return `<div class="task">
+      <div class="tasktitle">${esc(t.filename||t.title)}
+        ${t.engine?`<span class="tag">${esc(t.engine)}</span>`:''}
+        ${t.platform?`<span class="tag" style="color:var(--muted)">${esc(t.platform)}</span>`:''}
+      </div>
+      <div class="meta"><span>${labels[t.status]||t.status}${t.note&&t.status!=='error'?' · '+esc(t.note):''}${t.error?' · '+esc(t.error):''}</span><span>${Math.round(t.progress||0)}%</span></div>
+      <div class="bar"><i style="width:${Math.round(t.progress||0)}%"></i></div>
+      <div class="meta">
+        <span>${t.bytes?fmtBytes(t.bytes):''}${t.speed?' · <span class="speed">'+fmtSpeed(t.speed)+'</span>':''}</span>
+        <span class="actions">
+          ${t.engine==='helper'&&t.jobId&&!t.paused&&['processing','downloading'].includes(t.status)?`<button class="act" data-act="pause" data-id="${t.id}" style="padding:4px 8px;font-size:11px">⏸ إيقاف</button>`:''}
+          ${t.paused&&['processing','downloading'].includes(t.status)?`<button class="act primary" data-act="resume" data-id="${t.id}" style="padding:4px 8px;font-size:11px">▶ استئناف</button>`:''}
+          ${t.fileUrl&&t.status==='done'?`<button class="act primary" data-act="play" data-id="${t.id}" style="padding:4px 8px;font-size:11px">▶ تشغيل</button>`:''}
+          ${canCancel?`<button class="act danger" data-act="cancel" data-id="${t.id}" style="padding:4px 8px;font-size:11px">إلغاء</button>`:''}
+          ${t.login&&t.status==='error'?`<button class="login-badge" data-act="login" data-id="${t.id}">🔵 مطلوب تسجيل الدخول</button>`:''}
+          ${t.fileUrl&&t.status==='done'?`<a class="act good" href="${esc(t.fileUrl)}" download="${esc(t.filename)}" target="_blank" rel="noopener" style="padding:4px 8px;font-size:11px;text-decoration:none">حفظ</a>`:''}
+          ${canRetry?`<button class="act" data-act="retry" data-id="${t.id}" style="padding:4px 8px;font-size:11px">إعادة</button>`:''}
+          <button class="act ghost" data-act="remove" data-id="${t.id}" style="padding:4px 8px;font-size:11px">✕</button>
+        </span>
+      </div>
+    </div>`;
+  }).join('');
+  updateLaser();
+}
+
+function renderHistory(filter='') {
+  let list = state.history;
+  if (filter) {
+    const q = filter.toLowerCase();
+    list = list.filter(h => (h.title||'').toLowerCase().includes(q) || (h.url||'').toLowerCase().includes(q));
+  }
+  if (!list.length) {
+    $('#history').innerHTML = '<div class="empty">لا نتائج</div>';
+    return;
+  }
+  $('#history').innerHTML = list.map(h => `
+    <div class="task">
+      <div class="tasktitle">${esc(h.title)} ${h.platform?`<span class="tag">${esc(h.platform)}</span>`:''}</div>
+      <div class="meta"><span>${new Date(h.at).toLocaleString()}</span><span>${fmtBytes(h.bytes||0)}</span></div>
+      <div class="small" style="margin-top:4px;word-break:break-all;opacity:.75">${esc(h.url)}</div>
+    </div>`).join('');
+}
+
+function renderStats() {
+  const total = state.history.reduce((a,x)=>a+(x.bytes||0),0) || state.stats.bytes || 0;
+  $('#statsBox').innerHTML = `
+    <div class="card" style="text-align:center;padding:14px"><b style="font-size:22px;color:var(--c)">${state.stats.started}</b><div class="small">بدأت</div></div>
+    <div class="card" style="text-align:center;padding:14px"><b style="font-size:22px;color:var(--g)">${state.stats.success}</b><div class="small">نجحت</div></div>
+    <div class="card" style="text-align:center;padding:14px"><b style="font-size:22px;color:var(--r)">${state.stats.failed}</b><div class="small">فشلت</div></div>
+    <div class="card" style="text-align:center;padding:14px"><b style="font-size:18px;color:var(--c)">${fmtBytes(total)}</b><div class="small">حُفظت</div></div>`;
+}
+
+/* ── Login required / cookies import ── */
+function closeModal() { $('#modalRoot').innerHTML = ''; }
+function showLoginHelp(task) {
+  const site = (task && task.loginSite) || '';
+  const name = SITE_NAMES[site] || site || 'الموقع';
+  const loginUrl = LOGIN_URLS[site] || (task ? (() => { try { return new URL(task.source).origin; } catch { return ''; } })() : '');
+  const root = $('#modalRoot');
+  root.innerHTML = `<div class="modal-bg"><div class="modal">
+    <h3>🔵 ${task ? 'مطلوب تسجيل الدخول' : 'استيراد جلسة الدخول'} · ${esc(name)}</h3>
+    <div class="small" style="line-height:1.9">
+      ${task ? 'هذا المقطع لا يظهر إلا لحساب مسجّل (خاص، أو مقيّد، أو يطلبه الموقع). ' : ''}
+      المساعد برنامج منفصل عن المتصفح، فتسجيل دخولك في المتصفح وحده لا يصل إليه. المطلوب نسخ «جلسة الدخول» (cookies) إليه مرة واحدة.
+    </div>
+    ${loginUrl ? `<div class="step-box"><b>١) سجّل الدخول في ${esc(name)}</b>
+      <div class="row" style="margin-top:8px"><a class="act btn-blue grow" id="lgOpen" href="${esc(loginUrl)}" target="_blank" rel="noopener"
+        style="text-align:center;text-decoration:none;padding:11px;border-radius:11px">فتح صفحة تسجيل الدخول</a></div></div>` : ''}
+    <div class="step-box"><b>٢) صدّر الجلسة والصقها هنا</b>
+      <div class="small" style="line-height:1.9;margin-top:6px">
+        <b>أندرويد:</b> استخدم متصفح <b>Firefox</b>، وثبّت إضافة <b>Cookie-Editor</b>. افتح ${esc(name)} وأنت داخل حسابك، ثم Cookie-Editor ← Export ← JSON (يُنسخ تلقائياً)، وارجع والصق هنا.<br>
+        <b>الكمبيوتر:</b> إضافة «Get cookies.txt LOCALLY» ثم الصق المحتوى أو اختر الملف.<br>
+        الجلسة تُحفظ على جهازك داخل مجلد المساعد فقط، ولا تُرسل لأي جهة. يُفضّل حساب ثانوي لا حسابك الأساسي.
+      </div>
+      <textarea id="ckText" placeholder="الصق JSON أو محتوى cookies.txt هنا" style="direction:ltr;text-align:left;font-size:13px"></textarea>
+      <div class="row" style="margin-top:8px">
+        <label class="act ghost grow" style="text-align:center;cursor:pointer">📄 اختيار ملف<input type="file" id="ckFile" accept=".txt,.json,text/plain,application/json" style="display:none"></label>
+      </div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="act btn-blue grow" id="ckSave">حفظ الجلسة وإعادة المحاولة</button>
+      <button class="act ghost" id="ckClose">إغلاق</button>
+    </div>
+    <div class="small" id="ckMsg" style="margin-top:8px"></div>
+    <button class="act danger" id="ckClear" style="margin-top:8px;width:100%;font-size:12px">حذف كل الجلسات المحفوظة</button>
+  </div></div>`;
+  const msg = t => { $('#ckMsg').textContent = t; };
+  $('#ckClose').onclick = closeModal;
+  $('#ckFile').onchange = async e => {
+    const file = e.target.files[0];
+    if (file) { $('#ckText').value = await file.text(); msg('تم تحميل الملف: ' + file.name); }
+  };
+  $('#ckSave').onclick = async () => {
+    const text = $('#ckText').value.trim();
+    if (!text) { msg('الصق محتوى الجلسة أولاً.'); return; }
+    if (!(await checkHelper(true))) { msg('المساعد المحلي غير متصل. شغّله ثم أعد المحاولة.'); return; }
+    try {
+      const r = await hfetch(helper.base + '/api/cookies', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || ('HTTP ' + r.status));
+      log('COOKIES saved · ' + (j.domains || []).join(', '));
+      toast('تم حفظ الجلسة (' + j.count + ') وتُعاد المحاولة');
+      closeModal();
+      state.tasks.filter(t => t.login && t.status === 'error').forEach(t => retry(t.id));
+      checkHelper(true);
+    } catch (e) { msg('تعذّر الحفظ: ' + e.message); }
+  };
+  $('#ckClear').onclick = async () => {
+    if (!(await checkHelper(true))) { msg('المساعد المحلي غير متصل.'); return; }
+    await hfetch(helper.base + '/api/cookies/clear', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).catch(() => {});
+    toast('حُذفت الجلسات المحفوظة'); checkHelper(true);
+  };
+}
+
+/* ── Share app ── */
+async function shareApp() {
+  const data = {
+    title: 'ALTRA-DAWNLOADER',
+    text: 'محمل وسائط مستقل — ALTRA-DAWNLOADER',
+    url: location.href.split('?')[0]
+  };
+  if (navigator.share) {
+    try { await navigator.share(data); log('SHARE native'); return; } catch(e) { if (e.name==='AbortError') return; }
+  }
+  // Fallback multi-share sheet
+  const root = $('#modalRoot');
+  const u = encodeURIComponent(data.url);
+  const t = encodeURIComponent(data.text);
+  root.innerHTML = `<div class="modal-bg"><div class="modal">
+    <h3>مشاركة التطبيق</h3>
+    <div class="share-grid">
+      <button data-s="wa"><span>💬</span>واتساب</button>
+      <button data-s="tg"><span>✈️</span>تيليغرام</button>
+      <button data-s="tw"><span>𝕏</span>تويتر</button>
+      <button data-s="fb"><span>📘</span>فيسبوك</button>
+      <button data-s="mail"><span>📧</span>بريد</button>
+      <button data-s="copy"><span>🔗</span>نسخ الرابط</button>
+    </div>
+    <button class="act" style="width:100%;margin-top:12px" id="shareClose">إغلاق</button>
+  </div></div>`;
+  const links = {
+    wa: `https://wa.me/?text=${t}%20${u}`,
+    tg: `https://t.me/share/url?url=${u}&text=${t}`,
+    tw: `https://twitter.com/intent/tweet?url=${u}&text=${t}`,
+    fb: `https://www.facebook.com/sharer/sharer.php?u=${u}`,
+    mail: `mailto:?subject=${encodeURIComponent(data.title)}&body=${t}%20${u}`
+  };
+  root.querySelectorAll('[data-s]').forEach(b => {
+    b.onclick = async () => {
+      const k = b.dataset.s;
+      if (k === 'copy') {
+        try { await navigator.clipboard.writeText(data.url); toast('تم نسخ الرابط'); }
+        catch { toast(data.url); }
+      } else {
+        window.open(links[k], '_blank', 'noopener');
+      }
+    };
+  });
+  $('#shareClose').onclick = () => { root.innerHTML = ''; };
+}
+
+/* ── Install PWA ── */
+function setupInstall() {
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    state.deferredPrompt = e;
+    $('#installBanner').classList.add('show');
+    $('#quickInstall').style.display = '';
+    log('INSTALL prompt ready');
+  });
+  window.addEventListener('appinstalled', () => {
+    state.deferredPrompt = null;
+    $('#installBanner').classList.remove('show');
+    $('#quickInstall').style.display = 'none';
+    toast('تم تثبيت التطبيق');
+    log('APP INSTALLED');
+  });
+}
+async function doInstall() {
+  if (!state.deferredPrompt) {
+    // iOS / already installed guidance
+    const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isiOS) {
+      toast('على iOS: مشاركة ← إضافة إلى الشاشة الرئيسية');
+    } else if (window.matchMedia('(display-mode: standalone)').matches) {
+      toast('التطبيق مثبت بالفعل');
+    } else {
+      toast('استخدم قائمة المتصفح → تثبيت التطبيق');
+    }
+    return;
+  }
+  state.deferredPrompt.prompt();
+  const { outcome } = await state.deferredPrompt.userChoice;
+  log('INSTALL ' + outcome);
+  state.deferredPrompt = null;
+  $('#installBanner').classList.remove('show');
+}
+
+/* ── Share Target: URL opened into app ── */
+function handleLaunchParams() {
+  const params = new URLSearchParams(location.search);
+  // Web Share Target sends: ?url=...&text=...&title=...
+  // Many apps put the real link only in "text" mixed with title, so combine all fields.
+  const parts = [
+    params.get('url') || '',
+    params.get('text') || '',
+    params.get('title') || '',
+    location.hash.startsWith('#url=') ? decodeURIComponent(location.hash.slice(5)) : ''
+  ].filter(Boolean);
+  let urls = [];
+  for (const p of parts) {
+    urls = urls.concat(extractUrls(p));
+  }
+  // Also accept a bare https URL as the only query value (rare)
+  if (!urls.length && location.search.length > 8) {
+    try {
+      const raw = decodeURIComponent(location.search.slice(1));
+      if (validUrl(raw)) urls.push(raw);
+    } catch {}
+  }
+  urls = [...new Set(urls.filter(validUrl))];
+  if (urls.length) {
+    log('SHARE-TARGET  ' + urls.join(' | '));
+    addUrls(urls);
+    try { history.replaceState({}, '', location.pathname); } catch {}
+    toast(urls.length === 1 ? 'تم استلام الرابط — يبدأ التحميل' : ('تم استلام ' + urls.length + ' روابط — يبدأ التحميل'));
+    showSheet('home');
+  }
+  // Deep link to a sheet: ?sheet=search
+  const sheet = params.get('sheet');
+  if (sheet && ['home','settings','history','search','helper','console','about','library'].includes(sheet)) {
+    showSheet(sheet);
+  }
+}
+
+/* ── Advanced search ── */
+function advSearch() {
+  const q = ($('#advQ').value || '').trim().toLowerCase();
+  const st = $('#advStatus').value;
+  const plat = $('#advPlat').value;
+  const pool = [
+    ...state.tasks.map(t => ({ ...t, at: t.created, title: t.filename || t.title || t.source, url: t.source || t.url, status: t.status })),
+    ...state.history.map(h => ({ ...h, status: h.status || 'done', url: h.url || h.source }))
+  ];
+  const res = pool.filter(x => {
+    if (st) {
+      const xs = (x.status || '').toLowerCase();
+      if (st === 'done' && !['done',''].includes(xs)) return false;
+      if (st !== 'done' && xs !== st) return false;
+    }
+    if (plat) {
+      const p = (x.platform || '').toLowerCase();
+      if (!p.includes(plat.toLowerCase().replace('/twitter','').replace('x/',''))) return false;
+    }
+    if (q) {
+      const hay = ((x.title||'') + ' ' + (x.url||x.source||'') + ' ' + (x.filename||'')).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  const box = $('#advResults');
+  if (!res.length) {
+    box.innerHTML = '<div class="empty">لا نتائج في مهامك وسجلك' + (q ? '<br><button class="act btn-blue" id="advYtGo" style="margin-top:12px">🔎 ابحث عن «' + esc(q) + '» على يوتيوب</button>' : '') + '</div>';
+    return;
+  }
+  box.innerHTML = res.slice(0, 60).map(h => `
+    <div class="task">
+      <div class="tasktitle">${esc(h.title || h.filename || h.url || '')}</div>
+      <div class="meta">
+        <span>${esc(h.platform || '—')} · ${esc(h.status || 'done')}</span>
+        <span>${fmtBytes(h.bytes || h.size || 0)}</span>
+      </div>
+      ${h.url || h.source ? `<div class="actions" style="margin-top:6px"><button class="act good" data-add-url="${esc(h.url || h.source)}">➕ أعد التحميل</button></div>` : ''}
+    </div>`).join('');
+}
+
+async function advWebSearch() {
+  // 8.8: لا تحميل تلقائي — يعرض النتائج لتختار منها (الكود القديم للتحميل التلقائي بقي دون استدعاء)
+  return advList();
+}
+
+async function pollHelperSearch(id) {
+  const base = helper.base;
+  const task = state.tasks.find(t => t.id === id);
+  if (!task) return;
+  try {
+    while (true) {
+      await sleep(900);
+      const sr = await hfetch(base + '/api/status/' + id, { cache: 'no-store' });
+      const s = await sr.json();
+      if (!sr.ok) break;
+      task.progress = Math.max(task.progress, Math.min(99, s.progress || 0));
+      task.speed = s.speed || 0;
+      task.bytes = s.bytes || 0;
+      if (s.title) task.title = s.title;
+      if (s.filename) task.filename = s.filename;
+      renderQueue();
+      if (s.state === 'done') {
+        task.status = 'done'; task.progress = 100; task.fileUrl = base + '/file/' + id;
+        task.note = 'اكتمل البحث/التحميل';
+        if (!nativeDownload(task.fileUrl, task.filename)) { /* user can press save */ }
+        break;
+      }
+      if (s.state === 'error' || s.state === 'cancelled') {
+        task.status = s.state; task.error = s.error || ''; task.hint = s.hint || '';
+        break;
+      }
+    }
+  } catch (e) {
+    task.status = 'error'; task.error = e.message || String(e);
+    log('TASK ERROR ' + task.source + ' · ' + task.error);
+  }
+  renderQueue(); save();
+}
+
+function updateLaser() {
+  const bar = $('#laserBar');
+  if (!bar) return;
+  const active = state.tasks.some(t => ['queued','processing','downloading','running'].includes(t.status));
+  bar.classList.toggle('active', active);
+}
+
+/* ══ إضافات 8.8: مقارنة SnapTube ══ */
+function fmtDur(s) {
+  s = Math.round(+s || 0); if (!s) return '';
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), x = s % 60;
+  return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(x).padStart(2, '0');
+}
+function helperOld() {
+  const v = String((helper.info && helper.info.version) || '0').split('.').map(Number);
+  return !(v[0] > 8 || (v[0] === 8 && (v[1] || 0) >= 8));
+}
+const OLD_HELPER_MSG = 'المساعد المحلي في Termux نسخة قديمة (' + '%V%' + ') ولا يدعم هذه الميزة. حدّثه: افتح «المساعد المحلي» في التطبيق، انسخ الأمر الأول والصقه في Termux (يعيد تنزيل altra-server.py الجديد)، ثم أعد تشغيله. الأمر «altra» وحده يحدّث yt-dlp فقط.';
+function oldHelperText() { return OLD_HELPER_MSG.replace('%V%', (helper.info && helper.info.version) || '؟'); }
+function hpost(path, body, signal) {
+  return hfetch(helper.base + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}), signal });
+}
+function thumbImg(src, w, h) {
+  return src ? `<img src="${esc(src)}" alt="" loading="lazy" referrerpolicy="no-referrer" style="width:${w};height:${h};object-fit:cover;border-radius:12px;background:#141414;flex:none" onerror="this.style.visibility='hidden'">` : '';
+}
+
+/* إيقاف مؤقت / استئناف (المساعد يحتفظ بالملف الجزئي) */
+async function pauseTask(id) {
+  const t = state.tasks.find(x => x.id === id); if (!t || !t.jobId) return;
+  try { const r = await hpost('/api/pause/' + t.jobId); const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || 'HTTP ' + r.status); t.note = 'جاري الإيقاف…'; renderQueue(); toast('أُوقفت مؤقتاً'); }
+  catch (e) { toast('تعذّر الإيقاف: ' + (e.message || e)); }
+}
+async function resumeTask(id) {
+  const t = state.tasks.find(x => x.id === id); if (!t || !t.jobId) return;
+  try { const r = await hpost('/api/resume/' + t.jobId); const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || 'HTTP ' + r.status); t.paused = false; t.note = 'استئناف…'; renderQueue(); toast('استُؤنف التحميل'); }
+  catch (e) { toast('تعذّر الاستئناف: ' + (e.message || e)); }
+}
+
+/* إعادة المحاولة التلقائية */
+function autoRetry(task, e) {
+  const max = +($('#xRetry').value || 0);
+  const msg = ((task.helperErr || '') + ' ' + ((e && e.message) || '')).toLowerCase();
+  if (!max || (task.retries || 0) >= max || task.login || /unsupported url|private|unavailable|not available|copyright|removed|sign in|log in|login|age-restricted|غير مدعوم|ffmpeg غير/.test(msg)) return false;
+  task.retries = (task.retries || 0) + 1;
+  const wait = 4000 * task.retries;
+  task.status = 'queued'; task.progress = 0; task.error = ''; task.speed = 0; task.paused = false;
+  task.note = 'إعادة محاولة تلقائية ' + task.retries + '/' + max + '…';
+  task.notBefore = Date.now() + wait;
+  log('AUTO-RETRY ' + task.retries + '/' + max + ' · ' + (task.source || '').slice(0, 70) + ' · ' + (task.helperErr || (e && e.message) || ''));
+  setTimeout(pump, wait + 80);
+  return true;
+}
+
+/* إشعار الاكتمال */
+function notifyDone(task) {
+  try {
+    if ($('#xNotify').value !== '1' || !('Notification' in window) || Notification.permission !== 'granted') return;
+    const title = 'ALTRA ✓ اكتمل التحميل', opts = { body: task.filename || task.title || '', icon: 'icon-192.png', tag: 'altra-' + task.id };
+    if (navigator.vibrate) navigator.vibrate(200);
+    if (navigator.serviceWorker && navigator.serviceWorker.getRegistration) {
+      navigator.serviceWorker.getRegistration().then(r => { if (r && r.showNotification) r.showNotification(title, opts); else new Notification(title, opts); }).catch(() => { try { new Notification(title, opts); } catch {} });
+    } else new Notification(title, opts);
+  } catch (e) { log('NOTIFY ' + e.message); }
+}
+
+/* مشغّل مدمج */
+function showPlayer(src, title, poster, name) {
+  const isAudio = /\.(mp3|m4a|aac|flac|wav|ogg|opus|alac|weba|mka)$/i.test(name || title || '');
+  $('#modalRoot').innerHTML = `<div class="modal-bg"><div class="modal">
+    <h3 style="word-break:break-word;font-size:15px">${esc(title || '')}</h3>
+    ${isAudio
+      ? `<audio id="plMedia" controls autoplay src="${esc(src)}" style="width:100%"></audio>`
+      : `<video id="plMedia" controls autoplay playsinline src="${esc(src)}" ${poster ? `poster="${esc(poster)}"` : ''} style="width:100%;max-height:58vh;border-radius:16px;background:#000"></video>`}
+    <div class="small" id="plMsg" style="margin-top:8px"></div>
+    <div class="row" style="margin-top:12px">
+      <button class="act good grow" id="plSave">حفظ</button>
+      <button class="act ghost grow" id="plClose">إغلاق</button>
+    </div></div></div>`;
+  const m = $('#plMedia');
+  m.onerror = () => { $('#plMsg').textContent = 'المتصفح لا يشغّل هذه الصيغة (مثل MKV/AVI/FLV) — اضغط «حفظ» وافتحها بمشغّل جهازك.'; };
+  $('#plClose').onclick = () => { try { m.pause(); } catch {} closeModal(); };
+  $('#plSave').onclick = () => { nativeDownload(src, name || title); toast('بدأ الحفظ'); };
+}
+
+/* معاينة الرابط: صورة وعنوان ومدة وجودات بأحجامها · أو عناصر قائمة تشغيل لاختيار ما يُحمَّل */
+async function showProbe(url) {
+  const root = $('#modalRoot');
+  const direct = () => { closeModal(); addUrls([url]); showSheet('home'); };
+  root.innerHTML = `<div class="modal-bg"><div class="modal"><h3>🔎 معاينة الرابط</h3>
+    <div class="empty" id="pbBody">جاري جلب المعلومات…</div>
+    <div class="row" style="margin-top:10px"><button class="act ghost grow" id="pbClose">إغلاق</button></div></div></div>`;
+  const ctrl = new AbortController();
+  $('#pbClose').onclick = () => { ctrl.abort(); closeModal(); };
+  const body = () => $('#pbBody');
+  if (!(await checkHelper(true))) {
+    body().innerHTML = 'المعاينة تحتاج المساعد المحلي (غير متصل).<div class="row" style="margin-top:10px"><button class="act primary grow" id="pbDirect">تحميل مباشرة بالإعدادات الحالية</button></div>';
+    $('#pbDirect').onclick = direct; return;
+  }
+  if (helperOld()) {
+    body().innerHTML = '<div style="text-align:start;line-height:1.9">⚠️ ' + esc(oldHelperText()) + '</div><div class="row" style="margin-top:10px"><button class="act primary grow" id="pbDirect">تحميل مباشرة بالإعدادات الحالية</button></div>';
+    $('#pbDirect').onclick = direct; return;
+  }
+  let d;
+  const to = setTimeout(() => ctrl.abort(), 90000);
+  try {
+    const r = await hpost('/api/probe', { url: cleanUrl(url) }, ctrl.signal);
+    d = await r.json().catch(() => ({}));
+    if (!r.ok) { const er = new Error(d.error || ('HTTP ' + r.status)); er.hint = d.hint; er.login = d.login; throw er; }
+  } catch (e) {
+    clearTimeout(to);
+    if (e.name === 'AbortError') return;
+    if (!$('#pbBody')) return;
+    body().innerHTML = `<div style="text-align:start;line-height:1.8">⚠️ ${esc(e.message || e)}${e.hint ? '<div class="small">' + esc(e.hint) + '</div>' : ''}</div>
+      <div class="row" style="margin-top:10px"><button class="act primary grow" id="pbDirect">حاول التحميل مباشرة</button></div>`;
+    $('#pbDirect').onclick = direct; return;
+  }
+  clearTimeout(to);
+  if (!$('#pbBody')) return;
+  const FMT = `<optgroup label="فيديو"><option value="mp4">MP4</option><option value="mkv">MKV</option><option value="webm">WEBM</option></optgroup>
+    <optgroup label="صوت"><option value="mp3">MP3</option><option value="m4a">M4A</option><option value="opus">OPUS</option><option value="flac">FLAC</option><option value="wav">WAV</option></optgroup>`;
+  const meta = [d.uploader, fmtDur(d.duration)].filter(Boolean).join(' · ');
+  if (d.kind === 'video') {
+    const hs = d.heights || [];
+    const opts = '<option value="max">أقصى جودة</option>' + hs.map(h => `<option value="${h}">${h}p${d.sizes && d.sizes[h] ? ' · ~' + fmtBytes(d.sizes[h]) : ''}</option>`).join('');
+    body().innerHTML = `<div style="text-align:start">
+      ${d.thumbnail ? `<div style="margin-bottom:10px">${thumbImg(d.thumbnail, '100%', 'auto').replace('object-fit:cover', 'aspect-ratio:16/9;object-fit:cover')}</div>` : ''}
+      <div style="font-weight:500;line-height:1.6;word-break:break-word">${esc(d.title)}</div>
+      <div class="small">${esc(meta)}${d.live ? ' · 🔴 بث مباشر' : ''}</div>
+      <div class="grid2" style="margin-top:12px">
+        <label class="small" style="grid-column:1/-1">الجودة<select id="pbQ">${opts}</select></label>
+        <label class="small" style="grid-column:1/-1">الصيغة<select id="pbF">${FMT}</select></label>
+      </div>
+      <div class="small" id="pbSize" style="margin-top:8px"></div></div>
+      <div class="row" style="margin-top:12px"><button class="act btn-blue grow" id="pbGo">⬇ تحميل</button><button class="act good" id="pbMp3">🎵 MP3</button></div>`;
+    $('#pbF').value = ($('#format').value && /^(mp4|mkv|webm|mp3|m4a|opus|flac|wav)$/.test($('#format').value)) ? $('#format').value : 'mp4';
+    const cur = $('#quality').value; if (cur && [...$('#pbQ').options].some(o => o.value === cur)) $('#pbQ').value = cur;
+    const upd = () => {
+      const f = $('#pbF').value, audio = /^(mp3|m4a|opus|flac|wav)$/.test(f);
+      $('#pbQ').disabled = audio;
+      const sz = audio ? d.audio_size : (d.sizes || {})[$('#pbQ').value === 'max' ? hs[0] : $('#pbQ').value];
+      $('#pbSize').textContent = sz ? 'الحجم التقريبي: ' + fmtBytes(sz) : '';
+    };
+    $('#pbQ').onchange = upd; $('#pbF').onchange = upd; upd();
+    const go = (o) => { closeModal(); addUrls([url], o); showSheet('home'); };
+    $('#pbGo').onclick = () => { const f = $('#pbF').value; go({ quality: $('#pbQ').value, format: f, mode: 'auto' }); };
+    $('#pbMp3').onclick = () => go({ quality: 'max', format: 'mp3', mode: 'audio' });
+    return;
+  }
+  // قائمة تشغيل أو نتائج بحث
+  const ents = d.entries || [];
+  if (!ents.length) { body().innerHTML = 'لا عناصر في هذه القائمة.'; return; }
+  const pre = d.kind === 'playlist';
+  body().innerHTML = `<div style="text-align:start">
+    <div style="font-weight:500;line-height:1.6">${esc(d.title || 'قائمة')} <span class="badge">${ents.length}</span></div>
+    <div class="small">${esc(d.uploader || '')}</div>
+    <div class="grid2" style="margin-top:10px">
+      <label class="small">الجودة<select id="pbQ"><option value="max">أقصى جودة</option><option value="1080">1080p</option><option value="720">720p</option><option value="480">480p</option><option value="360">360p</option></select></label>
+      <label class="small">الصيغة<select id="pbF">${FMT}</select></label>
+    </div>
+    <div class="row" style="margin:10px 0 4px"><button class="act ghost grow" id="pbAll">تحديد/إلغاء الكل</button></div>
+    <div id="pbList">${ents.map((x, i) => `<label class="task" style="display:flex;gap:10px;align-items:center;cursor:pointer">
+      <input type="checkbox" data-i="${i}" ${pre ? 'checked' : ''} style="width:20px;height:20px;flex:none">
+      ${thumbImg(x.thumbnail, '64px', '44px')}
+      <span style="min-width:0;flex:1"><span class="tasktitle" style="display:block">${esc(x.title || x.url)}</span><span class="small">${esc([x.uploader, fmtDur(x.duration)].filter(Boolean).join(' · '))}</span></span></label>`).join('')}</div></div>
+    <div class="row" style="margin-top:12px"><button class="act btn-blue grow" id="pbGo">⬇ تحميل المحدد</button></div>`;
+  $('#pbF').value = /^(mp4|mkv|webm|mp3|m4a|opus|flac|wav)$/.test($('#format').value) ? $('#format').value : 'mp4';
+  const cnt = () => { const n = $$('#pbList input:checked').length; $('#pbGo').textContent = '⬇ تحميل المحدد (' + n + ')'; };
+  cnt();
+  $('#pbList').addEventListener('change', cnt);
+  $('#pbAll').onclick = () => { const boxes = $$('#pbList input'); const all = boxes.every(b => b.checked); boxes.forEach(b => { b.checked = !all; }); cnt(); };
+  $('#pbGo').onclick = () => {
+    const urls = $$('#pbList input:checked').map(b => ents[+b.dataset.i].url).filter(Boolean);
+    if (!urls.length) { toast('اختر عنصراً واحداً على الأقل'); return; }
+    const f = $('#pbF').value, q = $('#pbQ').value;
+    closeModal(); addUrls(urls, { quality: q, format: f, mode: 'auto' }); showSheet('home');
+  };
+}
+
+/* نتائج البحث بالصور: اختر ما تحمّله (أغاني) أو افتح ألبوماً/قائمة تشغيل — لا تحميل تلقائي */
+const advS = { n: 30 };
+async function advList(more) {
+  const q = ($('#advQ').value || '').trim();
+  if (!q) { toast('اكتب اسم فنان أو أغنية أو كلمة بحث'); $('#advQ').focus(); return; }
+  if (validUrl(q)) { showProbe(q); return; }
+  const src = $('#advSrc').value;
+  advS.n = more === true ? Math.min(200, advS.n + 30) : 30;
+  const box = $('#advResults');
+  log('SEARCH start q=' + q + ' src=' + src + ' n=' + advS.n);
+  toast('جاري البحث…');
+  box.innerHTML = '<div class="empty">جاري البحث عن «' + esc(q) + '»… (قد يستغرق بضع ثوانٍ)</div>';
+  const okH = await checkHelper(true);
+  log('SEARCH helper ok=' + okH + ' ver=' + ((helper.info && helper.info.version) || '?'));
+  if (!okH) { box.innerHTML = '<div class="empty">البحث يحتاج المساعد المحلي وهو غير متصل.<br><button class="act primary" data-sheet-link="helper" style="margin-top:10px">كيف أشغّل المساعد؟</button></div>'; return; }
+  try {
+    if (helperOld()) { box.innerHTML = '<div class="empty" style="line-height:1.9">⚠️ ' + esc(oldHelperText()) + '<br><button class="act primary" data-sheet-link="helper" style="margin-top:10px">فتح صفحة المساعد المحلي</button></div>'; return; }
+    const sc = new AbortController(); const st = setTimeout(() => sc.abort(), 75000);
+    let r; try { r = await hpost('/api/probe', { query: q, n: advS.n, type: src === 'ytpl' ? 'playlist' : 'video', source: src === 'sc' ? 'sc' : 'yt' }, sc.signal); }
+    catch (fe) { throw new Error(fe.name === 'AbortError' ? 'انتهت المهلة (75 ثانية) — يوتيوب لم يرد عبر المساعد' : fe.message); }
+    finally { clearTimeout(st); }
+    const d = await r.json().catch(() => ({}));
+    log('SEARCH probe status=' + r.status + ' entries=' + ((d.entries || []).length) + (d.error ? ' err=' + d.error : ''));
+    if (!r.ok) throw new Error(d.error || ('HTTP ' + r.status));
+    const ents = d.entries || [];
+    if (!ents.length) { box.innerHTML = '<div class="empty">لا نتائج لـ «' + esc(q) + '». جرّب تهجئة أخرى أو مصدراً آخر.</div>'; return; }
+    const moreBtn = (ents.length >= advS.n && advS.n < 200) ? '<div class="row" style="margin-top:10px"><button class="act ghost grow" id="advMore">عرض المزيد</button></div>' : '';
+    if (src === 'ytpl') {
+      box.innerHTML = '<div class="small" style="margin-bottom:6px">' + ents.length + ' قائمة/ألبوم — افتح القائمة لتختار أغانيها</div>' + ents.map(x => `<div class="task"><div style="display:flex;gap:10px;align-items:center">${thumbImg(x.thumbnail, '84px', '56px')}
+        <div style="min-width:0;flex:1"><div class="tasktitle" style="white-space:normal;line-height:1.5">${esc(x.title)}</div><div class="small">${esc(x.uploader || '')}</div></div></div>
+        <div class="actions" style="margin-top:8px"><button class="act primary" data-q-prev="${esc(x.url)}">📃 فتح القائمة واختيار الأغاني</button></div></div>`).join('') + moreBtn;
+    } else {
+      box.innerHTML = `<div class="grid2" style="margin-bottom:8px">
+          <label class="small">الصيغة<select id="advFmt"><option value="mp3">MP3 (صوت)</option><option value="m4a">M4A (صوت)</option><option value="mp4">MP4 (فيديو)</option></select></label>
+          <div style="display:flex;align-items:end"><button class="act ghost" id="advAll" style="width:100%">تحديد/إلغاء الكل</button></div></div>
+        <div id="advPick">${ents.map((x, i) => `<label class="task" style="display:flex;gap:10px;align-items:center;cursor:pointer">
+          <input type="checkbox" data-i="${i}" style="width:20px;height:20px;flex:none">
+          ${thumbImg(x.thumbnail, '72px', '48px')}
+          <span style="min-width:0;flex:1"><span class="tasktitle" style="display:block;white-space:normal;line-height:1.5">${esc(x.title)}</span><span class="small">${esc([x.uploader, fmtDur(x.duration)].filter(Boolean).join(' · '))}</span></span></label>`).join('')}</div>
+        <div class="row" style="margin-top:10px"><button class="act btn-blue grow" id="advDl">⬇ تحميل المحدد (0)</button></div>` + moreBtn;
+      const cnt = () => { $('#advDl').textContent = '⬇ تحميل المحدد (' + $$('#advPick input:checked').length + ')'; };
+      $('#advPick').addEventListener('change', cnt);
+      $('#advAll').onclick = () => { const bx = $$('#advPick input'); const all = bx.every(b => b.checked); bx.forEach(b => { b.checked = !all; }); cnt(); };
+      $('#advDl').onclick = () => {
+        const urls = $$('#advPick input:checked').map(b => ents[+b.dataset.i].url).filter(Boolean);
+        if (!urls.length) { toast('اختر أغنية واحدة على الأقل'); return; }
+        const f = $('#advFmt').value;
+        addUrls(urls, { quality: $('#quality').value, format: f, mode: f === 'mp4' ? 'auto' : 'audio' });
+        showSheet('home');
+      };
+    }
+    const mb = $('#advMore'); if (mb) mb.onclick = () => advList(true);
+  } catch (e) { box.innerHTML = '<div class="empty">فشل البحث: ' + esc(e.message || e) + '<div class="small" style="margin-top:8px">إن تكرر الفشل: افتح ⌘ Console ← «📋 نسخ السجل» وأرسله لي، وحدّث yt-dlp (<code>altra</code> في Termux يحدّثه تلقائياً).</div></div>'; }
+}
+let sugT;
+function sugInput() {
+  clearTimeout(sugT);
+  const q = ($('#advQ').value || '').trim();
+  if (q.length < 2 || validUrl(q) || !helper.ok) return;
+  sugT = setTimeout(async () => {
+    try {
+      const r = await hfetch(helper.base + '/api/suggest?q=' + encodeURIComponent(q), { cache: 'no-store' });
+      const j = await r.json();
+      const dl = $('#advSug'); if (dl) dl.innerHTML = (j.items || []).map(s => '<option value="' + esc(s) + '"></option>').join('');
+    } catch {}
+  }, 350);
+}
+
+/* أدوات القائمة */
+async function pauseAll() {
+  const ts = state.tasks.filter(t => t.jobId && !t.paused && t.engine === 'helper' && ['processing', 'downloading'].includes(t.status));
+  if (!ts.length) { toast('لا مهام جارية للإيقاف'); return; }
+  await Promise.all(ts.map(t => hpost('/api/pause/' + t.jobId).catch(() => {})));
+  toast('أُوقفت ' + ts.length + ' مهام');
+}
+async function resumeAll() {
+  const ts = state.tasks.filter(t => t.jobId && t.paused);
+  if (!ts.length) { toast('لا مهام موقوفة'); return; }
+  await Promise.all(ts.map(t => hpost('/api/resume/' + t.jobId).then(() => { t.paused = false; }).catch(() => {})));
+  renderQueue(); toast('استُؤنفت ' + ts.length + ' مهام');
+}
+function retryFailed() {
+  const ts = state.tasks.filter(t => t.status === 'error' && !t.demo && t.error !== 'أُلغي');
+  if (!ts.length) { toast('لا مهام فاشلة'); return; }
+  ts.forEach(t => { t.retries = 0; retry(t.id); });
+  toast('أُعيدت ' + ts.length + ' مهام');
+}
+function clearFinished() {
+  const n = state.tasks.filter(t => ['done', 'error'].includes(t.status)).length;
+  if (!n) { toast('لا مهام منتهية'); return; }
+  state.tasks = state.tasks.filter(t => !['done', 'error'].includes(t.status));
+  renderQueue(); save(); toast('مُسحت ' + n);
+}
+
+/* ملفاتي: الملفات المحفوظة عبر المساعد (تشغيل · حفظ · إعادة تسمية · حذف) */
+let libItems = [];
+function libKind(k) { return k === 'audio' ? '🎵' : (k === 'zip' ? '🗜' : '🎬'); }
+function drawLibrary() {
+  const f = ($('#libSearch').value || '').trim().toLowerCase();
+  const list = libItems.filter(x => !f || x.name.toLowerCase().includes(f));
+  $('#libCount').textContent = list.length;
+  if (!list.length) { $('#libList').innerHTML = '<div class="empty">' + (libItems.length ? 'لا نتائج' : 'لا ملفات محفوظة بعد') + '</div>'; return; }
+  $('#libList').innerHTML = list.map(x => `<div class="task">
+    <div class="tasktitle" style="white-space:normal;line-height:1.5">${libKind(x.kind)} ${esc(x.name)}</div>
+    <div class="meta"><span>${new Date(x.mtime * 1000).toLocaleString()}</span><span>${fmtBytes(x.size)}</span></div>
+    <div class="actions" style="margin-top:6px">
+      ${x.kind !== 'zip' ? `<button class="act primary" data-lib="play" data-id="${x.id}" style="padding:4px 10px;font-size:11px">▶ تشغيل</button>` : ''}
+      <button class="act good" data-lib="save" data-id="${x.id}" style="padding:4px 10px;font-size:11px">حفظ</button>
+      <button class="act" data-lib="rename" data-id="${x.id}" style="padding:4px 10px;font-size:11px">✎ تسمية</button>
+      <button class="act danger" data-lib="del" data-id="${x.id}" style="padding:4px 10px;font-size:11px">🗑 حذف</button>
+    </div></div>`).join('');
+}
+async function renderLibrary() {
+  if (!(await checkHelper(false))) { $('#libList').innerHTML = '<div class="empty">يتطلب المساعد المحلي (غير متصل)</div>'; $('#libInfo').textContent = ''; return; }
+  if (helperOld()) { $('#libList').innerHTML = '<div class="empty" style="line-height:1.9">⚠️ ' + esc(oldHelperText()) + '</div>'; return; }
+  try {
+    const r = await hfetch(helper.base + '/api/library', { cache: 'no-store' });
+    const j = await r.json();
+    libItems = j.items || [];
+    $('#libInfo').textContent = libItems.length ? ('الإجمالي: ' + fmtBytes(j.total || 0) + ' · ' + (j.roots || []).join('، ')) : ((j.roots || []).length ? '' : 'لم يُعثر على مجلد حفظ بعد');
+    drawLibrary();
+  } catch (e) { $('#libList').innerHTML = '<div class="empty">تعذّر تحميل القائمة: ' + esc(e.message || e) + '</div>'; }
+}
+function libRename(it) {
+  $('#modalRoot').innerHTML = `<div class="modal-bg"><div class="modal"><h3>✎ إعادة تسمية</h3>
+    <input id="rnIn" value="${esc(it.name)}" style="direction:ltr;text-align:left">
+    <div class="row" style="margin-top:10px"><button class="act btn-blue grow" id="rnOk">حفظ</button><button class="act ghost grow" id="rnNo">إلغاء</button></div></div></div>`;
+  $('#rnNo').onclick = closeModal;
+  $('#rnOk').onclick = async () => {
+    try {
+      const r = await hpost('/api/library/rename', { id: it.id, name: $('#rnIn').value });
+      const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || 'HTTP ' + r.status);
+      closeModal(); toast('تمت إعادة التسمية'); renderLibrary();
+    } catch (e) { toast(e.message || e); }
+  };
+}
+
+/* ── Events ── */
+$('#menuBtn').onclick = openDrawer;
+$('#overlay').onclick = closeDrawer;
+$$('.ditem[data-sheet]').forEach(b => b.onclick = () => showSheet(b.dataset.sheet));
+$('#shareAppBtn').onclick = () => { closeDrawer(); shareApp(); };
+$('#installMenuBtn').onclick = () => { closeDrawer(); doInstall(); };
+$('#installBtn').onclick = doInstall;
+$('#quickInstall').onclick = doInstall;
+
+$('#go').onclick = startFromInput;
+$('#paste').onclick = async () => {
+  try {
+    const t = await navigator.clipboard.readText();
+    if (t) { $('#url').value = ($('#url').value ? $('#url').value+'\n' : '') + t.trim(); toast('تم اللصق'); }
+  } catch { $('#url').focus(); toast('الحافظة غير متاحة هنا — اضغط مطولاً داخل الحقل ثم الصق'); }
+};
+
+const dz = $('#dropzone');
+['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('over'); }));
+['dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('over'); }));
+dz.addEventListener('drop', e => {
+  const text = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text') || '';
+  if (text) { $('#url').value = ($('#url').value?$('#url').value+'\n':'') + text.trim(); toast('أُضيفت روابط'); }
+});
+
+$('#queue').addEventListener('click', e => {
+  const b = e.target.closest('[data-act]');
+  if (!b) return;
+  const { act, id } = b.dataset;
+  if (act === 'cancel') cancelTask(id);
+  else if (act === 'retry') retry(id);
+  else if (act === 'remove') removeTask(id);
+  else if (act === 'login') { const t = state.tasks.find(x => x.id === id); if (t) showLoginHelp(t); }
+  else if (act === 'pause') pauseTask(id);
+  else if (act === 'resume') resumeTask(id);
+  else if (act === 'play') { const t = state.tasks.find(x => x.id === id); if (t && t.fileUrl) showPlayer(t.fileUrl, t.filename || t.title, t.thumb, t.filename); }
+  else if (act === 'save') { const t = state.tasks.find(x => x.id === id); if (t && t.demo) { toast('عرض تجريبي، لا يوجد ملف حقيقي'); } else if (t && t.fileUrl) { nativeDownload(t.fileUrl, t.filename); toast('بدأ الحفظ'); } }
+});
+
+$('#helperTest').onclick = async () => { const ok = await checkHelper(true); toast(ok ? 'المساعد متصل ✓' : 'المساعد غير متصل'); };
+$('#helperTest2').onclick = async () => { const ok = await checkHelper(true); toast(ok ? 'المساعد متصل ✓' : 'المساعد غير متصل'); };
+$('#openCookies').onclick = () => showLoginHelp(null);
+$('#helperUrl').onchange = () => { save(); checkHelper(true); };
+document.addEventListener('click', async e => {
+  const l = e.target.closest('[data-sheet-link]');
+  if (l) { showSheet(l.dataset.sheetLink); return; }
+  const c = e.target.closest('[data-copy]');
+  if (c) {
+    const el = document.getElementById(c.dataset.copy);
+    const text = el ? el.innerText : '';
+    try { await navigator.clipboard.writeText(text); toast('تم النسخ'); }
+    catch {
+      try {
+        const r = document.createRange(); r.selectNodeContents(el);
+        const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+        toast(document.execCommand('copy') ? 'تم النسخ' : 'حدّد النص يدوياً وانسخه');
+      } catch { toast('حدّد النص يدوياً وانسخه'); }
+    }
+  }
+});
+$('#pickFolder').onclick = pickFolder;
+$('#clearFolder').onclick = clearFolder;
+$('#clearHistory').onclick = async () => { if (await askConfirm('مسح السجل؟')) { state.history=[]; save(); renderHistory(); } };
+$('#exportHistory').onclick = () => {
+  triggerBlob(new Blob([JSON.stringify(state.history,null,2)],{type:'application/json'}), 'altra-history.json');
+};
+$('#histSearchBtn').onclick = () => renderHistory($('#histSearch').value);
+$('#histSearch').addEventListener('keydown', e => { if (e.key==='Enter') renderHistory($('#histSearch').value); });
+$('#advGo').onclick = advSearch;
+$('#advWebSearch').onclick = advWebSearch;
+$('#advQ').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('#advQ').blur(); advList(); } });
+$('#advQ').addEventListener('input', () => { if (($('#advQ').value || '').trim().length >= 2) advSearch(); });
+// Platform shortcuts
+document.addEventListener('click', e => {
+  const p = e.target.closest('.plat[data-plat]');
+  if (p) {
+    const name = p.dataset.plat;
+    const map = { youtube:'YouTube', instagram:'Instagram', tiktok:'TikTok', x:'X/Twitter', facebook:'Facebook', reddit:'Reddit', soundcloud:'SoundCloud', vimeo:'Vimeo', twitch:'Twitch', direct:'Direct' };
+    const label = map[name] || name;
+    const sites = { youtube:'https://m.youtube.com/', instagram:'https://www.instagram.com/', tiktok:'https://www.tiktok.com/', x:'https://x.com/', facebook:'https://m.facebook.com/', reddit:'https://www.reddit.com/', soundcloud:'https://soundcloud.com/', vimeo:'https://vimeo.com/', twitch:'https://www.twitch.tv/' };
+    if (sites[name]) {
+      toast('افتح الفيديو، انسخ رابطه، ثم ارجع هنا: يبدأ التحميل تلقائياً');
+      window.open(sites[name], '_blank', 'noopener');
+      return;
+    }
+    showSheet('search');
+    $('#advPlat').value = label;
+    $('#advQ').value = '';
+    $('#advQ').placeholder = 'ابحث عن محتوى ' + label + '…';
+    $('#advQ').focus();
+    advSearch();
+    toast('فلتر: ' + label);
+    return;
+  }
+  if (e.target.closest('#advYtGo')) { advList(); return; }
+  const qd = e.target.closest('[data-q-dl],[data-q-mp3],[data-q-prev]');
+  if (qd) {
+    if (qd.dataset.qPrev) showProbe(qd.dataset.qPrev);
+    else if (qd.dataset.qMp3) { addUrls([qd.dataset.qMp3], { quality: 'max', format: 'mp3', mode: 'audio' }); showSheet('home'); }
+    else if (qd.dataset.qDl) { addUrls([qd.dataset.qDl]); showSheet('home'); }
+    return;
+  }
+  const add = e.target.closest('[data-add-url]');
+  if (add) {
+    const u = add.getAttribute('data-add-url');
+    if (u && validUrl(u)) { addUrls([u]); toast('أُضيفت للقائمة'); showSheet('home'); }
+  }
+});
+
+['quality','format','mode','concurrency','strategy','endpoint'].forEach(id => {
+  $('#'+id).onchange = save;
+});
+EXT_IDS.forEach(id => { $('#' + id).onchange = save; });
+$('#xNotify').addEventListener('change', async () => {
+  if ($('#xNotify').value !== '1') return;
+  try {
+    if (!('Notification' in window)) { toast('المتصفح لا يدعم الإشعارات'); $('#xNotify').value = '0'; save(); return; }
+    const p = await Notification.requestPermission();
+    if (p !== 'granted') { toast('لم يُمنح إذن الإشعارات'); $('#xNotify').value = '0'; save(); }
+  } catch (e) { log('NOTIFY ' + e.message); }
+});
+$('#xWifi').addEventListener('change', () => pump());
+try { if (navigator.connection && navigator.connection.addEventListener) navigator.connection.addEventListener('change', () => pump()); } catch {}
+$('#probeBtn').onclick = async () => {
+  let u = extractUrls($('#url').value)[0];
+  if (!u) { try { u = extractUrls(await navigator.clipboard.readText())[0]; } catch {} }
+  if (!u) { toast('الصق رابطاً في الحقل أولاً'); $('#url').focus(); return; }
+  showProbe(u);
+};
+$('#qtPauseAll').onclick = pauseAll;
+$('#qtResumeAll').onclick = resumeAll;
+$('#qtRetry').onclick = retryFailed;
+$('#qtClear').onclick = clearFinished;
+$('#advList').onclick = () => advList();
+$('#advSend').onclick = () => advList();
+$('#libRefresh').onclick = renderLibrary;
+$('#libSearch').addEventListener('input', drawLibrary);
+$('#libList').addEventListener('click', async e => {
+  const b = e.target.closest('[data-lib]'); if (!b) return;
+  const it = libItems.find(x => x.id === b.dataset.id); if (!it) return;
+  const url = helper.base + '/lib/' + it.id;
+  if (b.dataset.lib === 'play') showPlayer(url, it.name, '', it.name);
+  else if (b.dataset.lib === 'save') { nativeDownload(url, it.name); toast('بدأ الحفظ'); }
+  else if (b.dataset.lib === 'rename') libRename(it);
+  else if (b.dataset.lib === 'del') {
+    if (!(await askConfirm('حذف «' + it.name + '» نهائياً من الجهاز؟'))) return;
+    try { const r = await hpost('/api/library/delete', { id: it.id }); const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || 'HTTP ' + r.status); toast('حُذف الملف'); renderLibrary(); }
+    catch (er) { toast('تعذّر الحذف: ' + (er.message || er)); }
+  }
+});
+$('#customEndpoint').onchange = save;
+$('#langSel').onchange = () => { applyLang($('#langSel').value); save(); };
+
+$('#cmdGo').onclick = () => {
+  const c = $('#cmd').value.trim().toLowerCase();
+  $('#cmd').value = '';
+  if (c === 'clear') { state.logs=[]; $('#log').textContent=''; }
+  else if (c === 'status') log(JSON.stringify({ running: state.running, stats: state.stats, folder: !!state.dirHandle }, null, 2));
+  else if (c === 'queue') log(JSON.stringify(state.tasks.map(t=>({status:t.status,plat:t.platform})),null,2));
+  else if (c === 'storage') log(state.dirHandle ? ('folder: '+state.dirHandle.name) : 'no folder');
+  else if (c === 'diag') fullDiag();
+  else if (c === 'help') log('help | status | queue | clear | storage | diag');
+  else log('? ' + c);
+};
+$('#cmd').addEventListener('keydown', e => { if (e.key==='Enter') $('#cmdGo').click(); });
+$('#logClear').onclick = () => { state.logs = []; renderLog(); };
+$('#logHelper').onclick = async () => { helperLogLast = 0; await pullHelperLog(); toast('حُدّث سجل المساعد'); };
+$('#logDiag').onclick = fullDiag;
+$('#logCopy').onclick = async () => {
+  const text = state.logs.join('\n');
+  try { await navigator.clipboard.writeText(text); toast('نُسخ السجل — الصقه هنا للتحليل'); }
+  catch { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); toast('نُسخ السجل'); } catch { toast('تعذّر النسخ'); } ta.remove(); }
+};
+// سحب سجل المساعد تلقائياً أثناء فتح Console أو وجود مهام تعمل
+setInterval(() => { if (document.hidden || !helper.ok) return; if ($('#sheet-console').classList.contains('active') || state.running > 0) pullHelperLog(); }, 2500);
+
+try {
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    navigator.serviceWorker.register('./sw.js').then(() => log('SW ok')).catch(e => log('SW ' + e.message));
+  }
+} catch (e) { log('SW unavailable · ' + e.message); }
+
+document.addEventListener('securitypolicyviolation', ev => {
+  if (state.restricted) return;
+  state.restricted = true;
+  log('CSP blocked: ' + ev.blockedURI);
+  showEnvWarn('⚠️ هذه البيئة (مثل شاشة المعاينة) تمنع الاتصال بالمواقع الخارجية والتنزيل. واجهة التطبيق تعمل هنا، لكن التحميل الفعلي يحتاج فتح التطبيق مستضافاً على HTTPS أو من <b>localhost</b>.');
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+$('#url').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) startFromInput(); });
+window.addEventListener('unhandledrejection', e => log('UNHANDLED ' + (e.reason && e.reason.message || e.reason)));
+window.addEventListener('error', e => log('JS ERROR ' + e.message + (e.filename ? ' @' + String(e.filename).split('/').pop() + ':' + e.lineno : '')));
+
+applyLang('ar');
+setupInstall();
+load();
+renderQueue();
+renderHelperChip();
+initHelper();
+handleLaunchParams();
+if (new URLSearchParams(location.search).get('action') === 'new') $('#url').focus();
+let _lastClip = '';
+async function clipCheck() {
+  try {
+    if (document.visibilityState !== 'visible' || !navigator.clipboard || !navigator.clipboard.readText) return;
+    const t = (await navigator.clipboard.readText() || '').trim();
+    if (!t || t === _lastClip) return;
+    const u = extractUrls(t);
+    if (!u.length || $('#url').value.includes(u[0])) return;
+    _lastClip = t;
+    let auto = true; try { auto = localStorage.getItem('altra_autoclip') !== '0'; } catch {}
+    if (auto) { addUrls(u); showSheet('home'); toast('تم التقاط الرابط وبدأ التحميل ⬇'); return; }
+    $('#url').value = ($('#url').value ? $('#url').value + '\n' : '') + u.join('\n');
+    toast('تم التقاط رابط من الحافظة، اضغط تحميل');
+  } catch {}
+}
+window.altraAutoClip = on => { try { localStorage.setItem('altra_autoclip', on ? '1' : '0'); } catch {} toast(on ? 'التحميل التلقائي من الحافظة: مفعّل' : 'التحميل التلقائي من الحافظة: متوقف'); };
+document.addEventListener('visibilitychange', clipCheck);
+window.addEventListener('focus', clipCheck);
+setTimeout(clipCheck, 600);
+try {
+  if (/^https?:$/.test(location.protocol) && !/^(localhost|127\.|\[::1\])/.test(location.hostname)) {
+    const c1 = $('#cmd1');
+    if (c1) c1.textContent = 'curl -fsSL ' + new URL('setup-termux.sh', location.href).href + ' | ALTRA_BASE=' + new URL('./', location.href).href.replace(/\/$/, '') + ' bash';
+  }
+} catch (e) { /* يبقى الأمر الافتراضي */ }
+log('ALTRA-DAWNLOADER v8.6 READY');
+updateLaser();
+log('للمنصات الاجتماعية: ضع خادمك في الإعدادات لتحقيق الاستقلالية.');
+log('للملفات المباشرة: يعمل فوراً بدون أي خادم خارجي.');
+$('#helperChip').addEventListener('click',e=>{if(e.target.closest('button,a'))return;$('#helperChip').classList.toggle('open');});
+/* Quick pills (quality/format) ⇄ settings */
+[['#quality','#qQuality'],['#format','#qFormat']].forEach(([m,q])=>{const A=$(m),B=$(q);if(!A||!B)return;
+ const pull=()=>{if(A.value)B.value=A.value;};
+ B.addEventListener('change',()=>{A.value=B.value;A.dispatchEvent(new Event('change'));});
+ A.addEventListener('change',pull);pull();setTimeout(pull,400);window.addEventListener('load',pull);});
+})();
+
+</script>
+</body>
+</html>
