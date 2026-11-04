@@ -86,6 +86,10 @@ body::before{content:"";position:fixed;inset:-20% -10% auto -10%;height:60%;poin
 .qchip{display:inline-flex;align-items:center;gap:9px;white-space:nowrap;padding:12px 18px;border-radius:99px;background:var(--s2);border:0;color:#e0e0e0;font-size:14px;cursor:pointer;transition:.2s}
 .qchip .i{color:#6ea8fe;width:20px;height:20px}
 .qchip:active{transform:scale(.95);background:var(--s3)}
+.adv-top{padding:10px 14px 0}
+.adv-top-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;padding:12px 16px;border:0;border-radius:99px;background:linear-gradient(90deg,#1d3f7a,#1d6a4d);color:#fff;font:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:.2s;box-shadow:0 0 0 1px #ffffff14 inset}
+.adv-top-btn small{flex-basis:100%;text-align:center;font-size:10.5px;font-weight:400;opacity:.82}
+.adv-top-btn:active{transform:scale(.97)}
 /* cards */
 .card{margin:14px;padding:18px;background:var(--s2);border:1px solid #2e2e2e;border-radius:26px;box-shadow:0 10px 34px #0005;animation:up .6s both}
 h2{font-size:15px;font-weight:500;margin:0 0 14px;color:#f0f0f0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -208,7 +212,7 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
     <button class="menu-btn" id="menuBtn" aria-label="القائمة"><svg class="i " viewBox="0 0 24 24"><use href="#i-menu"/></svg></button>
     <div class="brand">
       <div class="logo"><b>ALTRA</b>-DAWNLOADER</div>
-      <div class="sub" id="subTitle">v8.6 · محمل مستقل</div>
+      <div class="sub" id="subTitle">v8.9 · محمل مستقل</div>
     </div>
     <span class="live">LIVE</span>
     <button class="icon-btn" id="consoleBtn" title="Console" style="position:relative" data-sheet-link="console"><svg class="i " viewBox="0 0 24 24"><use href="#i-term"/></svg><span class="err-dot"></span></button>
@@ -216,6 +220,7 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
     <button class="icon-btn" title="الإعدادات" data-sheet-link="settings"><svg class="i " viewBox="0 0 24 24"><use href="#i-tune"/></svg></button>
   </header>
   <div class="laser-bar" id="laserBar"></div>
+  <div class="adv-top"><button type="button" class="adv-top-btn" id="advTopBtn" data-sheet-link="search"><svg class="i" viewBox="0 0 24 24"><use href="#i-search"/></svg><span>البحث المتقدم</span><small>كل المواقع · أغاني · ألبومات · أفلام ومسلسلات</small></button></div>
 
   <div class="install-banner" id="installBanner">
     <span>ثبّت ALTRA ليظهر في قائمة «مشاركة» بأي تطبيق — شارك الرابط فيبدأ التحميل تلقائياً</span>
@@ -229,7 +234,7 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
   <!-- HOME -->
   <div id="sheet-home" class="sheet active">
     <section class="hero">
-      <div class="badge-pill"><span class="orb">A</span>نقدّم لكم ALTRA · الإصدار 8.6</div>
+      <div class="badge-pill"><span class="orb">A</span>نقدّم لكم ALTRA · الإصدار 8.9</div>
       <h1>حمّل أي شيء<br>مع <em>ALTRA</em></h1>
       <p>الصق الرابط وسيتولى المحمّل الباقي — فيديو وصوت من أكثر من ١٠٠٠ موقع، بأعلى جودة وبلا حسابات.</p>
     </section>
@@ -262,6 +267,7 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
         <button class="act ghost" id="qtResumeAll">▶ استئناف الكل</button>
         <button class="act ghost" id="qtRetry">↻ إعادة الفاشلة</button>
         <button class="act ghost" id="qtClear">🧹 مسح المنتهية</button>
+        <button class="act ghost" id="qtShare">📤 مشاركة</button>
       </div>
     </div>
 
@@ -364,7 +370,7 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
 
       <div style="margin-top:14px">
         <div class="small" style="margin-bottom:6px">مجلد الحفظ (تخزين داخلي أو خارجي)</div>
-        <div class="small" style="margin-bottom:8px;color:#a8dab5">مع المساعد المحلي: تُحفظ الملفات في «ALTRA-DAWNLOADER» داخل التخزين الداخلي (Video / Audio) ولا تظهر في المعرض.</div>
+        <div class="small" style="margin-bottom:8px;color:#a8dab5">مع المساعد المحلي: تُحفظ الملفات مباشرة في الاستوديو — الفيديو في «Movies/ALTRA» والصوت في «Music/ALTRA» (يتطلب السماح بالتخزين مرة واحدة).</div>
         <div class="storage-box" id="storageInfo">لم يُختر مجلد — سيتم السؤال عند كل تحميل أو استخدام التنزيل الافتراضي</div>
         <div class="row" style="margin-top:8px">
           <button class="act good grow" id="pickFolder">📁 اختر مجلد الحفظ</button>
@@ -399,6 +405,12 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
         </label>
         <label class="small">إشعار عند الاكتمال
           <select id="xNotify"><option value="0">لا</option><option value="1">نعم</option></select>
+        </label>
+        <label class="small">⚡ Turbo (سرعة أعلى)
+          <select id="xTurbo"><option value="1">مفعّل (موصى)</option><option value="0">عادي</option></select>
+        </label>
+        <label class="small">🛡 حماية الروابط
+          <select id="xGuard"><option value="1">لا تحمّل الحسابات والصفحات تلقائياً</option><option value="0">معطّلة (تحميل مباشر لكل رابط)</option></select>
         </label>
       </div>
       <div class="small" style="margin-top:8px;line-height:1.7">الترجمة والغلاف والوسوم والحد من السرعة تعمل عبر المساعد المحلي ومع ffmpeg. إن لم تتوفر الترجمة أو فشل تضمينها يُكمل التحميل بدونها.</div>
@@ -458,10 +470,13 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
         <button class="act good grow" id="advWebSearch">🔎 بحث يوتيوب</button>
       </div>
       <div class="row" style="margin-top:8px">
-        <div class="qsel grow" style="margin-inline-start:0"><select id="advSrc" aria-label="مصدر البحث" style="max-width:none;width:100%;padding:10px 14px"><option value="yt">يوتيوب · أغاني ومقاطع</option><option value="ytpl">يوتيوب · ألبومات وقوائم تشغيل</option><option value="sc">ساوندكلاود</option></select><svg class="i" viewBox="0 0 24 24"><use href="#i-chev"/></svg></div>
+        <div class="qsel grow" style="margin-inline-start:0"><select id="advSrc" aria-label="مصدر البحث" style="max-width:none;width:100%;padding:10px 14px"><option value="all">🌐 كل المواقع (يوتيوب · يوتيوب ميوزك · ساوندكلاود · ديلي موشن)</option><option value="yt">يوتيوب · أغاني ومقاطع</option><option value="ytpl">يوتيوب · ألبومات وقوائم تشغيل</option><option value="sc">ساوندكلاود</option><option value="ytm">يوتيوب ميوزك</option><option value="dm">ديلي موشن</option><option value="bili">بيليبيلي</option><option value="nico">نيكو نيكو</option></select><svg class="i" viewBox="0 0 24 24"><use href="#i-chev"/></svg></div>
         <button class="act ghost" id="advList">📋 عرض النتائج</button>
       </div>
-      <div class="small" style="margin-top:8px;line-height:1.6">ابحث محلياً في المهام والسجل، أو ابحث على يوتيوب عبر المساعد المحلي (يتطلب اتصاله) ثم أضف النتائج للتحميل.</div>
+      <div class="row" style="margin-top:8px">
+        <div class="qsel grow" style="margin-inline-start:0"><select id="advType" aria-label="نوع النتائج" style="max-width:none;width:100%;padding:10px 14px"><option value="all">🎵💿 أغاني + ألبومات</option><option value="songs">🎵 أغاني فقط</option><option value="albums">💿 ألبومات فقط</option><option value="movies">🎬 أفلام ومسلسلات وحلقات (طويلة)</option></select><svg class="i" viewBox="0 0 24 24"><use href="#i-chev"/></svg></div>
+      </div>
+      <div class="small" style="margin-top:8px;line-height:1.6">ابحث محلياً في المهام والسجل، أو ابحث على يوتيوب عبر المساعد المحلي (يتطلب اتصاله) ثم أضف النتائج للتحميل.<br>اكتب اسم الفنان فقط (مثل <b>Mflex Sounds</b>) مع «🌐 كل المواقع» و«أغاني + ألبومات» ليعرض كل أغانيه وألبوماته من عدة مواقع (يتطلب المساعد المحلي 8.9).</div>
       <div id="advResults" style="margin-top:12px"></div>
     </div>
     <div class="card">
@@ -557,7 +572,7 @@ python altra-server.py</code><button class="act" data-copy="cmd3">نسخ</button
     <div class="card">
       <h2>ℹ عن التطبيق</h2>
       <div class="small" style="line-height:1.75">
-        <b style="color:var(--c);font-size:15px">ALTRA-DAWNLOADER v8.6</b><br>
+        <b style="color:var(--c);font-size:15px">ALTRA-DAWNLOADER v8.9</b><br>
         محمل وسائط قابل للتثبيت (PWA) يعمل كتطبيق على الجهاز.<br><br>
         <b>القدرات المستقلة:</b><br>
         • تحميل الملفات المباشرة (mp4, mp3, …) بأقصى سرعة عبر البث إلى القرص<br>
@@ -621,7 +636,7 @@ python altra-server.py</code><button class="act" data-copy="cmd3">نسخ</button
   <button class="ditem" data-sheet="about"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-info"/></svg></span><span class="lab">نبذة عن التطبيق</span></button>
   <button class="ditem" data-sheet="contact"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-mail"/></svg></span><span class="lab">التواصل مع المطور</span></button>
   <button class="ditem" data-sheet="console"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-term"/></svg></span><span class="lab">Console</span></button>
-  <div class="dfoot">ALTRA-DAWNLOADER v8.6<br>nidalwatfa99@gmail.com<br>WhatsApp 0096998854450</div>
+  <div class="dfoot">ALTRA-DAWNLOADER v8.9<br>nidalwatfa99@gmail.com<br>WhatsApp 0096998854450</div>
 </aside>
 
 <div id="toast" class="toast"></div>
@@ -647,7 +662,7 @@ const OPEN_ENDPOINTS = [
 ];
 const DIRECT_EXTS = /\.(mp4|webm|mkv|mov|m4v|mp3|m4a|ogg|opus|wav|flac|aac)(\?.*)?$/i;
 const KEY = 'altra_v8';
-const EXT_IDS = ['xAsk','xWifi','xRetry','xLimit','xSubs','xTags','xNotify'];
+const EXT_IDS = ['xAsk','xWifi','xRetry','xLimit','xSubs','xTags','xNotify','xTurbo','xGuard'];
 const AUDIO_FMTS = ['mp3','m4a','aac','flac','wav','ogg','opus','alac'];
 const IS_MOBILE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 const LOGIN_URLS = {
@@ -926,7 +941,7 @@ async function helperRun(task, signal) {
   const r = await hfetch(base + '/api/resolve', {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, signal,
     body: JSON.stringify({ url: cleanUrl(task.source), quality: (task.o && task.o.quality) || $('#quality').value, format: (task.o && task.o.format) || $('#format').value, mode: (task.o && task.o.mode) || $('#mode').value,
-      limit: $('#xLimit').value, subs: $('#xSubs').value === '1', tags: $('#xTags').value === '1' })
+      limit: $('#xLimit').value, subs: $('#xSubs').value === '1', tags: $('#xTags').value === '1', turbo: $('#xTurbo').value })
   });
   const j = await r.json().catch(() => ({}));
   if (!r.ok || !j.id) throw new Error(j.error || ('HTTP ' + r.status));
@@ -1018,7 +1033,7 @@ function load() {
 function applyLang(lang) {
   document.documentElement.lang = lang;
   document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-  $('#subTitle').textContent = lang === 'ar' ? 'v8.6 · محمل مستقل' : 'v8.6 · Independent downloader';
+  $('#subTitle').textContent = lang === 'ar' ? 'v8.9 · محمل مستقل' : 'v8.9 · Independent downloader';
 }
 
 /* ── Navigation ── */
@@ -1371,9 +1386,10 @@ function startFromInput() {
     else { toast('رابط غير صالح'); return; }
   }
   if ($('#xAsk').value === '1' && urls.length === 1 && !isDirect(urls[0])) { $('#url').value = ''; showProbe(urls[0]); return; }
+  const g = guardUrls(urls);
   $('#url').value = '';
-  addUrls(urls);
-  showSheet('home');
+  if (g.ok.length) { addUrls(g.ok); showSheet('home'); }
+  if (g.held.length) divertHeld(g.held);
 }
 
 function onCellular() { try { const c = navigator.connection; return !!(c && c.type === 'cellular'); } catch { return false; } }
@@ -1552,6 +1568,7 @@ function renderQueue() {
           ${t.engine==='helper'&&t.jobId&&!t.paused&&['processing','downloading'].includes(t.status)?`<button class="act" data-act="pause" data-id="${t.id}" style="padding:4px 8px;font-size:11px">⏸ إيقاف</button>`:''}
           ${t.paused&&['processing','downloading'].includes(t.status)?`<button class="act primary" data-act="resume" data-id="${t.id}" style="padding:4px 8px;font-size:11px">▶ استئناف</button>`:''}
           ${t.fileUrl&&t.status==='done'?`<button class="act primary" data-act="play" data-id="${t.id}" style="padding:4px 8px;font-size:11px">▶ تشغيل</button>`:''}
+          ${t.status==='done'&&!t.demo&&(t.fileUrl||t.source)?`<button class="act primary" data-act="share" data-id="${t.id}" style="padding:4px 8px;font-size:11px">📤 مشاركة</button>`:''}
           ${canCancel?`<button class="act danger" data-act="cancel" data-id="${t.id}" style="padding:4px 8px;font-size:11px">إلغاء</button>`:''}
           ${t.login&&t.status==='error'?`<button class="login-badge" data-act="login" data-id="${t.id}">🔵 مطلوب تسجيل الدخول</button>`:''}
           ${t.fileUrl&&t.status==='done'?`<a class="act good" href="${esc(t.fileUrl)}" download="${esc(t.filename)}" target="_blank" rel="noopener" style="padding:4px 8px;font-size:11px;text-decoration:none">حفظ</a>`:''}
@@ -1762,16 +1779,314 @@ function handleLaunchParams() {
   urls = [...new Set(urls.filter(validUrl))];
   if (urls.length) {
     log('SHARE-TARGET  ' + urls.join(' | '));
-    addUrls(urls);
+    const g = guardUrls(urls);
+    if (g.ok.length) {
+      addUrls(g.ok);
+      toast(g.ok.length === 1 ? 'تم استلام الرابط — يبدأ التحميل' : ('تم استلام ' + g.ok.length + ' روابط — يبدأ التحميل'));
+    }
     try { history.replaceState({}, '', location.pathname); } catch {}
-    toast(urls.length === 1 ? 'تم استلام الرابط — يبدأ التحميل' : ('تم استلام ' + urls.length + ' روابط — يبدأ التحميل'));
     showSheet('home');
+    if (g.held.length) divertHeld(g.held);
   }
   // Deep link to a sheet: ?sheet=search
   const sheet = params.get('sheet');
   if (sheet && ['home','settings','history','search','helper','console','about','library'].includes(sheet)) {
     showSheet(sheet);
   }
+}
+
+/* ══ إضافات 8.9 ══════════════════════════════════════════════════════════
+   1) فلتر الروابط: يفرّق بين رابط مقطع واحد ورابط حساب/قناة/قائمة/صفحة فلا يبدأ التحميل تلقائياً للأخيرة
+   2) مشاركة الملفات عبر قائمة مشاركة أندرويد الموسّعة
+   3) بحث موحّد: أغاني + ألبومات + أفلام من عدة مواقع                              */
+
+/* ── 1) فلتر الروابط ── */
+function classifyUrl(u) {
+  // 'media' = مقطع/ملف واحد · 'account' = حساب أو قناة · 'collection' = قائمة/ألبوم · 'page' = صفحة عامة
+  try {
+    if (isDirect(u)) return 'media';
+    const x = new URL(u);
+    const host = x.hostname.toLowerCase().replace(/^(www|m|mobile|mbasic|web|music|touch)\./, '');
+    const dec = v => { try { return decodeURIComponent(v); } catch { return v; } };
+    const seg = x.pathname.split('/').filter(Boolean).map(dec);
+    const sp = x.searchParams, n = seg.length, s0 = (seg[0] || '').toLowerCase(), last = (seg[n - 1] || '').toLowerCase();
+    const num = v => /^\d+$/.test(v || '');
+
+    // يوتيوب (ويوتيوب ميوزك)
+    if (host === 'youtu.be') return n ? 'media' : 'page';
+    if (/(^|\.)youtube(-nocookie)?\.com$/.test(host)) {
+      if (s0 === 'watch') return sp.get('v') ? 'media' : 'page';
+      if (['shorts', 'live', 'embed', 'v', 'clip'].includes(s0)) return n > 1 ? 'media' : 'page';
+      if (s0 === 'playlist' || s0 === 'browse') return 'collection';
+      if (s0.startsWith('@') || ['channel', 'c', 'user'].includes(s0)) return 'account';
+      return 'page';
+    }
+    // إنستغرام
+    if (/^(instagram\.com|instagr\.am)$/.test(host)) {
+      const i = seg.findIndex(v => ['reel', 'reels', 'p', 'tv'].includes(v.toLowerCase()));
+      if (i >= 0 && seg[i + 1]) return 'media';
+      if (s0 === 'stories') return seg[2] ? (seg[1] === 'highlights' ? 'collection' : 'media') : 'account';
+      if (s0 === 'share') return n > 1 ? 'media' : 'page';
+      if (!n || ['explore', 'accounts', 'direct', 'reels', 'reel'].includes(s0)) return 'page';
+      return (n === 1 || ['tagged', 'reels', 'saved'].includes((seg[1] || '').toLowerCase())) ? 'account' : 'page';
+    }
+    // تيك توك
+    if (/(^|\.)tiktok\.com$/.test(host)) {
+      if (['vm', 'vt'].includes(host.split('.')[0])) return n ? 'media' : 'page';
+      if (s0 === 't') return seg[1] ? 'media' : 'page';
+      if (s0.startsWith('@')) return (['video', 'photo'].includes((seg[1] || '').toLowerCase()) && seg[2]) ? 'media' : (n === 1 ? 'account' : 'page');
+      if (s0 === 'music') return 'collection';
+      return 'page';
+    }
+    // فيسبوك
+    if (host === 'fb.watch') return n ? 'media' : 'page';
+    if (/(^|\.)(facebook\.com|fb\.com)$/.test(host)) {
+      if (s0 === 'watch') return (sp.get('v') || num(seg[1])) ? 'media' : 'page';
+      if (['videos', 'reels', 'posts'].includes(last) && n > 1) return 'collection';
+      if (s0 === 'profile.php') return 'account';
+      if (['reel', 'video.php', 'video', 'share', 'permalink.php'].includes(s0)) return (n > 1 || sp.get('v') || sp.get('story_fbid')) ? 'media' : 'page';
+      if (seg.some(v => ['videos', 'reel', 'posts'].includes(v)) && n > 1) return 'media';
+      if (['groups', 'pages', 'events', 'marketplace', 'gaming', 'hashtag', 'search', 'stories'].includes(s0)) return 'page';
+      return n === 1 ? 'account' : 'page';
+    }
+    // X / تويتر
+    if (/^(x\.com|twitter\.com|fxtwitter\.com|vxtwitter\.com)$/.test(host)) {
+      if (seg.includes('status') || seg.includes('statuses')) return 'media';
+      if (n === 1 && !['home', 'explore', 'search', 'notifications', 'messages', 'i'].includes(s0)) return 'account';
+      return (n === 2 && ['likes', 'media', 'with_replies', 'highlights'].includes(seg[1])) ? 'account' : 'page';
+    }
+    // ريديت
+    if (host === 'redd.it') return n ? 'media' : 'page';
+    if (/(^|\.)reddit\.com$/.test(host)) {
+      if (seg.includes('comments') || (s0 === 'r' && seg[2] === 's')) return 'media';
+      if (s0 === 'user' || s0 === 'u') return 'account';
+      if (s0 === 'r') return 'collection';
+      return 'page';
+    }
+    // ساوندكلاود
+    if (host === 'on.soundcloud.com') return n ? 'media' : 'page';
+    if (/(^|\.)soundcloud\.com$/.test(host)) {
+      if (!n || ['discover', 'search', 'charts', 'stream', 'you', 'upload', 'pages', 'feed'].includes(s0)) return 'page';
+      if (n === 1) return 'account';
+      if (n === 2) return ['tracks', 'albums', 'sets', 'reposts', 'likes', 'popular-tracks', 'following', 'followers', 'comments', 'spotlight'].includes(seg[1]) ? 'account' : 'media';
+      return seg[1] === 'sets' ? 'collection' : 'media';
+    }
+    // فيميو
+    if (/(^|\.)vimeo\.com$/.test(host)) {
+      if (['album', 'showcase'].includes(s0)) return 'collection';
+      if (num(s0) || num(last)) return 'media';
+      if (['channels', 'groups'].includes(s0)) return 'collection';
+      return n === 1 ? 'account' : 'page';
+    }
+    // تويتش
+    if (host === 'clips.twitch.tv') return n ? 'media' : 'page';
+    if (/(^|\.)twitch\.tv$/.test(host)) {
+      if (s0 === 'videos') return num(seg[1]) ? 'media' : 'collection';
+      if (seg[1] === 'clip' && seg[2]) return 'media';
+      if (n === 2 && ['videos', 'clips', 'schedule', 'about'].includes(seg[1])) return 'account';
+      if (n === 1 && s0 !== 'directory') return 'account';
+      return 'page';
+    }
+    // ديلي موشن
+    if (host === 'dai.ly') return n ? 'media' : 'page';
+    if (/(^|\.)dailymotion\.com$/.test(host)) {
+      const vi = seg.indexOf('video');
+      if (vi >= 0 && seg[vi + 1]) return 'media';
+      if (s0 === 'playlist') return 'collection';
+      if (s0 === 'search') return 'page';
+      return n === 1 ? 'account' : 'page';
+    }
+    // بيليبيلي · باندكامب
+    if (/(^|\.)(bilibili\.com|b23\.tv)$/.test(host)) {
+      if (host === 'space.bilibili.com') return 'account';
+      return (n && (host === 'b23.tv' || seg.includes('video') || seg.includes('play'))) ? 'media' : 'page';
+    }
+    if (/(^|\.)bandcamp\.com$/.test(host)) return s0 === 'track' ? 'media' : (s0 === 'album' ? 'collection' : 'account');
+
+    // أي موقع آخر: الصفحة الرئيسية وصفحات البحث والتصنيفات والحسابات لا تُحمَّل تلقائياً
+    if (!n) return 'page';
+    if (n <= 2 && ['search', 'tag', 'tags', 'category', 'categories', 'feed', 'explore', 'trending', 'hashtag', 'topics', 'browse'].includes(s0)) return 'page';
+    if (n <= 2 && ['channel', 'channels', 'user', 'users', 'profile', 'profiles', 'author', 'authors', 'artist', 'artists', 'u'].includes(s0)) return 'account';
+    if (n <= 2 && ['playlist', 'playlists', 'album', 'albums', 'series', 'sets'].includes(s0)) return 'collection';
+    return 'media';
+  } catch { return 'media'; }
+}
+function isKnownMediaHost(u) {
+  try { const h = new URL(u).hostname.replace(/^www\./, '').toLowerCase(); return PLAT_TABLE.some(([, p]) => new RegExp(p).test(h)); } catch { return false; }
+}
+const GUARD_LABEL = { account: 'حساب/قناة', collection: 'قائمة/ألبوم', page: 'صفحة' };
+function guardOn() { const g = $('#xGuard'); return !g || g.value !== '0'; }
+function guardUrls(urls) {
+  // يرجع الروابط المسموح بدء تحميلها فوراً (ok)، والمحجوزة (held) لتُعرض في المعاينة بدل التحميل التلقائي
+  if (!guardOn()) return { ok: urls, held: [] };
+  const ok = [], held = [];
+  for (const u of urls) { const c = classifyUrl(u); if (c === 'media') ok.push(u); else held.push({ u, c }); }
+  return { ok, held };
+}
+function divertHeld(held) {
+  if (!held || !held.length) return;
+  const h = held[0];
+  log('GUARD held ' + h.c + ' · ' + h.u);
+  toast('🛡 رابط ' + (GUARD_LABEL[h.c] || 'صفحة') + ': لم يبدأ التحميل تلقائياً — اختر ما تريد تحميله' + (held.length > 1 ? ' (+' + (held.length - 1) + ' روابط أخرى وُضعت في الحقل)' : ''));
+  if (held.length > 1) $('#url').value = held.slice(1).map(x => x.u).join('\n');
+  showProbe(h.u, { noPre: h.c !== 'collection' });
+}
+// مراقب الحافظة أشد حذراً: يبدأ تلقائياً فقط لرابط مقطع واحد من موقع وسائط معروف أو ملف مباشر
+function clipAllowed(u) {
+  if (!guardOn()) return true;
+  return classifyUrl(u) === 'media' && (isDirect(u) || isKnownMediaHost(u));
+}
+
+/* ── 2) المشاركة عبر قائمة أندرويد الموسّعة ── */
+function guessMime(name) {
+  const e = (String(name || '').split('.').pop() || '').toLowerCase();
+  return ({ mp4: 'video/mp4', m4v: 'video/mp4', webm: 'video/webm', mkv: 'video/x-matroska', mov: 'video/quicktime', avi: 'video/x-msvideo', flv: 'video/x-flv', gif: 'image/gif',
+    mp3: 'audio/mpeg', m4a: 'audio/mp4', aac: 'audio/aac', flac: 'audio/flac', wav: 'audio/wav', ogg: 'audio/ogg', opus: 'audio/ogg', zip: 'application/zip' })[e] || 'application/octet-stream';
+}
+async function fileForShare(t) {
+  const r = await hfetch(t.fileUrl, { cache: 'no-store' });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const b = await r.blob();
+  const name = t.filename || t.title || 'altra';
+  return new File([b], name, { type: (b.type && b.type !== 'application/octet-stream') ? b.type : guessMime(name) });
+}
+function askShareAgain(files, title) {
+  // بعد تجهيز ملف كبير تنتهي صلاحية اللمسة الأولى؛ نطلب لمسة جديدة والملف جاهز
+  $('#modalRoot').innerHTML = `<div class="modal-bg"><div class="modal"><h3>📤 الملف جاهز للمشاركة</h3>
+    <div class="small" style="margin:6px 0 12px;word-break:break-word">${esc(title)}</div>
+    <div class="row"><button class="act btn-blue grow" id="shGo">📤 مشاركة الآن</button><button class="act ghost" id="shNo">إغلاق</button></div></div></div>`;
+  $('#shNo').onclick = closeModal;
+  $('#shGo').onclick = async () => {
+    try { await navigator.share({ files, title }); closeModal(); }
+    catch (e) { if (e.name === 'AbortError') { closeModal(); return; } toast('تعذّرت المشاركة: ' + (e.message || e)); }
+  };
+}
+async function shareLinkFallback(t) {
+  const name = t.filename || t.title || 'ALTRA', link = t.source || '';
+  try { await navigator.share({ title: name, text: name + (link ? '\n' + link : '') }); return; }
+  catch (e) { if (e.name === 'AbortError') return; }
+  try { await navigator.clipboard.writeText(link || name); toast('نُسخ الرابط — الصقه في أي تطبيق'); } catch { toast('تعذّرت المشاركة'); }
+}
+async function shareTask(id) {
+  const t = state.tasks.find(x => x.id === id);
+  if (!t) return;
+  if (!navigator.share) { try { await navigator.clipboard.writeText(t.source || t.filename || ''); toast('المتصفح لا يدعم المشاركة — نُسخ الرابط'); } catch { toast('المتصفح لا يدعم المشاركة'); } return; }
+  const name = t.filename || t.title || 'ALTRA';
+  if (t.fileUrl && t.status === 'done') {
+    if ((t.bytes || 0) > 1.5 * 1024 * 1024 * 1024) { toast('الملف كبير جداً للمشاركة المباشرة (أكثر من 1.5GB) — أشارك الرابط بدلاً منه'); return shareLinkFallback(t); }
+    toast('جاري تجهيز الملف للمشاركة…');
+    let file = null;
+    try { file = await fileForShare(t); } catch (e) { log('SHARE prepare ' + (e.message || e)); }
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: name }); return; }
+      catch (e) {
+        if (e.name === 'AbortError') return;
+        if (e.name === 'NotAllowedError') { askShareAgain([file], name); return; }
+        log('SHARE file fail ' + e.name + ' ' + (e.message || ''));
+      }
+    }
+  }
+  return shareLinkFallback(t);
+}
+async function shareAll() {
+  const done = state.tasks.filter(t => t.status === 'done' && t.fileUrl && !t.demo);
+  if (!done.length) { toast('لا ملفات مكتملة للمشاركة'); return; }
+  if (!navigator.share || !navigator.canShare) { toast('المتصفح لا يدعم مشاركة الملفات'); return; }
+  const picked = []; let total = 0;
+  for (const t of done.slice().reverse().slice(0, 10)) {   // الأحدث أولاً، حتى 10 ملفات
+    if (picked.length && total + (t.bytes || 0) > 400 * 1024 * 1024) break;
+    picked.push(t); total += t.bytes || 0;
+  }
+  toast('جاري تجهيز ' + picked.length + ' ملف للمشاركة…');
+  const files = [];
+  for (const t of picked) { try { files.push(await fileForShare(t)); } catch (e) { log('SHARE prepare ' + (e.message || e)); } }
+  if (!files.length) { toast('تعذّر تجهيز الملفات'); return; }
+  if (!navigator.canShare({ files })) { toast('المتصفح لا يقبل مشاركة هذه الملفات'); return; }
+  const note = picked.length < done.length ? ' (الأحدث ' + picked.length + ' من ' + done.length + ')' : '';
+  try { await navigator.share({ files, title: 'ALTRA' }); if (note) toast('شُورك' + note); }
+  catch (e) {
+    if (e.name === 'AbortError') return;
+    if (e.name === 'NotAllowedError') { askShareAgain(files, files.length + ' ملف' + note); return; }
+    toast('تعذّرت المشاركة: ' + (e.message || e));
+  }
+}
+
+/* ── 3) بحث موحّد: أغاني + ألبومات + أفلام ── */
+function helperMulti() {
+  const v = String((helper.info && helper.info.version) || '0').split('.').map(Number);
+  return v[0] > 8 || (v[0] === 8 && (v[1] || 0) >= 9);
+}
+const advM = { n: 50 };
+async function advMulti(q, src, more) {
+  advM.n = more ? Math.min(200, advM.n + 50) : 50;
+  const type = ($('#advType') && $('#advType').value) || 'all';
+  const kinds = type === 'songs' ? ['songs'] : type === 'albums' ? ['albums'] : type === 'movies' ? ['movies', 'long'] : ['songs', 'albums'];
+  const box = $('#advResults');
+  log('SEARCH multi q=' + q + ' src=' + src + ' type=' + type + ' n=' + advM.n);
+  toast('جاري البحث…');
+  box.innerHTML = '<div class="empty">جاري البحث عن «' + esc(q) + '» في عدة مواقع… (قد يستغرق حتى دقيقة)</div>';
+  const okH = await checkHelper(true);
+  if (!okH) { box.innerHTML = '<div class="empty">البحث يحتاج المساعد المحلي وهو غير متصل.<br><button class="act primary" data-sheet-link="helper" style="margin-top:10px">كيف أشغّل المساعد؟</button></div>'; return; }
+  if (helperOld()) { box.innerHTML = '<div class="empty" style="line-height:1.9">⚠️ ' + esc(oldHelperText()) + '<br><button class="act primary" data-sheet-link="helper" style="margin-top:10px">فتح صفحة المساعد المحلي</button></div>'; return; }
+  if (!helperMulti()) {
+    // مساعد 8.8: لا يعرف البحث الموحّد، فنستخدم بحث يوتيوب القديم ونُنبّه لتحديثه
+    toast('حدّث المساعد المحلي إلى 8.9 لبحث الألبومات وكل المواقع — أبحث الآن في يوتيوب فقط');
+    $('#advSrc').value = 'yt';
+    return advList(false);
+  }
+  try {
+    const sc = new AbortController(); const st = setTimeout(() => sc.abort(), 110000);
+    let r;
+    try { r = await hpost('/api/probe', { query: q, mode: 'multi', sources: [src], kinds, n: advM.n }, sc.signal); }
+    catch (fe) { throw new Error(fe.name === 'AbortError' ? 'انتهت المهلة (110 ثانية)' : fe.message); }
+    finally { clearTimeout(st); }
+    const d = await r.json().catch(() => ({}));
+    log('SEARCH multi status=' + r.status + ' items=' + ((d.items || []).length) + ' lists=' + ((d.lists || []).length) + ((d.errors || []).length ? ' errors=' + d.errors.map(e => e.site + ':' + e.error).join(' | ') : ''));
+    if (!r.ok) throw new Error(d.error || ('HTTP ' + r.status));
+    renderMulti(d, q, type);
+  } catch (e) {
+    box.innerHTML = '<div class="empty">فشل البحث: ' + esc(e.message || e) + '<div class="small" style="margin-top:8px">إن تكرر الفشل: افتح ⌘ Console ← «📋 نسخ السجل»، وحدّث yt-dlp (<code>altra</code> في Termux يحدّثه تلقائياً).</div></div>';
+  }
+}
+function renderMulti(d, q, type) {
+  const box = $('#advResults');
+  const items = (d.items || []).slice(0, 400), lists = d.lists || [], errs = d.errors || [];
+  const errHtml = errs.length ? '<div class="small" style="margin-top:10px;line-height:1.7;opacity:.8">تعذّر الاتصال ببعض المصادر: ' + errs.map(e => esc(e.site)).filter((v, i, a) => a.indexOf(v) === i).join('، ') + '</div>' : '';
+  if (!items.length && !lists.length) { box.innerHTML = '<div class="empty">لا نتائج لـ «' + esc(q) + '». جرّب تهجئة أخرى أو مصدراً آخر.' + errHtml + '</div>'; return; }
+  const badge = s => s ? `<span class="tag" style="color:var(--muted)">${esc(s)}</span>` : '';
+  const movies = type === 'movies';
+  let html = `<div class="small" style="margin-bottom:8px">${items.length} عنصر · ${lists.length} ألبوم/قائمة${(d.sites || []).length ? ' — من: ' + esc(d.sites.join('، ')) : ''}</div>`;
+  if (lists.length) {
+    html += `<div style="font-weight:500;margin:6px 0">💿 ألبومات وقوائم تشغيل (${lists.length})</div>` + lists.map(x => `<div class="task"><div style="display:flex;gap:10px;align-items:center">${thumbImg(x.thumbnail, '84px', '56px')}
+      <div style="min-width:0;flex:1"><div class="tasktitle" style="white-space:normal;line-height:1.5">${esc(x.title)} ${badge(x.site)}</div><div class="small">${esc([x.uploader, x.count ? x.count + ' مقطع' : ''].filter(Boolean).join(' · '))}</div></div></div>
+      <div class="actions" style="margin-top:8px"><button class="act primary" data-q-prev="${esc(x.url)}">📃 فتح الألبوم واختيار الأغاني</button></div></div>`).join('');
+  }
+  if (items.length) {
+    html += `<div style="font-weight:500;margin:14px 0 6px">${movies ? '🎬 أفلام وحلقات ومقاطع طويلة' : '🎵 أغاني'} (${items.length})</div>
+      <div class="grid2" style="margin-bottom:8px">
+        <label class="small">الصيغة<select id="advFmt"><option value="mp3"${movies ? '' : ' selected'}>MP3 (صوت)</option><option value="m4a">M4A (صوت)</option><option value="mp4"${movies ? ' selected' : ''}>MP4 (فيديو)</option></select></label>
+        <div style="display:flex;align-items:end"><button class="act ghost" id="advAll" style="width:100%">تحديد/إلغاء الكل</button></div></div>
+      <div id="advPick">${items.map((x, i) => `<label class="task" style="display:flex;gap:10px;align-items:center;cursor:pointer">
+        <input type="checkbox" data-i="${i}" style="width:20px;height:20px;flex:none">
+        ${thumbImg(x.thumbnail, '72px', '48px')}
+        <span style="min-width:0;flex:1"><span class="tasktitle" style="display:block;white-space:normal;line-height:1.5">${esc(x.title)}</span><span class="small">${esc([x.uploader, fmtDur(x.duration), x.site].filter(Boolean).join(' · '))}</span></span></label>`).join('')}</div>
+      <div class="row" style="margin-top:10px"><button class="act btn-blue grow" id="advDl">⬇ تحميل المحدد (0)</button></div>`;
+  }
+  if ((items.length + lists.length) >= Math.min(advM.n, 30) && advM.n < 200) html += '<div class="row" style="margin-top:10px"><button class="act ghost grow" id="advMore">عرض المزيد</button></div>';
+  box.innerHTML = html + errHtml;
+  if (items.length) {
+    const cnt = () => { $('#advDl').textContent = '⬇ تحميل المحدد (' + $$('#advPick input:checked').length + ')'; };
+    $('#advPick').addEventListener('change', cnt);
+    $('#advAll').onclick = () => { const bx = $$('#advPick input'); const all = bx.every(b => b.checked); bx.forEach(b => { b.checked = !all; }); cnt(); };
+    $('#advDl').onclick = () => {
+      const urls = $$('#advPick input:checked').map(b => items[+b.dataset.i].url).filter(Boolean);
+      if (!urls.length) { toast('اختر عنصراً واحداً على الأقل'); return; }
+      const f = $('#advFmt').value;
+      addUrls(urls, { quality: $('#quality').value, format: f, mode: f === 'mp4' ? 'auto' : 'audio' });
+      showSheet('home');
+    };
+  }
+  const mb = $('#advMore'); if (mb) mb.onclick = () => advList(true);
 }
 
 /* ── Advanced search ── */
@@ -1939,7 +2254,7 @@ function showPlayer(src, title, poster, name) {
 }
 
 /* معاينة الرابط: صورة وعنوان ومدة وجودات بأحجامها · أو عناصر قائمة تشغيل لاختيار ما يُحمَّل */
-async function showProbe(url) {
+async function showProbe(url, opt) {
   const root = $('#modalRoot');
   const direct = () => { closeModal(); addUrls([url]); showSheet('home'); };
   root.innerHTML = `<div class="modal-bg"><div class="modal"><h3>🔎 معاينة الرابط</h3>
@@ -2005,7 +2320,7 @@ async function showProbe(url) {
   // قائمة تشغيل أو نتائج بحث
   const ents = d.entries || [];
   if (!ents.length) { body().innerHTML = 'لا عناصر في هذه القائمة.'; return; }
-  const pre = d.kind === 'playlist';
+  const pre = d.kind === 'playlist' && !(opt && opt.noPre);
   body().innerHTML = `<div style="text-align:start">
     <div style="font-weight:500;line-height:1.6">${esc(d.title || 'قائمة')} <span class="badge">${ents.length}</span></div>
     <div class="small">${esc(d.uploader || '')}</div>
@@ -2039,6 +2354,7 @@ async function advList(more) {
   if (!q) { toast('اكتب اسم فنان أو أغنية أو كلمة بحث'); $('#advQ').focus(); return; }
   if (validUrl(q)) { showProbe(q); return; }
   const src = $('#advSrc').value;
+  if (['all', 'ytm', 'dm', 'bili', 'nico'].includes(src)) return advMulti(q, src, more === true);
   advS.n = more === true ? Math.min(200, advS.n + 30) : 30;
   const box = $('#advResults');
   log('SEARCH start q=' + q + ' src=' + src + ' n=' + advS.n);
@@ -2204,6 +2520,7 @@ $('#queue').addEventListener('click', e => {
   else if (act === 'login') { const t = state.tasks.find(x => x.id === id); if (t) showLoginHelp(t); }
   else if (act === 'pause') pauseTask(id);
   else if (act === 'resume') resumeTask(id);
+  else if (act === 'share') shareTask(id);
   else if (act === 'play') { const t = state.tasks.find(x => x.id === id); if (t && t.fileUrl) showPlayer(t.fileUrl, t.filename || t.title, t.thumb, t.filename); }
   else if (act === 'save') { const t = state.tasks.find(x => x.id === id); if (t && t.demo) { toast('عرض تجريبي، لا يوجد ملف حقيقي'); } else if (t && t.fileUrl) { nativeDownload(t.fileUrl, t.filename); toast('بدأ الحفظ'); } }
 });
@@ -2302,6 +2619,7 @@ $('#qtPauseAll').onclick = pauseAll;
 $('#qtResumeAll').onclick = resumeAll;
 $('#qtRetry').onclick = retryFailed;
 $('#qtClear').onclick = clearFinished;
+$('#qtShare').onclick = shareAll;
 $('#advList').onclick = () => advList();
 $('#advSend').onclick = () => advList();
 $('#libRefresh').onclick = renderLibrary;
@@ -2380,7 +2698,17 @@ async function clipCheck() {
     if (!u.length || $('#url').value.includes(u[0])) return;
     _lastClip = t;
     let auto = true; try { auto = localStorage.getItem('altra_autoclip') !== '0'; } catch {}
-    if (auto) { addUrls(u); showSheet('home'); toast('تم التقاط الرابط وبدأ التحميل ⬇'); return; }
+    if (auto) {
+      const okU = [], heldU = [];
+      for (const x of u) (clipAllowed(x) ? okU : heldU).push(x);
+      if (okU.length) { addUrls(okU); showSheet('home'); toast('تم التقاط الرابط وبدأ التحميل ⬇'); }
+      if (heldU.length) {
+        log('GUARD clipboard held · ' + heldU.join(' | '));
+        $('#url').value = ($('#url').value ? $('#url').value + '\n' : '') + heldU.join('\n');
+        toast('🛡 رابط حساب/صفحة/غير معروف: لم يبدأ التحميل تلقائياً — اضغط GO أو «معاينة رابط»');
+      }
+      return;
+    }
     $('#url').value = ($('#url').value ? $('#url').value + '\n' : '') + u.join('\n');
     toast('تم التقاط رابط من الحافظة، اضغط تحميل');
   } catch {}
@@ -2395,7 +2723,7 @@ try {
     if (c1) c1.textContent = 'curl -fsSL ' + new URL('setup-termux.sh', location.href).href + ' | ALTRA_BASE=' + new URL('./', location.href).href.replace(/\/$/, '') + ' bash';
   }
 } catch (e) { /* يبقى الأمر الافتراضي */ }
-log('ALTRA-DAWNLOADER v8.6 READY');
+log('ALTRA-DAWNLOADER v8.9 READY');
 updateLaser();
 log('للمنصات الاجتماعية: ضع خادمك في الإعدادات لتحقيق الاستقلالية.');
 log('للملفات المباشرة: يعمل فوراً بدون أي خادم خارجي.');

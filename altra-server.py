@@ -36,7 +36,7 @@ import zipfile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, quote, unquote, urlparse
 
-VERSION = "8.8"
+VERSION = "8.9"
 HERE = os.path.realpath(os.path.dirname(os.path.abspath(__file__)))
 
 DASHBOARD_HTML = r'''<!DOCTYPE html>
@@ -199,7 +199,7 @@ CFG = {
     "loopback": True,
     "has_ffmpeg": bool(shutil.which("ffmpeg")),
     "save": None,
-    "gallery": False,
+    "gallery": True,
 }
 JOBS = {}
 JOBS_LOCK = threading.Lock()
@@ -434,6 +434,10 @@ def build_opts(job, hook):
     lim = RATE_LIMITS.get(str(p.get("limit") or ""))
     if lim:
         opts["ratelimit"] = lim
+    # ── 8.9: Turbo — أجزاء متوازية أكثر ومخزن قراءة أكبر (يحافظ على الإيقاف المؤقت والتقدم) ──
+    if str(p.get("turbo") or "1") == "1":
+        opts["concurrent_fragment_downloads"] = 16
+        opts["buffersize"] = 65536
     if job.resumed:
         opts["overwrites"] = None  # يكمل الملف الجزئي بدل البدء من الصفر
     if ff and p.get("tags") and audio and fmt != "wav":
@@ -492,25 +496,183 @@ def probe_opts():
     return o
 
 
+# ── 8.9: بحث موحّد (أغاني + ألبومات + أفلام) عبر عدة مواقع ──────────────────
+_SP_PLAYLISTS = "EgIQAw%3D%3D"   # مرشّح يوتيوب: قوائم التشغيل (ألبومات الفنانين)
+_SP_MOVIES = "EgIQBA%3D%3D"      # مرشّح يوتيوب: أفلام
+_SP_LONG = "EgIYAg%3D%3D"        # مرشّح يوتيوب: أكثر من 20 دقيقة (حلقات، مسلسلات، أفلام)
+
+
+def site_label(u):
+    h = (urlparse(u or "").hostname or "").lower()
+    if h.startswith("music.youtube."):
+        return "YouTube Music"
+    if "youtube" in h or h == "youtu.be":
+        return "YouTube"
+    for k, name in (("soundcloud", "SoundCloud"), ("dailymotion", "Dailymotion"), ("bilibili", "Bilibili"),
+                    ("nicovideo", "Niconico"), ("vimeo", "Vimeo")):
+        if k in h:
+            return name
+    return re.sub(r"^www\.", "", h)
+
+
+def _ent(e):
+    """يحوّل عنصراً من yt-dlp (extract_flat) إلى صيغة موحّدة يعرضها التطبيق."""
+    u = e.get("webpage_url") or e.get("url") or ""
+    ie = (e.get("ie_key") or "").lower()
+    vid = e.get("id")
+    if u and not re.match(r"^https?://", u) and vid and ie.startswith("youtube"):
+        u = "https://www.youtube.com/watch?v=" + str(vid)
+    th = e.get("thumbnail") or ""
+    if not th:
+        ts = e.get("thumbnails") or []
+        th = (ts[-1].get("url") if ts else "") or ""
+    if not th and vid and ie == "youtube" and re.match(r"^[\w-]{11}$", str(vid)):
+        th = "https://i.ytimg.com/vi/%s/mqdefault.jpg" % vid
+    is_list = bool(re.search(r"[?&]list=|/playlist\?|/sets/|/album/|music\.youtube\.com/browse/", u or "")) \
+        and "watch?v=" not in (u or "")
+    return {"id": e.get("id"), "title": (e.get("title") or "")[:200], "url": u, "is_list": is_list,
+            "duration": e.get("duration"), "thumbnail": th,
+            "count": e.get("playlist_count") or e.get("n_entries"),
+            "uploader": (e.get("uploader") or e.get("channel") or "")[:80]}
+
+
+def _channel_videos_tab(u):
+    """رابط قناة يوتيوب بلا تبويب ← تبويب «الفيديوهات»، فتعرض المعاينة مقاطع القناة مباشرة."""
+    try:
+        p = urlparse(u)
+        h = re.sub(r"^(www|m)\.", "", (p.hostname or "").lower())
+        if h == "youtube.com" and re.match(r"^/(@[^/]+|channel/[^/]+|c/[^/]+|user/[^/]+)/?$", p.path):
+            return u.split("?")[0].split("#")[0].rstrip("/") + "/videos"
+    except Exception:  # noqa: BLE001
+        pass
+    return u
+
+
+def _norm_title(t):
+    return re.sub(r"[\W_]+", "", (t or "").casefold())
+
+
+def _is_channel_url(u):
+    return bool(re.search(r"youtube\.com/(@|channel/|c/|user/)", u or ""))
+
+
+def _dedupe(rows, items):
+    """يحذف المكرر (نفس المعرّف، أو نفس العنوان بمدة متقاربة أو مجهولة)."""
+    seen, titles, out = set(), {}, []
+    for x in rows:
+        if items and (x["is_list"] or _is_channel_url(x["url"])):
+            continue
+        k = x["id"] or x["url"]
+        if k in seen:
+            continue
+        nt = _norm_title(x["title"])
+        d = x.get("duration") or 0
+        if nt:
+            prev = titles.get(nt, [])
+            if any((not d) or (not pd) or abs(pd - d) <= 5 for pd in prev):
+                continue
+            titles.setdefault(nt, []).append(d)
+        seen.add(k)
+        out.append(x)
+    return out
+
+
+def probe_multi(query, sources, kinds, n):
+    """بحث واحد يجمع عدة مواقع وأنواعاً: أغاني · ألبومات · أفلام/حلقات طويلة.
+    كل مصدر يعمل في خيط مستقل بمهلة، وفشل أحدها لا يمنع ظهور نتائج الباقي."""
+    if yt_dlp is None:
+        raise RuntimeError("yt-dlp غير مثبّت. نفّذ: pip install -U \"yt-dlp[default]\"")
+    from concurrent.futures import ThreadPoolExecutor, wait
+    from urllib.parse import quote_plus
+    n = max(10, min(int(n or 50), 200))
+    qe = quote_plus(query)
+    S = set(sources or ["all"])
+    if "all" in S:
+        S |= {"yt", "ytm", "sc", "dm"}
+    K = set(kinds or ["songs", "albums"])
+    yt_res = "https://www.youtube.com/results?search_query=%s&sp=" % qe
+    plan = []   # (الموقع، items|lists، المصدر، العدد)
+    if "yt" in S:
+        if "songs" in K:
+            plan.append(("YouTube", "items", "ytsearch%d:%s" % (n, query), n))
+        if "albums" in K:
+            plan.append(("YouTube", "lists", yt_res + _SP_PLAYLISTS, n))
+        if "movies" in K:
+            plan.append(("YouTube", "items", yt_res + _SP_MOVIES, n))
+        if "long" in K:
+            plan.append(("YouTube", "items", yt_res + _SP_LONG, n))
+    if "ytm" in S:
+        if "songs" in K:
+            plan.append(("YouTube Music", "items", "https://music.youtube.com/search?q=%s#songs" % qe, n))
+        if "albums" in K:
+            plan.append(("YouTube Music", "lists", "https://music.youtube.com/search?q=%s#albums" % qe, n))
+    media_kinds = bool(K & {"songs", "movies", "long"})
+    if "sc" in S and "songs" in K:
+        plan.append(("SoundCloud", "items", "scsearch%d:%s" % (n, query), n))
+    if "dm" in S and media_kinds:
+        plan.append(("Dailymotion", "items", "https://www.dailymotion.com/search/%s/videos" % qe, n))
+    if "bili" in S and media_kinds:
+        plan.append(("Bilibili", "items", "bilisearch%d:%s" % (min(n, 50), query), min(n, 50)))
+    if "nico" in S and media_kinds:
+        plan.append(("Niconico", "items", "nicosearch%d:%s" % (min(n, 50), query), min(n, 50)))
+    if not plan:
+        raise RuntimeError("لا مصدر بحث مناسب للاختيار الحالي.")
+
+    def work(item):
+        site, _role, src, cnt = item
+        o = probe_opts()
+        o.update({"extract_flat": "in_playlist", "playlistend": cnt, "socket_timeout": 15, "retries": 1})
+        with yt_dlp.YoutubeDL(o) as ydl:
+            info = ydl.extract_info(src, download=False)
+        out = []
+        for e in (info.get("entries") or []) if info else []:
+            if not e:
+                continue
+            x = _ent(e)
+            if x["url"]:
+                x["site"] = site
+                out.append(x)
+        return out
+
+    ex = ThreadPoolExecutor(max_workers=min(4, len(plan)))
+    futs = [(it, ex.submit(work, it)) for it in plan]
+    done, _pending = wait([f for _, f in futs], timeout=70)
+    items, lists, errors = [], [], []
+    for it, f in futs:
+        site, role = it[0], it[1]
+        if f not in done:
+            errors.append({"site": site, "role": role, "error": "انتهت المهلة"})
+            continue
+        try:
+            (items if role == "items" else lists).extend(f.result())
+        except Exception as e:  # noqa: BLE001
+            errors.append({"site": site, "role": role, "error": (clean_error(e) or repr(e))[:160]})
+            slog("بحث %s (%s) فشل: %s" % (site, role, clean_error(e)), "warn")
+    ex.shutdown(wait=False, cancel_futures=True)
+
+    toks = [t for t in re.findall(r"\w+", query.casefold()) if len(t) > 1]
+
+    def rel(x):
+        if not toks:
+            return 0
+        hay = ((x.get("title") or "") + " " + (x.get("uploader") or "")).casefold()
+        return sum(1 for t in toks if t in hay) / len(toks)
+
+    items = _dedupe(items, True)
+    only_lists = [x for x in lists if x["is_list"]] or lists
+    lists = _dedupe(only_lists, False)
+    items.sort(key=lambda x: -rel(x))     # ترتيب مستقر: الأقرب لكلمات البحث أولاً
+    lists.sort(key=lambda x: -rel(x))
+    return {"kind": "multi", "title": query, "items": items[:600], "lists": lists[:150],
+            "errors": errors, "sites": sorted({x["site"] for x in items + lists})}
+
+
 def probe(url, query=None, n=12, kind="video", source="yt"):
     """معاينة رابط: العنوان والصورة والمدة والجودات المتاحة بأحجامها التقريبية، أو عناصر قائمة تشغيل/نتائج بحث."""
     if yt_dlp is None:
         raise RuntimeError("yt-dlp غير مثبّت. نفّذ: pip install -U \"yt-dlp[default]\"")
 
-    def ent(e):
-        u = e.get("webpage_url") or e.get("url") or ""
-        if u and not re.match(r"^https?://", u) and e.get("id") and (e.get("ie_key") or "").lower().startswith("youtube"):
-            u = "https://www.youtube.com/watch?v=" + e["id"]
-        th = e.get("thumbnail") or ""
-        if not th:
-            ts = e.get("thumbnails") or []
-            th = (ts[-1].get("url") if ts else "") or ""
-        if not th and e.get("id") and (e.get("ie_key") or "").lower().startswith("youtube"):
-            th = "https://i.ytimg.com/vi/%s/mqdefault.jpg" % e["id"]
-        is_list = bool(re.search(r"[?&]list=|/playlist\?|/sets/|/album/", u or "")) and "watch?v=" not in (u or "")
-        return {"id": e.get("id"), "title": (e.get("title") or "")[:200], "url": u, "is_list": is_list,
-                "duration": e.get("duration"), "thumbnail": th,
-                "uploader": (e.get("uploader") or e.get("channel") or "")[:80]}
+    ent = _ent
 
     o = probe_opts()
     if query:
@@ -534,12 +696,12 @@ def probe(url, query=None, n=12, kind="video", source="yt"):
 
     o["extract_flat"] = "in_playlist"
     with yt_dlp.YoutubeDL(o) as ydl:
-        info = ydl.extract_info(normalize_url(url), download=False)
+        info = ydl.extract_info(_channel_videos_tab(normalize_url(url)), download=False)
     if not info:
         raise RuntimeError("لم يُعثر على وسائط في هذا الرابط.")
     if info.get("_type") == "playlist" or info.get("entries"):
         ents = [ent(e) for e in (info.get("entries") or []) if e]
-        ents = [x for x in ents if x["url"]][:200]
+        ents = [x for x in ents if x["url"]][:500]
         return {"kind": "playlist", "title": (info.get("title") or "")[:200], "uploader": (info.get("uploader") or info.get("channel") or "")[:80],
                 "thumbnail": info.get("thumbnail") or (ents[0]["thumbnail"] if ents else ""), "entries": ents}
 
@@ -936,21 +1098,46 @@ def detect_gallery_base():
     return None
 
 
+def ensure_storage_access():
+    """في Termux: إن لم يكن إذن التخزين ممنوحاً فالملفات تُحفظ داخل ~/altra-downloads (لا يراها الاستوديو).
+    نطلب الإذن تلقائياً وننتظر ظهور ~/storage/shared حتى 40 ثانية."""
+    if CFG["save"] or not os.environ.get("PREFIX", "").startswith("/data/data/com.termux"):
+        return
+    if detect_gallery_base():
+        return
+    if not shutil.which("termux-setup-storage"):
+        return
+    print(" ▶ إذن التخزين غير ممنوح: ستظهر نافذة طلب إذن — اضغط «سماح» ليظهر التحميل في الاستوديو …")
+    try:
+        subprocess.run(["termux-setup-storage"], timeout=30, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception:  # noqa: BLE001
+        pass
+    for _ in range(40):
+        if detect_gallery_base():
+            print(" ✓ تم منح إذن التخزين")
+            return
+        time.sleep(1)
+    print(" ⚠ لم يُمنح إذن التخزين بعد — حتى تمنحه تُحفظ الملفات في ~/altra-downloads (غير ظاهرة في الاستوديو).")
+
+
 def media_scan(path):
-    for cmd in (["termux-media-scan", path],
-                ["am", "broadcast", "-a", "android.intent.action.MEDIA_SCANNER_SCAN_FILE", "-d", "file://" + path]):
+    """يُعلم أندرويد بالملف الجديد ليظهر فوراً في الاستوديو/المعرض (يجرّب الطريقتين معاً)."""
+    ok = False
+    for cmd in (["am", "broadcast", "-a", "android.intent.action.MEDIA_SCANNER_SCAN_FILE", "-d", "file://" + path],
+                ["termux-media-scan", path]):
         if shutil.which(cmd[0]):
             try:
                 subprocess.run(cmd, timeout=15, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                return True
+                ok = True
             except Exception:  # noqa: BLE001
                 pass
-    return False
+    return ok
 
 
 def publish_to_gallery(job):
     """ينسخ الملف النهائي إلى مجلد ALTRA-DAWNLOADER (Video/Audio) داخل التخزين الداخلي.
-    افتراضياً لا يظهر في المعرض/الاستوديو (ملف .nomedia وبلا مسح إعلامي). للظهور فيه شغّل المساعد مع --gallery."""
+    افتراضياً (8.9) يُحفظ مباشرة في الاستوديو: الفيديو في Movies/ALTRA والصوت في Music/ALTRA مع مسح إعلامي فوري.
+    للإخفاء عن المعرض شغّل المساعد مع --no-gallery (مجلد ALTRA-DAWNLOADER بملف .nomedia)."""
     base = detect_gallery_base()
     ext = os.path.splitext(job.filepath)[1].lower().lstrip(".")
     is_audio = ext in AUDIO_FORMATS or ext in ("weba", "mka", "aiff")
@@ -1282,7 +1469,8 @@ class Handler(BaseHTTPRequestHandler):
             limit = str(data.get("limit") or "")
             if limit not in RATE_LIMITS:
                 limit = ""
-            job = Job(url, {"quality": q, "format": fmt, "mode": mode, "limit": limit,
+            turbo = "0" if str(data.get("turbo")) == "0" else "1"
+            job = Job(url, {"quality": q, "format": fmt, "mode": mode, "limit": limit, "turbo": turbo,
                             "subs": bool(data.get("subs")), "tags": bool(data.get("tags"))})
             with JOBS_LOCK:
                 JOBS[job.id] = job
@@ -1346,6 +1534,10 @@ class Handler(BaseHTTPRequestHandler):
             except (TypeError, ValueError):
                 n = 12
             try:
+                if query and str(data.get("mode") or "") == "multi":
+                    srcs = [str(x)[:12] for x in (data.get("sources") or ["all"])][:8]
+                    kinds = [str(x)[:10] for x in (data.get("kinds") or ["songs", "albums"])][:6]
+                    return self.send_json(probe_multi(query, srcs, kinds, n))
                 kind = "playlist" if str(data.get("type") or "") == "playlist" else "video"
                 source = "sc" if str(data.get("source") or "") == "sc" else "yt"
                 return self.send_json(probe(url, query or None, n, kind, source))
@@ -1510,7 +1702,8 @@ def main():
     ap.add_argument("--cache", help="مجلد الملفات المؤقتة")
     ap.add_argument("--keep", type=int, default=60, help="مدة حفظ الملفات المؤقتة بالدقائق")
     ap.add_argument("--save-dir", help="مجلد حفظ نسخة نهائية (افتراضياً: معرض الجوال في Termux)، أو off للتعطيل")
-    ap.add_argument("--gallery", action="store_true", help="إظهار الملفات في معرض/استوديو الجوال (افتراضياً مخفية في مجلد ALTRA-DAWNLOADER)")
+    ap.add_argument("--gallery", action="store_true", help="(الافتراضي الآن) الحفظ مباشرة في معرض/استوديو الجوال")
+    ap.add_argument("--no-gallery", action="store_true", help="إخفاء الملفات عن المعرض: تُحفظ في مجلد ALTRA-DAWNLOADER بملف .nomedia")
     ap.add_argument("--update", action="store_true", help="حدّث yt-dlp قبل التشغيل")
     ap.add_argument("--jobs", type=int, default=10, help="عدد التحميلات المتزامنة في المساعد")
     a = ap.parse_args()
@@ -1524,7 +1717,7 @@ def main():
     CFG["cookies"] = a.cookies
     CFG["browser"] = a.browser
     CFG["keep"] = a.keep
-    CFG["gallery"] = bool(a.gallery)
+    CFG["gallery"] = not a.no_gallery
     CFG["save"] = os.path.abspath(a.save_dir) if a.save_dir and a.save_dir != "off" else ("off" if a.save_dir == "off" else None)
     CFG["loopback"] = a.host in ("127.0.0.1", "localhost", "::1")
     for o in a.origin:
@@ -1540,6 +1733,8 @@ def main():
     shutil.rmtree(CFG["cache"], ignore_errors=True)
     os.makedirs(CFG["cache"], exist_ok=True)
     threading.Thread(target=cleaner, daemon=True).start()
+
+    ensure_storage_access()
 
     srv = None
     for attempt in range(2):
@@ -1566,7 +1761,7 @@ def main():
     print(f" ALTRA Helper v{VERSION}")
     print(f" yt-dlp : {ver or 'غير مثبّت  ←  pip install -U \"yt-dlp[default]\"'}")
     g = detect_gallery_base()
-    print(f" الحفظ  : {(g + ('/Movies/ALTRA (المعرض)' if CFG['gallery'] else '/ALTRA-DAWNLOADER (مخفي عن المعرض)')) if g and not CFG['save'] else g or '~/altra-downloads  (للحفظ في التخزين الداخلي نفّذ: termux-setup-storage ثم أعد التشغيل)'}")
+    print(f" الحفظ  : {(g + ('/Movies/ALTRA و /Music/ALTRA (الاستوديو مباشرة)' if CFG['gallery'] else '/ALTRA-DAWNLOADER (مخفي عن المعرض)')) if g and not CFG['save'] else g or '~/altra-downloads  (للحفظ في الاستوديو نفّذ: termux-setup-storage ثم أعد التشغيل)'}")
     if ytdlp_old():
         print(" ⚠ نسخة yt-dlp قديمة: شغّل مع --update أو  pip install -U yt-dlp")
     print(f" ffmpeg : {'متوفر' if CFG['has_ffmpeg'] else 'غير موجود (الدمج والتحويل معطّلان)'}")
