@@ -243,7 +243,7 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
       <div class="p-bar">
         <button class="rb" id="paste" title="لصق من الحافظة"><svg class="i " viewBox="0 0 24 24"><use href="#i-clip"/></svg></button>
         <button class="rb" data-sheet-link="search" title="بحث متقدم"><svg class="i " viewBox="0 0 24 24"><use href="#i-search"/></svg></button>
-        <div class="qsel" style="margin-inline-start:auto"><select id="qFormat" aria-label="الصيغة"><option value="mp4">MP4</option><option value="mkv">MKV</option><option value="webm">WEBM</option><option value="mov">MOV</option><option value="avi">AVI</option><option value="flv">FLV</option><option value="gif">GIF</option><option value="mp3">MP3</option><option value="m4a">M4A</option><option value="aac">AAC</option><option value="flac">FLAC</option><option value="wav">WAV</option><option value="ogg">OGG</option><option value="opus">OPUS</option><option value="alac">ALAC</option><option value="best">Best</option></select><svg class="i" viewBox="0 0 24 24"><use href="#i-chev"/></svg></div>
+        <div class="qsel" style="margin-inline-start:auto"><select id="qFormat" aria-label="الصيغة"><option value="auto">تلقائي</option><option value="mp4">MP4</option><option value="mkv">MKV</option><option value="webm">WEBM</option><option value="mov">MOV</option><option value="avi">AVI</option><option value="flv">FLV</option><option value="gif">GIF</option><option value="mp3">MP3</option><option value="m4a">M4A</option><option value="aac">AAC</option><option value="flac">FLAC</option><option value="wav">WAV</option><option value="ogg">OGG</option><option value="opus">OPUS</option><option value="alac">ALAC</option><option value="best">Best</option></select><svg class="i" viewBox="0 0 24 24"><use href="#i-chev"/></svg></div>
         <div class="qsel" style="margin-inline-start:0"><select id="qQuality" aria-label="الجودة"><option value="max">أقصى جودة</option><option value="2160">4K</option><option value="1440">1440p</option><option value="1080">1080p</option><option value="720">720p</option><option value="480">480p</option><option value="360">360p</option></select><svg class="i " viewBox="0 0 24 24"><use href="#i-chev"/></svg></div>
         <button id="go" title="ابدأ التحميل" aria-label="ابدأ التحميل"><svg class="i sp" viewBox="0 0 24 24"><use href="#i-spark"/></svg></button>
       </div>
@@ -307,6 +307,7 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
         </label>
         <label class="small">الصيغة
           <select id="format">
+            <option value="auto">تلقائي · يختار الصيغة المناسبة بنفسه (موصى)</option>
             <optgroup label="فيديو">
               <option value="mp4">MP4</option><option value="mkv">MKV</option><option value="webm">WEBM</option>
               <option value="mov">MOV</option><option value="avi">AVI</option><option value="flv">FLV</option><option value="gif">GIF</option>
@@ -988,7 +989,8 @@ async function helperRun(task, signal) {
   task.progress = 100; task.speed = 0;
   log('HELPER DONE ' + task.filename + ' · ' + fmtBytes(task.bytes));
   if (s.saved) {
-    task.note = (s.gallery ? '✓ في المعرض: ' : '✓ حُفظ خارج المعرض في: ') + s.saved.split('/').slice(-3).join('/');
+    task.note = s.need_storage ? '⚠ حُفظ داخل Termux فقط (لا يظهر في الاستوديو) — امنح إذن التخزين ثم اضغط «حفظ»' : ((s.gallery ? '✓ في المعرض: ' : '✓ حُفظ خارج المعرض في: ') + s.saved.split('/').slice(-3).join('/'));
+    if (s.need_storage) toast('⚠ امنح Termux إذن التخزين ليظهر التحميل في الاستوديو ثم اضغط «حفظ»');
     log('GALLERY ' + s.saved);
   } else {
     if (!nativeDownload(task.fileUrl, task.filename)) throw new Error('تعذّر بدء التنزيل من المساعد');
@@ -1025,6 +1027,12 @@ function load() {
     });
   } catch(e) { log('LOAD ' + e.message); }
   try { const sx = (JSON.parse(localStorage.getItem(KEY) || '{}').settings || {}).ext || {}; EXT_IDS.forEach(id => { if (sx[id] != null && $('#' + id)) $('#' + id).value = sx[id]; }); } catch {}
+  try {
+    if (!localStorage.getItem('altra_auto_fmt_v1')) {
+      if (['mp4', 'best', ''].includes($('#format').value)) { $('#format').value = 'auto'; if ($('#qFormat')) $('#qFormat').value = 'auto'; }
+      localStorage.setItem('altra_auto_fmt_v1', '1');
+    }
+  } catch {}
   if (!$('#strategy').value) $('#strategy').value = 'auto';
   if (!$('#concurrency').value) $('#concurrency').value = '10';
   applyLang($('#langSel').value || 'ar');
@@ -1443,7 +1451,7 @@ async function run(task) {
       if (!data.items?.length) throw new Error('لا عناصر');
       if (data.items.length === 1) {
         task.downloadUrl = data.items[0].url;
-        task.filename = data.items[0].filename || safeName('', $('#format').value);
+        task.filename = data.items[0].filename || safeName('', ['auto', 'best'].includes($('#format').value) ? 'mp4' : $('#format').value);
       } else {
         const ch = await showPicker(data.items);
         if (!ch) throw new Error('أُلغي الاختيار');
@@ -1452,7 +1460,7 @@ async function run(task) {
       }
     } else {
       task.downloadUrl = data.url;
-      task.filename = data.filename || safeName('', $('#format').value === 'best' ? 'mp4' : $('#format').value);
+      task.filename = data.filename || safeName('', ['auto', 'best'].includes($('#format').value) ? 'mp4' : $('#format').value);
     }
     task.engine = data.engine || '';
     task.status = 'downloading';
@@ -1571,7 +1579,7 @@ function renderQueue() {
           ${t.status==='done'&&!t.demo&&(t.fileUrl||t.source)?`<button class="act primary" data-act="share" data-id="${t.id}" style="padding:4px 8px;font-size:11px">📤 مشاركة</button>`:''}
           ${canCancel?`<button class="act danger" data-act="cancel" data-id="${t.id}" style="padding:4px 8px;font-size:11px">إلغاء</button>`:''}
           ${t.login&&t.status==='error'?`<button class="login-badge" data-act="login" data-id="${t.id}">🔵 مطلوب تسجيل الدخول</button>`:''}
-          ${t.fileUrl&&t.status==='done'?`<a class="act good" href="${esc(t.fileUrl)}" download="${esc(t.filename)}" target="_blank" rel="noopener" style="padding:4px 8px;font-size:11px;text-decoration:none">حفظ</a>`:''}
+          ${t.fileUrl&&t.status==='done'?`<button class="act good" data-act="save" data-id="${t.id}" style="padding:4px 8px;font-size:11px">حفظ</button>`:''}
           ${canRetry?`<button class="act" data-act="retry" data-id="${t.id}" style="padding:4px 8px;font-size:11px">إعادة</button>`:''}
           <button class="act ghost" data-act="remove" data-id="${t.id}" style="padding:4px 8px;font-size:11px">✕</button>
         </span>
@@ -1794,6 +1802,76 @@ function handleLaunchParams() {
     showSheet(sheet);
   }
 }
+
+/* ══ 8.9.1 — زر «حفظ»: يضع الملف في الاستوديو مباشرة عبر المساعد ═══════════════
+   (كان يفتح رابط الملف في تبويب فارغ لأن كروم يتجاهل «download» عبر نطاق آخر)       */
+async function browserSave(url, name, size) {
+  // احتياطي: تنزيل عبر المتصفح بلا تبويب فارغ — blob لحجم معقول، وإلا إطار مخفي (الرأس attachment يبدأ التنزيل)
+  try {
+    if (!size || size <= 300 * 1024 * 1024) {
+      toast('جاري التجهيز للحفظ في التنزيلات…');
+      const r = await hfetch(url, { cache: 'no-store' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const b = await r.blob();
+      const u = URL.createObjectURL(b);
+      const a = document.createElement('a');
+      a.href = u; a.download = name || 'altra'; a.style.display = 'none';
+      document.body.appendChild(a); a.click();
+      setTimeout(() => { a.remove(); URL.revokeObjectURL(u); }, 60000);
+      toast('بدأ الحفظ في مجلد التنزيلات');
+      return true;
+    }
+  } catch (e) { log('SAVE blob fail ' + (e.message || e)); }
+  try {
+    const f = document.createElement('iframe');
+    f.style.display = 'none'; f.src = url; document.body.appendChild(f);
+    setTimeout(() => f.remove(), 120000);
+    toast('بدأ الحفظ في مجلد التنزيلات');
+    return true;
+  } catch { return nativeDownload(url, name); }
+}
+function askStorage(url, name, t, msg) {
+  $('#modalRoot').innerHTML = `<div class="modal-bg"><div class="modal"><h3>📂 يلزم إذن التخزين ليظهر في الاستوديو</h3>
+    <div class="small" style="line-height:1.9;margin:8px 0 12px">${esc(msg || '')}<br>
+    ١) في Termux نفّذ: <code>termux-setup-storage</code> ثم اضغط «سماح».<br>
+    ٢) أو: إعدادات أندرويد ← التطبيقات ← Termux ← الأذونات ← التخزين ← سماح.<br>
+    ثم اضغط «إعادة المحاولة» — لا حاجة لإعادة تشغيل المساعد.</div>
+    <div class="row"><button class="act btn-blue grow" id="stRetry">🔁 إعادة المحاولة</button></div>
+    <div class="row" style="margin-top:8px"><button class="act ghost grow" id="stBrowser">⬇ احفظ في التنزيلات (المتصفح)</button><button class="act ghost" id="stNo">إغلاق</button></div></div></div>`;
+  $('#stNo').onclick = closeModal;
+  $('#stRetry').onclick = () => { closeModal(); saveByFileUrl(url, name, t); };
+  $('#stBrowser').onclick = () => { closeModal(); browserSave(url, name, t && t.bytes); };
+}
+async function saveByFileUrl(url, name, t) {
+  const m = /^(.*)\/file\/([0-9a-f]{16})$/.exec(String(url));
+  if (m) {
+    toast('جاري الحفظ في الاستوديو…');
+    let d = null, status = 0;
+    try {
+      const r = await hfetch(m[1] + '/api/save/' + m[2], { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      status = r.status; d = await r.json().catch(() => null);
+    } catch (e) { log('SAVE helper fail ' + (e.message || e)); }
+    log('SAVE helper status=' + status + ' ' + JSON.stringify(d || {}).slice(0, 220));
+    if (d && d.gallery) {
+      if (t) { t.note = '✓ في الاستوديو: ' + String(d.saved).split('/').slice(-3).join('/'); save(); renderQueue(); }
+      toast(d.already ? '✓ الملف موجود في الاستوديو' : '✓ حُفظ في الاستوديو');
+      return true;
+    }
+    if (d && d.need_storage) { askStorage(url, name, t, d.error); return false; }
+    if (status === 404 && d && d.error === 'not found') toast('حدّث المساعد (أمر altra في Termux) ليحفظ في الاستوديو مباشرة — الحفظ الآن عبر المتصفح');
+    else if (d && d.error) toast('تعذّر الحفظ في الاستوديو: ' + d.error);
+    if (status === 404 && d && d.ok === false) return false;   // انتهت صلاحية المهمة في المساعد: لا فائدة من محاولة المتصفح
+  }
+  return browserSave(url, name, t && t.bytes);
+}
+async function saveTask(id) {
+  const t = state.tasks.find(x => x.id === id);
+  if (!t) return;
+  if (t.demo) { toast('عرض تجريبي، لا يوجد ملف حقيقي'); return; }
+  if (!t.fileUrl) return;
+  return saveByFileUrl(t.fileUrl, t.filename, t);
+}
+
 
 /* ══ إضافات 8.9 ══════════════════════════════════════════════════════════
    1) فلتر الروابط: يفرّق بين رابط مقطع واحد ورابط حساب/قناة/قائمة/صفحة فلا يبدأ التحميل تلقائياً للأخيرة
@@ -2064,7 +2142,7 @@ function renderMulti(d, q, type) {
   if (items.length) {
     html += `<div style="font-weight:500;margin:14px 0 6px">${movies ? '🎬 أفلام وحلقات ومقاطع طويلة' : '🎵 أغاني'} (${items.length})</div>
       <div class="grid2" style="margin-bottom:8px">
-        <label class="small">الصيغة<select id="advFmt"><option value="mp3"${movies ? '' : ' selected'}>MP3 (صوت)</option><option value="m4a">M4A (صوت)</option><option value="mp4"${movies ? ' selected' : ''}>MP4 (فيديو)</option></select></label>
+        <label class="small">الصيغة<select id="advFmt"><option value="auto" selected>تلقائي (حسب نوع الملف)</option><option value="mp3">MP3 (صوت)</option><option value="m4a">M4A (صوت)</option><option value="mp4">MP4 (فيديو)</option></select></label>
         <div style="display:flex;align-items:end"><button class="act ghost" id="advAll" style="width:100%">تحديد/إلغاء الكل</button></div></div>
       <div id="advPick">${items.map((x, i) => `<label class="task" style="display:flex;gap:10px;align-items:center;cursor:pointer">
         <input type="checkbox" data-i="${i}" style="width:20px;height:20px;flex:none">
@@ -2082,7 +2160,7 @@ function renderMulti(d, q, type) {
       const urls = $$('#advPick input:checked').map(b => items[+b.dataset.i].url).filter(Boolean);
       if (!urls.length) { toast('اختر عنصراً واحداً على الأقل'); return; }
       const f = $('#advFmt').value;
-      addUrls(urls, { quality: $('#quality').value, format: f, mode: f === 'mp4' ? 'auto' : 'audio' });
+      addUrls(urls, { quality: $('#quality').value, format: f, mode: AUDIO_FMTS.includes(f) ? 'audio' : 'auto' });
       showSheet('home');
     };
   }
@@ -2250,7 +2328,7 @@ function showPlayer(src, title, poster, name) {
   const m = $('#plMedia');
   m.onerror = () => { $('#plMsg').textContent = 'المتصفح لا يشغّل هذه الصيغة (مثل MKV/AVI/FLV) — اضغط «حفظ» وافتحها بمشغّل جهازك.'; };
   $('#plClose').onclick = () => { try { m.pause(); } catch {} closeModal(); };
-  $('#plSave').onclick = () => { nativeDownload(src, name || title); toast('بدأ الحفظ'); };
+  $('#plSave').onclick = () => { if (/\/file\/[0-9a-f]{16}$/.test(String(src))) saveByFileUrl(src, name || title, null); else { nativeDownload(src, name || title); toast('بدأ الحفظ'); } };
 }
 
 /* معاينة الرابط: صورة وعنوان ومدة وجودات بأحجامها · أو عناصر قائمة تشغيل لاختيار ما يُحمَّل */
@@ -2287,7 +2365,7 @@ async function showProbe(url, opt) {
   }
   clearTimeout(to);
   if (!$('#pbBody')) return;
-  const FMT = `<optgroup label="فيديو"><option value="mp4">MP4</option><option value="mkv">MKV</option><option value="webm">WEBM</option></optgroup>
+  const FMT = `<option value="auto">تلقائي (حسب نوع الرابط)</option><optgroup label="فيديو"><option value="mp4">MP4</option><option value="mkv">MKV</option><option value="webm">WEBM</option></optgroup>
     <optgroup label="صوت"><option value="mp3">MP3</option><option value="m4a">M4A</option><option value="opus">OPUS</option><option value="flac">FLAC</option><option value="wav">WAV</option></optgroup>`;
   const meta = [d.uploader, fmtDur(d.duration)].filter(Boolean).join(' · ');
   if (d.kind === 'video') {
@@ -2303,7 +2381,7 @@ async function showProbe(url, opt) {
       </div>
       <div class="small" id="pbSize" style="margin-top:8px"></div></div>
       <div class="row" style="margin-top:12px"><button class="act btn-blue grow" id="pbGo">⬇ تحميل</button><button class="act good" id="pbMp3">🎵 MP3</button></div>`;
-    $('#pbF').value = ($('#format').value && /^(mp4|mkv|webm|mp3|m4a|opus|flac|wav)$/.test($('#format').value)) ? $('#format').value : 'mp4';
+    $('#pbF').value = ($('#format').value && /^(auto|mp4|mkv|webm|mp3|m4a|opus|flac|wav)$/.test($('#format').value)) ? $('#format').value : 'mp4';
     const cur = $('#quality').value; if (cur && [...$('#pbQ').options].some(o => o.value === cur)) $('#pbQ').value = cur;
     const upd = () => {
       const f = $('#pbF').value, audio = /^(mp3|m4a|opus|flac|wav)$/.test(f);
@@ -2334,7 +2412,7 @@ async function showProbe(url, opt) {
       ${thumbImg(x.thumbnail, '64px', '44px')}
       <span style="min-width:0;flex:1"><span class="tasktitle" style="display:block">${esc(x.title || x.url)}</span><span class="small">${esc([x.uploader, fmtDur(x.duration)].filter(Boolean).join(' · '))}</span></span></label>`).join('')}</div></div>
     <div class="row" style="margin-top:12px"><button class="act btn-blue grow" id="pbGo">⬇ تحميل المحدد</button></div>`;
-  $('#pbF').value = /^(mp4|mkv|webm|mp3|m4a|opus|flac|wav)$/.test($('#format').value) ? $('#format').value : 'mp4';
+  $('#pbF').value = /^(auto|mp4|mkv|webm|mp3|m4a|opus|flac|wav)$/.test($('#format').value) ? $('#format').value : 'mp4';
   const cnt = () => { const n = $$('#pbList input:checked').length; $('#pbGo').textContent = '⬇ تحميل المحدد (' + n + ')'; };
   cnt();
   $('#pbList').addEventListener('change', cnt);
@@ -2381,7 +2459,7 @@ async function advList(more) {
         <div class="actions" style="margin-top:8px"><button class="act primary" data-q-prev="${esc(x.url)}">📃 فتح القائمة واختيار الأغاني</button></div></div>`).join('') + moreBtn;
     } else {
       box.innerHTML = `<div class="grid2" style="margin-bottom:8px">
-          <label class="small">الصيغة<select id="advFmt"><option value="mp3">MP3 (صوت)</option><option value="m4a">M4A (صوت)</option><option value="mp4">MP4 (فيديو)</option></select></label>
+          <label class="small">الصيغة<select id="advFmt"><option value="auto" selected>تلقائي (حسب نوع الملف)</option><option value="mp3">MP3 (صوت)</option><option value="m4a">M4A (صوت)</option><option value="mp4">MP4 (فيديو)</option></select></label>
           <div style="display:flex;align-items:end"><button class="act ghost" id="advAll" style="width:100%">تحديد/إلغاء الكل</button></div></div>
         <div id="advPick">${ents.map((x, i) => `<label class="task" style="display:flex;gap:10px;align-items:center;cursor:pointer">
           <input type="checkbox" data-i="${i}" style="width:20px;height:20px;flex:none">
@@ -2395,7 +2473,7 @@ async function advList(more) {
         const urls = $$('#advPick input:checked').map(b => ents[+b.dataset.i].url).filter(Boolean);
         if (!urls.length) { toast('اختر أغنية واحدة على الأقل'); return; }
         const f = $('#advFmt').value;
-        addUrls(urls, { quality: $('#quality').value, format: f, mode: f === 'mp4' ? 'auto' : 'audio' });
+        addUrls(urls, { quality: $('#quality').value, format: f, mode: AUDIO_FMTS.includes(f) ? 'audio' : 'auto' });
         showSheet('home');
       };
     }
@@ -2522,7 +2600,7 @@ $('#queue').addEventListener('click', e => {
   else if (act === 'resume') resumeTask(id);
   else if (act === 'share') shareTask(id);
   else if (act === 'play') { const t = state.tasks.find(x => x.id === id); if (t && t.fileUrl) showPlayer(t.fileUrl, t.filename || t.title, t.thumb, t.filename); }
-  else if (act === 'save') { const t = state.tasks.find(x => x.id === id); if (t && t.demo) { toast('عرض تجريبي، لا يوجد ملف حقيقي'); } else if (t && t.fileUrl) { nativeDownload(t.fileUrl, t.filename); toast('بدأ الحفظ'); } }
+  else if (act === 'save') saveTask(id);
 });
 
 $('#helperTest').onclick = async () => { const ok = await checkHelper(true); toast(ok ? 'المساعد متصل ✓' : 'المساعد غير متصل'); };

@@ -36,7 +36,7 @@ import zipfile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, quote, unquote, urlparse
 
-VERSION = "8.9"
+VERSION = "8.9.1"
 HERE = os.path.realpath(os.path.dirname(os.path.abspath(__file__)))
 
 DASHBOARD_HTML = r'''<!DOCTYPE html>
@@ -175,7 +175,7 @@ except ImportError:
                 sys.path.remove(cand)
 
 AUDIO_FORMATS = {"mp3", "m4a", "aac", "flac", "wav", "ogg", "opus", "alac"}
-VIDEO_FORMATS = {"mp4", "mkv", "webm", "mov", "avi", "flv", "gif", "best"}
+VIDEO_FORMATS = {"mp4", "mkv", "webm", "mov", "avi", "flv", "gif", "best", "auto"}
 # صيغ تُدمج مباشرة، وأخرى تُحوَّل بعد التحميل عبر ffmpeg
 MERGE_FORMATS = {"mp4", "mkv", "webm"}
 CONVERT_FORMATS = {"mov", "avi", "flv", "gif"}
@@ -272,6 +272,7 @@ class Job:
         self.saved = ""
         self.gallery = False
         self.save_error = ""
+        self.need_storage = False   # 8.9.1: إذن التخزين غير ممنوح فلم يصل الملف للاستوديو
         self.site = site_of(url)
         self.created = time.time()
         self.finished = None
@@ -292,7 +293,7 @@ class Job:
             "filename": self.filename, "size": self.size,
             "error": self.error, "hint": self.hint,
             "login": self.login, "site": self.site,
-            "saved": self.saved, "gallery": self.gallery, "save_error": self.save_error,
+            "saved": self.saved, "gallery": self.gallery, "save_error": self.save_error, "need_storage": self.need_storage,
             "url": self.url, "created": self.created, "finished": self.finished,
         }
 
@@ -413,6 +414,12 @@ def build_opts(job, hook):
         elif fmt == "mkv":
             opts["format"] = f"bv*{hf}+ba/b{hf}/b"
             opts["merge_output_format"] = "mkv"
+        elif fmt == "auto":
+            # 8.9.1 — تلقائي: لا يحتاج المستخدم لمعرفة الصيغة. فيديو ← mp4 متوافق مع الاستوديو (يُدمج فقط عند الحاجة)،
+            # ملف واحد جاهز ← يبقى بصيغته، مصدر صوت فقط ← صوت بصيغته الأصلية بلا تحويل.
+            opts["format"] = (f"bv*{hf}[ext=mp4]+ba[ext=m4a]/bv*{hf}+ba/b{hf}[ext=mp4]/b{hf}/b/ba")
+            opts["merge_output_format"] = "mp4"
+            opts["postprocessor_args"] = {"merger": ["-movflags", "+faststart"]}
         elif fmt == "best":
             # الأصل بلا أي تحويل: أفضل فيديو + أفضل صوت بحاويته الطبيعية
             opts["format"] = f"bv*{hf}+ba/b{hf}/b"
@@ -427,7 +434,7 @@ def build_opts(job, hook):
         stages = 2
     else:
         opts["format"] = f"b{hf}[ext=mp4]/b{hf}/b[ext=mp4]/b"
-        if fmt not in ("mp4", "best"):
+        if fmt not in ("mp4", "best", "auto"):
             slog("ffmpeg غير موجود: لا يمكن التحويل إلى %s، سيُحفظ بصيغته الأصلية (ثبّت ffmpeg)" % fmt, "warn", job)
 
     # ── إضافات 8.8: حد السرعة · الاستئناف · الترجمة · الغلاف والوسوم ──
@@ -1139,6 +1146,7 @@ def publish_to_gallery(job):
     افتراضياً (8.9) يُحفظ مباشرة في الاستوديو: الفيديو في Movies/ALTRA والصوت في Music/ALTRA مع مسح إعلامي فوري.
     للإخفاء عن المعرض شغّل المساعد مع --no-gallery (مجلد ALTRA-DAWNLOADER بملف .nomedia)."""
     base = detect_gallery_base()
+    job.need_storage = bool(CFG["gallery"] and not base and CFG["save"] != "off")
     ext = os.path.splitext(job.filepath)[1].lower().lstrip(".")
     is_audio = ext in AUDIO_FORMATS or ext in ("weba", "mka", "aiff")
     is_video = ext in ("mp4", "webm", "mkv", "mov", "m4v", "3gp", "avi", "flv", "gif")
@@ -1170,6 +1178,38 @@ def publish_to_gallery(job):
     except Exception as ex:  # noqa: BLE001
         job.save_error = clean_error(ex)
         slog("فشل حفظ الملف: " + repr(ex), "error", job)
+
+
+def resave_to_gallery(job):
+    """زر «حفظ» في التطبيق: يضع الملف في الاستوديو الآن، ويعيد المحاولة بعد منح إذن التخزين دون إعادة تشغيل المساعد."""
+    if job.saved and job.gallery and os.path.isfile(job.saved):
+        media_scan(job.saved)
+        return {"ok": True, "gallery": True, "saved": job.saved, "already": True}
+    if not CFG["gallery"] and not CFG["save"]:
+        return {"ok": False, "gallery": False, "hidden_mode": True, "error": "وضع الإخفاء (--no-gallery) مفعّل في المساعد"}
+    src = next((p for p in (job.filepath, job.saved) if p and os.path.isfile(p)), "")
+    if not src:
+        return {"ok": False, "gallery": False, "error": "الملف لم يعد موجوداً على الجوال"}
+    if not detect_gallery_base():
+        job.need_storage = True
+        return {"ok": False, "gallery": False, "need_storage": True,
+                "error": "إذن التخزين غير ممنوح لـ Termux، فلا يستطيع المساعد الكتابة في الاستوديو."}
+    old_saved, old_path = job.saved, job.filepath
+    job.filepath, job.save_error = src, ""
+    try:
+        publish_to_gallery(job)
+    finally:
+        job.filepath = old_path
+    ok = bool(job.saved and job.gallery and os.path.isfile(job.saved))
+    private = os.path.join(os.path.expanduser("~"), "altra-downloads") + os.sep
+    if ok and old_saved and old_saved != job.saved and os.path.isfile(old_saved) and os.path.abspath(old_saved).startswith(private) \
+            and os.path.getsize(old_saved) == os.path.getsize(job.saved):
+        try:
+            os.remove(old_saved)   # نسخة Termux الخاصة لم تعد لازمة (توفير مساحة)
+        except OSError:
+            pass
+    return {"ok": ok, "gallery": ok, "saved": job.saved, "need_storage": job.need_storage,
+            "error": "" if ok else (job.save_error or "تعذّر الحفظ في الاستوديو")}
 
 
 def diagnostics():
@@ -1492,6 +1532,13 @@ class Handler(BaseHTTPRequestHandler):
             except OSError:
                 pass
             return self.send_json({"ok": True})
+
+        m = re.match(r"^/api/save/([0-9a-f]{16})$", path)
+        if m:
+            j = JOBS.get(m.group(1))
+            if not j or j.state != "done":
+                return self.send_json({"ok": False, "error": "الملف لم يعد متاحاً (انتهت صلاحية المهمة)"}, 404)
+            return self.send_json(resave_to_gallery(j))
 
         m = re.match(r"^/api/cancel/([0-9a-f]{16})$", path)
         if m:
