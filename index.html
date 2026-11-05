@@ -410,6 +410,9 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
         <label class="small">⚡ Turbo (سرعة أعلى)
           <select id="xTurbo"><option value="1">مفعّل (موصى)</option><option value="0">عادي</option></select>
         </label>
+        <label class="small">📥 مكان الحفظ
+          <select id="xSaveTo"><option value="auto">تلقائي (موصى): الاستوديو، وإن تعذّر فعبر المتصفح</option><option value="helper">الاستوديو عبر المساعد فقط</option><option value="browser">دائماً عبر المتصفح (مجلد التنزيلات)</option></select>
+        </label>
         <label class="small">🛡 حماية الروابط
           <select id="xGuard"><option value="1">لا تحمّل الحسابات والصفحات تلقائياً</option><option value="0">معطّلة (تحميل مباشر لكل رابط)</option></select>
         </label>
@@ -663,7 +666,7 @@ const OPEN_ENDPOINTS = [
 ];
 const DIRECT_EXTS = /\.(mp4|webm|mkv|mov|m4v|mp3|m4a|ogg|opus|wav|flac|aac)(\?.*)?$/i;
 const KEY = 'altra_v8';
-const EXT_IDS = ['xAsk','xWifi','xRetry','xLimit','xSubs','xTags','xNotify','xTurbo','xGuard'];
+const EXT_IDS = ['xAsk','xWifi','xRetry','xLimit','xSubs','xTags','xNotify','xTurbo','xGuard','xSaveTo'];
 const AUDIO_FMTS = ['mp3','m4a','aac','flac','wav','ogg','opus','alac'];
 const IS_MOBILE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 const LOGIN_URLS = {
@@ -942,7 +945,7 @@ async function helperRun(task, signal) {
   const r = await hfetch(base + '/api/resolve', {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, signal,
     body: JSON.stringify({ url: cleanUrl(task.source), quality: (task.o && task.o.quality) || $('#quality').value, format: (task.o && task.o.format) || $('#format').value, mode: (task.o && task.o.mode) || $('#mode').value,
-      limit: $('#xLimit').value, subs: $('#xSubs').value === '1', tags: $('#xTags').value === '1', turbo: $('#xTurbo').value })
+      limit: $('#xLimit').value, subs: $('#xSubs').value === '1', tags: $('#xTags').value === '1', turbo: $('#xTurbo').value, nosave: $('#xSaveTo').value === 'browser' })
   });
   const j = await r.json().catch(() => ({}));
   if (!r.ok || !j.id) throw new Error(j.error || ('HTTP ' + r.status));
@@ -988,13 +991,20 @@ async function helperRun(task, signal) {
   task.filename = s.filename; task.bytes = s.size || task.bytes; task.fileUrl = base + '/file/' + j.id; task.thumb = s.thumbnail || '';
   task.progress = 100; task.speed = 0;
   log('HELPER DONE ' + task.filename + ' · ' + fmtBytes(task.bytes));
+  const saveTo = ($('#xSaveTo') && $('#xSaveTo').value) || 'auto';
   if (s.saved) {
-    task.note = s.need_storage ? '⚠ حُفظ داخل Termux فقط (لا يظهر في الاستوديو) — امنح إذن التخزين ثم اضغط «حفظ»' : ((s.gallery ? '✓ في المعرض: ' : '✓ حُفظ خارج المعرض في: ') + s.saved.split('/').slice(-3).join('/'));
-    if (s.need_storage) toast('⚠ امنح Termux إذن التخزين ليظهر التحميل في الاستوديو ثم اضغط «حفظ»');
+    // المساعد حفظ الملف بنفسه (الاستوديو، أو مجلد مخصص/مخفي حسب تشغيله)
+    task.note = (s.gallery ? '✓ في الاستوديو: ' : '✓ حُفظ خارج المعرض في: ') + s.saved.split('/').slice(-3).join('/');
     log('GALLERY ' + s.saved);
+  } else if (saveTo === 'helper') {
+    // اختار المستخدم «الاستوديو عبر المساعد فقط»: لا حفظ عبر المتصفح
+    task.note = s.need_storage ? '⚠ لم يُحفظ في الاستوديو: امنح Termux إذن التخزين (termux-setup-storage) ثم اضغط «حفظ»' : '⚠ لم يُحفظ تلقائياً — اضغط «حفظ»';
+    toast(task.note);
   } else {
-    if (!nativeDownload(task.fileUrl, task.filename)) throw new Error('تعذّر بدء التنزيل من المساعد');
-    task.note = 'بدأ التنزيل في المتصفح (مجلد التنزيلات)، وإن لم يبدأ اضغط «حفظ»' + (s.save_error ? ' · تعذّر النسخ للمعرض: ' + s.save_error : '');
+    // تلقائي عند غياب إذن التخزين، أو «عبر المتصفح»: تنزيل المتصفح (مجلد التنزيلات ← ألبوم Download في الاستوديو)
+    const ok = await browserSave(task.fileUrl, task.filename, task.bytes);
+    if (!ok) throw new Error('تعذّر بدء التنزيل من المساعد');
+    task.note = 'حُفظ عبر المتصفح في مجلد التنزيلات (يظهر في الاستوديو ضمن ألبوم Download)' + (s.need_storage ? ' · للحفظ المباشر في الاستوديو امنح Termux إذن التخزين' : '') + (s.save_error ? ' · ' + s.save_error : '');
   }
 }
 
@@ -1806,29 +1816,27 @@ function handleLaunchParams() {
 /* ══ 8.9.1 — زر «حفظ»: يضع الملف في الاستوديو مباشرة عبر المساعد ═══════════════
    (كان يفتح رابط الملف في تبويب فارغ لأن كروم يتجاهل «download» عبر نطاق آخر)       */
 async function browserSave(url, name, size) {
-  // احتياطي: تنزيل عبر المتصفح بلا تبويب فارغ — blob لحجم معقول، وإلا إطار مخفي (الرأس attachment يبدأ التنزيل)
+  // تنزيل عبر المتصفح بلا تبويب فارغ: blob لملف صغير، وإلا رابط في نفس التبويب (الرأس attachment يُبقي الصفحة مكانها)
   try {
-    if (!size || size <= 300 * 1024 * 1024) {
-      toast('جاري التجهيز للحفظ في التنزيلات…');
-      const r = await hfetch(url, { cache: 'no-store' });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      const b = await r.blob();
-      const u = URL.createObjectURL(b);
+    if (size && size > 50 * 1024 * 1024) {
       const a = document.createElement('a');
-      a.href = u; a.download = name || 'altra'; a.style.display = 'none';
-      document.body.appendChild(a); a.click();
-      setTimeout(() => { a.remove(); URL.revokeObjectURL(u); }, 60000);
-      toast('بدأ الحفظ في مجلد التنزيلات');
+      a.href = url; a.download = name || 'altra'; a.style.display = 'none';
+      document.body.appendChild(a); a.click(); setTimeout(() => a.remove(), 5000);
+      toast('بدأ التنزيل في المتصفح (مجلد التنزيلات)');
       return true;
     }
-  } catch (e) { log('SAVE blob fail ' + (e.message || e)); }
-  try {
-    const f = document.createElement('iframe');
-    f.style.display = 'none'; f.src = url; document.body.appendChild(f);
-    setTimeout(() => f.remove(), 120000);
+    const r = await hfetch(url, { cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const b = await r.blob();
+    const u = URL.createObjectURL(b);
+    const a = document.createElement('a');
+    a.href = u; a.download = name || 'altra'; a.style.display = 'none';
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { a.remove(); URL.revokeObjectURL(u); }, 60000);
     toast('بدأ الحفظ في مجلد التنزيلات');
     return true;
-  } catch { return nativeDownload(url, name); }
+  } catch (e) { log('SAVE browser fail ' + (e.message || e)); }
+  return nativeDownload(url, name);
 }
 function askStorage(url, name, t, msg) {
   $('#modalRoot').innerHTML = `<div class="modal-bg"><div class="modal"><h3>📂 يلزم إذن التخزين ليظهر في الاستوديو</h3>
@@ -1843,8 +1851,9 @@ function askStorage(url, name, t, msg) {
   $('#stBrowser').onclick = () => { closeModal(); browserSave(url, name, t && t.bytes); };
 }
 async function saveByFileUrl(url, name, t) {
+  const mode = ($('#xSaveTo') && $('#xSaveTo').value) || 'auto';
   const m = /^(.*)\/file\/([0-9a-f]{16})$/.exec(String(url));
-  if (m) {
+  if (m && mode !== 'browser') {
     toast('جاري الحفظ في الاستوديو…');
     let d = null, status = 0;
     try {
@@ -1857,7 +1866,10 @@ async function saveByFileUrl(url, name, t) {
       toast(d.already ? '✓ الملف موجود في الاستوديو' : '✓ حُفظ في الاستوديو');
       return true;
     }
-    if (d && d.need_storage) { askStorage(url, name, t, d.error); return false; }
+    if (d && d.need_storage) {
+      if (mode === 'helper') { askStorage(url, name, t, d.error); return false; }
+      toast('تعذّر الحفظ المباشر في الاستوديو (إذن التخزين) — أحفظه عبر المتصفح');
+    }
     if (status === 404 && d && d.error === 'not found') toast('حدّث المساعد (أمر altra في Termux) ليحفظ في الاستوديو مباشرة — الحفظ الآن عبر المتصفح');
     else if (d && d.error) toast('تعذّر الحفظ في الاستوديو: ' + d.error);
     if (status === 404 && d && d.ok === false) return false;   // انتهت صلاحية المهمة في المساعد: لا فائدة من محاولة المتصفح

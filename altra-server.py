@@ -36,7 +36,7 @@ import zipfile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, quote, unquote, urlparse
 
-VERSION = "8.9.1"
+VERSION = "8.9.2"
 HERE = os.path.realpath(os.path.dirname(os.path.abspath(__file__)))
 
 DASHBOARD_HTML = r'''<!DOCTYPE html>
@@ -1147,6 +1147,13 @@ def publish_to_gallery(job):
     للإخفاء عن المعرض شغّل المساعد مع --no-gallery (مجلد ALTRA-DAWNLOADER بملف .nomedia)."""
     base = detect_gallery_base()
     job.need_storage = bool(CFG["gallery"] and not base and CFG["save"] != "off")
+    if job.params.get("nosave"):
+        return  # 8.9.2: اختار المستخدم الحفظ عبر المتصفح فقط (الإعدادات ← مكان الحفظ)
+    if not base and CFG["gallery"]:
+        # 8.9.2: بلا إذن تخزين لا ننشئ نسخة خاصة داخل Termux (لا تظهر في الاستوديو وتضاعف استهلاك المساحة).
+        # نترك الحقل saved فارغاً فيحفظ التطبيق الملف عبر المتصفح تلقائياً (مجلد التنزيلات ← ألبوم Download في الاستوديو).
+        slog("إذن التخزين غير ممنوح: لم تُنسخ نسخة داخل Termux — سيحفظ التطبيق الملف عبر المتصفح. للحفظ المباشر في الاستوديو نفّذ: termux-setup-storage", "warn", job)
+        return
     ext = os.path.splitext(job.filepath)[1].lower().lstrip(".")
     is_audio = ext in AUDIO_FORMATS or ext in ("weba", "mka", "aiff")
     is_video = ext in ("mp4", "webm", "mkv", "mov", "m4v", "3gp", "avi", "flv", "gif")
@@ -1195,6 +1202,7 @@ def resave_to_gallery(job):
         return {"ok": False, "gallery": False, "need_storage": True,
                 "error": "إذن التخزين غير ممنوح لـ Termux، فلا يستطيع المساعد الكتابة في الاستوديو."}
     old_saved, old_path = job.saved, job.filepath
+    job.params["nosave"] = False   # طلب صريح من المستخدم (زر «حفظ»)
     job.filepath, job.save_error = src, ""
     try:
         publish_to_gallery(job)
@@ -1510,7 +1518,7 @@ class Handler(BaseHTTPRequestHandler):
             if limit not in RATE_LIMITS:
                 limit = ""
             turbo = "0" if str(data.get("turbo")) == "0" else "1"
-            job = Job(url, {"quality": q, "format": fmt, "mode": mode, "limit": limit, "turbo": turbo,
+            job = Job(url, {"quality": q, "format": fmt, "mode": mode, "limit": limit, "turbo": turbo, "nosave": bool(data.get("nosave")),
                             "subs": bool(data.get("subs")), "tags": bool(data.get("tags"))})
             with JOBS_LOCK:
                 JOBS[job.id] = job
