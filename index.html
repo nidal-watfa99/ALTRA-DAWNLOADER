@@ -185,6 +185,54 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
 #helperChip.warn.open .grow{max-height:none;-webkit-mask:none;mask:none}
 @media(hover:none){.dropzone{display:none}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ── المعادل (EQ) ── */
+.eqbg{z-index:80}
+.eqm .eqhd h3{margin:0 0 4px;font-size:21px;font-weight:500}
+.eqon{display:flex;align-items:center;justify-content:space-between;margin:6px 2px 12px;cursor:pointer;color:#eee;user-select:none}
+.sw{width:38px;height:14px;border-radius:9px;background:#555;position:relative;flex-shrink:0;transition:.2s;display:inline-block}
+.sw::after{content:"";position:absolute;top:-4px;right:-3px;width:22px;height:22px;border-radius:50%;background:#9e9e9e;transition:.2s;box-shadow:0 1px 3px #0008}
+.sw.on{background:#7a4423}.sw.on::after{right:auto;left:-3px;background:#ff6600}
+.eqchips{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 14px;direction:rtl;scrollbar-width:none}
+.eqchips::-webkit-scrollbar{display:none}
+.eqchip{border:0;flex-shrink:0;background:#3d3d3d;color:#e6e6e6;border-radius:99px;padding:10px 18px;font:inherit;font-size:15px;direction:ltr;cursor:pointer}
+.eqchip.sel{background:#ff6600;color:#fff}
+.eqcard{direction:ltr;background:#3d3d3d;border-radius:8px;padding:14px 12px 16px;text-align:left}
+.eqrow1{display:flex;align-items:center;gap:20px;min-height:46px}
+.eqic{border:0;background:none;color:#d0d0d0;width:28px;height:28px;display:grid;place-items:center;cursor:pointer;padding:0}
+.eqic svg{width:24px;height:24px;fill:currentColor}
+.eqic:disabled{opacity:.35;cursor:default}
+.eqnm{font-size:21px;color:#f2f2f2;word-break:break-word}
+.eqin{flex:1;min-width:0;background:none;border:0;border-bottom:1px solid #ddd;color:#f2f2f2;font:inherit;font-size:21px;outline:0;padding:2px 0;direction:ltr}
+.eqpre{display:flex;align-items:center;gap:10px;margin:14px 0 20px;color:#d8d8d8;font-size:14px}
+.eqbands{display:flex;justify-content:space-between}
+.eqb{display:flex;flex-direction:column;align-items:center;width:10%;gap:12px}
+.eqd{font-size:10px;color:#8a8a8a;white-space:nowrap;height:14px}
+.eql{font-size:10.5px;color:#bdbdbd;white-space:nowrap}
+.eqs{position:relative;touch-action:none;--p:.5;cursor:pointer;user-select:none}
+.eqs.v{width:26px;height:130px}.eqs.rt{flex:1;height:26px}
+.eqt,.eqfl{position:absolute;border-radius:3px}
+.eqt{background:#ff660059}.eqfl{background:#ff6600}
+.eqk{position:absolute;width:24px;height:24px;border-radius:50%;background:#ff6600;box-shadow:0 1px 4px #0006}
+.eqs.v .eqt{left:calc(50% - 2px);width:4px;top:12px;bottom:12px}
+.eqs.v .eqfl{left:calc(50% - 2px);width:4px;bottom:12px;height:calc((100% - 24px)*var(--p))}
+.eqs.v .eqk{left:1px;bottom:calc((100% - 24px)*var(--p))}
+.eqs.rt .eqt{top:calc(50% - 2px);height:4px;left:12px;right:12px}
+.eqs.rt .eqfl{top:calc(50% - 2px);height:4px;right:12px;width:calc((100% - 24px)*var(--p))}
+.eqs.rt .eqk{top:1px;right:calc((100% - 24px)*var(--p))}
+.eqsnap{display:flex;align-items:center;gap:24px;margin-top:22px;padding-left:6px;cursor:pointer;color:#eee;user-select:none}
+
+/* ── صفوف القوائم بنمط Snaptube (RTL): مصغّرة يميناً · عنوان · القناة · مشاهدات · مدة · أيقونة تنزيل يساراً ── */
+.sn{position:relative;display:flex;gap:12px;align-items:flex-start;padding:12px 0 14px;border-top:1px solid var(--line);cursor:pointer;-webkit-user-select:none;user-select:none}
+.sn:first-child{border-top:0;padding-top:2px}
+.sn-th{flex:none;width:36%;max-width:170px;aspect-ratio:16/9;border-radius:6px;background:#141414;overflow:hidden}
+.sn-th img{width:100%;height:100%;object-fit:cover;display:block}
+.sn-b{flex:1;min-width:0;display:flex;flex-direction:column;min-height:calc(min(36vw,170px)*.5625);padding-inline-end:2px}
+.sn-t{unicode-bidi:plaintext;text-align:right;font-size:15px;line-height:1.4;font-weight:500;color:#f0f0f0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.sn-by{margin-top:10px;font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sn-m{margin-top:3px;font-size:12.5px;color:var(--muted)}
+.sn-dl{position:absolute;left:2px;bottom:12px;width:30px;height:30px;margin:0;appearance:none;-webkit-appearance:none;border:0;border-radius:50%;background:transparent no-repeat center/24px url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e3e3e3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 4v11M7 11l5 5 5-5M5 20h14'/></svg>");cursor:pointer;transition:.15s}
+.sn-dl:checked{background-color:#3588fe;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><path d='M5 12.5l4.5 4.5L19 7.5'/></svg>")}
 </style>
 </head>
 <body>
@@ -2156,10 +2204,7 @@ function renderMulti(d, q, type) {
       <div class="grid2" style="margin-bottom:8px">
         <label class="small">الصيغة<select id="advFmt"><option value="auto" selected>تلقائي (حسب نوع الملف)</option><option value="mp3">MP3 (صوت)</option><option value="m4a">M4A (صوت)</option><option value="mp4">MP4 (فيديو)</option></select></label>
         <div style="display:flex;align-items:end"><button class="act ghost" id="advAll" style="width:100%">تحديد/إلغاء الكل</button></div></div>
-      <div id="advPick">${items.map((x, i) => `<label class="task" style="display:flex;gap:10px;align-items:center;cursor:pointer">
-        <input type="checkbox" data-i="${i}" style="width:20px;height:20px;flex:none">
-        ${thumbImg(x.thumbnail, '72px', '48px')}
-        <span style="min-width:0;flex:1"><span class="tasktitle" style="display:block;white-space:normal;line-height:1.5">${esc(x.title)}</span><span class="small">${esc([x.uploader, fmtDur(x.duration), x.site].filter(Boolean).join(' · '))}</span></span></label>`).join('')}</div>
+      <div id="advPick">${items.map((x, i) => snRow(x, i, false, x.site)).join('')}</div>
       <div class="row" style="margin-top:10px"><button class="act btn-blue grow" id="advDl">⬇ تحميل المحدد (0)</button></div>`;
   }
   if ((items.length + lists.length) >= Math.min(advM.n, 30) && advM.n < 200) html += '<div class="row" style="margin-top:10px"><button class="act ghost grow" id="advMore">عرض المزيد</button></div>';
@@ -2281,6 +2326,21 @@ function oldHelperText() { return OLD_HELPER_MSG.replace('%V%', (helper.info && 
 function hpost(path, body, signal) {
   return hfetch(helper.base + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}), signal });
 }
+/* صف قائمة بنمط Snaptube — الـ checkbox يبقى للتحديد (يظهر كأيقونة تنزيل) */
+function fmtViews(n) {
+  n = +n || 0; if (!n) return '';
+  const ar = t => String(t).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+  const v = n >= 1e9 ? (n / 1e9).toFixed(n >= 1e10 ? 0 : 1).replace(/\.0$/, '') + 'B'
+    : n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(/\.0$/, '') + 'M'
+    : n >= 1e3 ? Math.round(n / 1e3) + 'K' : String(n);
+  return ar(v) + ' مشاهدة';
+}
+function snRow(x, i, checked, extra) {
+  const meta = [fmtViews(x.views), fmtDur(x.duration), extra].filter(Boolean).join(' · ');
+  return `<label class="sn"><span class="sn-th">${x.thumbnail ? `<img src="${esc(x.thumbnail)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.visibility='hidden'">` : ''}</span>
+    <span class="sn-b"><span class="sn-t">${esc(x.title || x.url || '')}</span><span class="sn-by">${esc(x.uploader || '')}</span><span class="sn-m">${esc(meta)}</span></span>
+    <input class="sn-dl" type="checkbox" data-i="${i}" ${checked ? 'checked' : ''} aria-label="تحديد للتنزيل"></label>`;
+}
 function thumbImg(src, w, h) {
   return src ? `<img src="${esc(src)}" alt="" loading="lazy" referrerpolicy="no-referrer" style="width:${w};height:${h};object-fit:cover;border-radius:12px;background:#141414;flex:none" onerror="this.style.visibility='hidden'">` : '';
 }
@@ -2324,8 +2384,186 @@ function notifyDone(task) {
   } catch (e) { log('NOTIFY ' + e.message); }
 }
 
+/* ── المعادل (EQ) · 10 نطاقات · مطابق لمعادل VLC ── */
+const EQ_LBL = ['16kHz','8kHz','4kHz','2kHz','1kHz','500Hz','250Hz','125Hz','63Hz','31Hz'];
+const EQ_FRQ = [16000,8000,4000,2000,1000,500,250,125,62.5,31.25];
+const EQ_PRE = [
+  ['Flat',12,[0,0,0,0,0,0,0,0,0,0]],
+  ['Classical',12,[0,0,0,0,0,0,-7.2,-7.2,-7.2,-9.6]],
+  ['Club',6,[0,0,8,5.6,5.6,5.6,3.2,0,0,0]],
+  ['Dance',5,[9.6,7.2,2.4,0,0,-5.6,-7.2,-7.2,0,0]],
+  ['Full bass',5,[-8,9.6,9.6,5.6,1.6,-4,-8,-10.4,-11.2,-11.2]],
+  ['Full bass and treble',4,[7.2,5.6,0,-7.2,-4.8,1.6,8,11.2,12,12]],
+  ['Full treble',3,[-9.6,-9.6,-9.6,-4,2.4,11.2,16,16,16,16.8]],
+  ['Headphones',4,[4.8,11.2,5.6,-3.2,-2.4,1.6,4.8,9.6,12.8,14.4]],
+  ['Large hall',5,[10.4,10.4,5.6,5.6,0,-4.8,-4.8,-4.8,0,0]],
+  ['Live',7,[-4.8,0,4,5.6,5.6,5.6,4,2.4,2.4,2.4]],
+  ['Party',6,[7.2,7.2,0,0,0,0,0,0,7.2,7.2]],
+  ['Pop',6,[-1.6,4.8,7.2,8,5.6,0,-2.4,-2.4,-1.6,-1.6]],
+  ['Reggae',8,[0,0,0,-5.6,0,6.4,6.4,0,0,0]],
+  ['Rock',5,[8,4.8,-5.6,-8,-3.2,4,8.8,11.2,11.2,11.2]],
+  ['Ska',6,[-2.4,-4.8,-4,0,4,5.6,8.8,9.6,11.2,9.6]],
+  ['Soft',5,[4.8,1.6,0,-2.4,0,4,8,9.6,11.2,12]],
+  ['Soft rock',5,[4,4,2.4,0,-4,-5.6,-3.2,0,2.4,8.8]],
+  ['Techno',5,[8,5.6,0,-5.6,-5.6,0,8,9.6,9.6,8]]
+].map((p, i) => ({ id: 'p' + i, name: p[0], pre: p[1], b: p[2].slice().reverse(), preset: true }));
+const EQ_ICO = {
+  del: '<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>',
+  pen: '<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>',
+  undo: '<svg viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>'
+};
+const eq = { ctx: null, pre: null, f: [], el: null, editing: false, nameBak: '',
+  st: { on: false, snap: true, cur: 'c1', seq: 2, list: [
+    { id: 'c1', name: 'New equalizer',   pre: 5, b: [4, 7, -2, -9, -15, -17, -19, -18, -14, -8] },
+    { id: 'c2', name: 'New equalizer 2', pre: 6, b: [10, 5, -3, -14, -15, -19, -17, -15, -7, -1] }
+  ] } };
+try {
+  const sv = JSON.parse(localStorage.getItem('altra_eq_v1') || 'null');
+  if (sv && Array.isArray(sv.list) && sv.list.every(c => c && typeof c.id === 'string' && Array.isArray(c.b) && c.b.length === 10)) eq.st = Object.assign(eq.st, sv);
+} catch {}
+const eqSave = () => { try { localStorage.setItem('altra_eq_v1', JSON.stringify(eq.st)); } catch {} };
+const eqAll = () => EQ_PRE.concat(eq.st.list);
+const eqCur = () => eqAll().find(x => x.id === eq.st.cur) || EQ_PRE[0];
+
+function eqTeardown() { try { eq.ctx && eq.ctx.close(); } catch {} eq.ctx = null; eq.pre = null; eq.f = []; }
+function eqApply() {
+  if (!eq.ctx) return;
+  const c = eqCur(), t = eq.ctx.currentTime, on = eq.st.on;
+  eq.pre.gain.setTargetAtTime(on ? Math.pow(10, c.pre / 20) : 1, t, .02);
+  eq.f.forEach((f, i) => f.gain.setTargetAtTime(on ? c.b[i] : 0, t, .02));
+}
+/* جاهزية المصدر: Web Audio يُخرج صمتاً لمصدر من نطاق آخر بلا CORS — نتحقق أولاً ولا نلمس المشغّل إن لم يصلح */
+async function eqPrep(m) {
+  const s = m.currentSrc || m.src; let u;
+  try { u = new URL(s, location.href); } catch { return false; }
+  if (u.protocol === 'blob:' || u.protocol === 'data:' || u.origin === location.origin || m.crossOrigin) return true;
+  try {
+    const r = await fetch(s, { headers: { Range: 'bytes=0-0' } });
+    try { r.body && r.body.cancel(); } catch {}
+    if (!r.ok) return false;
+  } catch { return false; }
+  const t = m.currentTime, paused = m.paused;
+  m.crossOrigin = 'anonymous'; m.src = s; m.load();
+  m.addEventListener('loadedmetadata', () => { try { if (t > .5) m.currentTime = t; } catch {} if (!paused) m.play().catch(() => {}); }, { once: true });
+  return true;
+}
+async function eqAttach() {
+  const m = eq.el; if (!m) return false;
+  if (eq.ctx) return true;
+  const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false;
+  if (!(await eqPrep(m))) return false;
+  try {
+    const ctx = new AC(), src = ctx.createMediaElementSource(m), pre = ctx.createGain();
+    src.connect(pre); let prev = pre;
+    const f = EQ_FRQ.map(fr => { const b = ctx.createBiquadFilter(); b.type = 'peaking'; b.frequency.value = fr; b.Q.value = 1.41; b.gain.value = 0; prev.connect(b); prev = b; return b; });
+    prev.connect(ctx.destination);
+    eq.ctx = ctx; eq.pre = pre; eq.f = f;
+    m.addEventListener('play', () => { if (ctx.state === 'suspended') ctx.resume().catch(() => {}); });
+    ctx.resume().catch(() => {});
+    eqApply(); return true;
+  } catch (e) { try { log('EQ ' + e.message); } catch {} return false; }
+}
+function eqSlider(el, o) {
+  el.innerHTML = '<i class="eqt"></i><i class="eqfl"></i><i class="eqk"></i>';
+  el.setAttribute('role', 'slider'); el.setAttribute('aria-valuemin', o.min); el.setAttribute('aria-valuemax', o.max);
+  const R = 12; let down = false;
+  const calc = e => {
+    const r = el.getBoundingClientRect();
+    let p = o.vert ? 1 - (e.clientY - r.top - R) / (r.height - 2 * R) : (e.clientX - r.left - R) / (r.width - 2 * R);
+    if (o.rtl) p = 1 - p; p = Math.min(1, Math.max(0, p));
+    return Math.round(o.min + p * (o.max - o.min));
+  };
+  const set = v => { el.style.setProperty('--p', (v - o.min) / (o.max - o.min)); el.setAttribute('aria-valuenow', v); };
+  el.addEventListener('pointerdown', e => { down = true; try { el.setPointerCapture(e.pointerId); } catch {} e.preventDefault(); const v = calc(e); set(v); o.on(v); });
+  el.addEventListener('pointermove', e => { if (!down) return; const v = calc(e); set(v); o.on(v); });
+  const up = () => { down = false; };
+  el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+  return { set };
+}
+function eqOpen() {
+  if (!eq.el || $('.eqbg')) return;
+  const bg = document.createElement('div'); bg.className = 'modal-bg eqbg';
+  bg.innerHTML = `<div class="modal eqm">
+    <div class="eqhd"><h3>المُعادِل</h3></div>
+    <div class="eqon" id="eqOnL"><span>فعّل</span><i class="sw" id="eqOn"></i></div>
+    <div class="eqchips" id="eqChips"></div>
+    <div class="eqcard">
+      <div class="eqrow1" id="eqHead"></div>
+      <div class="eqpre"><div class="eqs rt" id="eqPre"></div><span>Preamp</span></div>
+      <div class="eqbands">${EQ_LBL.map((l, i) => `<div class="eqb"><span class="eqd" id="eqd${i}"></span><div class="eqs v" id="eqv${i}"></div><span class="eql">${l}</span></div>`).join('')}</div>
+      <div class="eqsnap" id="eqSnapL"><i class="sw" id="eqSnap"></i><span>أشرطة المفاجئة</span></div>
+    </div></div>`;
+  $('#modalRoot').appendChild(bg);
+  bg.addEventListener('click', e => { if (e.target === bg) bg.remove(); });
+  const fmt = v => (v > 0 ? '+' : '') + Math.round(v) + 'dB';
+  const nextName = () => { const nm = new Set(eq.st.list.map(c => c.name)); for (let n = 1; ; n++) { const x = n === 1 ? 'New equalizer' : 'New equalizer ' + n; if (!nm.has(x)) return x; } };
+  const swr = () => { $('#eqOn').classList.toggle('on', eq.st.on); $('#eqSnap').classList.toggle('on', eq.st.snap); };
+  const chips = () => {
+    $('#eqChips').innerHTML = eqAll().map(c => `<button class="eqchip${c.id === eq.st.cur ? ' sel' : ''}" data-id="${c.id}">${esc(c.name)}</button>`).join('');
+    const sel = $('#eqChips .sel'); if (sel && sel.scrollIntoView) { try { sel.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch {} }
+  };
+  const head = () => {
+    const c = eqCur(), pr = !!c.preset, ed = eq.editing && !pr;
+    $('#eqHead').innerHTML = `<button class="eqic" id="eqDel" ${pr ? 'disabled' : ''}>${EQ_ICO.del}</button><button class="eqic" id="eqEd" ${pr ? 'disabled' : ''}>${ed ? EQ_ICO.undo : EQ_ICO.pen}</button>` +
+      (ed ? `<input class="eqin" id="eqNm" maxlength="40" value="${esc(c.name)}">` : `<div class="eqnm">${esc(c.name)}</div>`);
+    const nm = $('#eqNm'), edb = $('#eqEd');
+    $('#eqDel').onclick = () => {
+      if (eqCur().preset) return;
+      eq.st.list = eq.st.list.filter(x => x.id !== eq.st.cur); eq.st.cur = 'p0'; eq.editing = false;
+      eqSave(); eqApply(); chips(); head(); sync();
+    };
+    edb.onpointerdown = e => e.preventDefault();
+    edb.onclick = () => {
+      const cc = eqCur(); if (cc.preset) return;
+      if (!eq.editing) { eq.editing = true; eq.nameBak = cc.name; head(); const i = $('#eqNm'); if (i) i.focus(); return; }
+      cc.name = eq.nameBak; eqSave(); const i = $('#eqNm'); if (i) i.value = cc.name; chips(); undoState();
+    };
+    const undoState = () => { const i = $('#eqNm'), b = $('#eqEd'); if (b && i) b.style.opacity = (eqCur().name === eq.nameBak) ? '.35' : ''; };
+    if (nm) {
+      undoState();
+      nm.oninput = () => { const v = nm.value.trim(); if (v) { eqCur().name = v; eqSave(); chips(); } undoState(); };
+      const done = () => { if (!eq.editing) return; if (!nm.value.trim()) eqCur().name = eq.nameBak; eq.editing = false; eqSave(); chips(); head(); };
+      nm.onblur = done; nm.onkeydown = e => { if (e.key === 'Enter') nm.blur(); };
+    }
+  };
+  const ens = () => {
+    const c = eqCur(); if (!c.preset) return c;
+    const n = { id: 'c' + (++eq.st.seq), name: nextName(), pre: c.pre, b: c.b.slice() };
+    eq.st.list.push(n); eq.st.cur = n.id; eq.editing = false; chips(); head(); return n;
+  };
+  const sl = EQ_LBL.map((_, i) => eqSlider($('#eqv' + i), { vert: true, min: -20, max: 20, on: v => {
+    if (v === Math.round(eqCur().b[i])) return;
+    const c = ens(), d = v - Math.round(c.b[i]); c.b[i] = v;
+    if (eq.st.snap && d) [i - 1, i + 1].forEach(j => { if (j >= 0 && j < 10) c.b[j] = Math.max(-20, Math.min(20, Math.round(c.b[j]) + Math.round(d / 2))); });
+    eqSave(); eqApply(); sync();
+  } }));
+  const preS = eqSlider($('#eqPre'), { rtl: true, min: -20, max: 20, on: v => {
+    if (v === Math.round(eqCur().pre)) return;
+    const c = ens(); c.pre = v; eqSave(); eqApply();
+  } });
+  function sync() {
+    const c = eqCur();
+    c.b.forEach((v, i) => { sl[i].set(Math.round(v)); $('#eqd' + i).textContent = fmt(v); });
+    preS.set(Math.round(c.pre));
+  }
+  $('#eqChips').onclick = e => {
+    const b = e.target.closest('.eqchip'); if (!b) return;
+    eq.st.cur = b.dataset.id; eq.editing = false; eqSave(); eqApply(); chips(); head(); sync();
+  };
+  $('#eqOnL').onclick = async () => {
+    if (!eq.st.on) {
+      const ok = await eqAttach();
+      if (!ok) { toast('تعذّر تفعيل المعادل على هذا المصدر'); return; }
+    }
+    eq.st.on = !eq.st.on; eqSave(); eqApply(); swr();
+  };
+  $('#eqSnapL').onclick = () => { eq.st.snap = !eq.st.snap; eqSave(); swr(); };
+  chips(); head(); sync(); swr();
+}
+
 /* مشغّل مدمج */
 function showPlayer(src, title, poster, name) {
+  eqTeardown(); eq.el = null; eq.editing = false;
   const isAudio = /\.(mp3|m4a|aac|flac|wav|ogg|opus|alac|weba|mka)$/i.test(name || title || '');
   $('#modalRoot').innerHTML = `<div class="modal-bg"><div class="modal">
     <h3 style="word-break:break-word;font-size:15px">${esc(title || '')}</h3>
@@ -2335,11 +2573,14 @@ function showPlayer(src, title, poster, name) {
     <div class="small" id="plMsg" style="margin-top:8px"></div>
     <div class="row" style="margin-top:12px">
       <button class="act good grow" id="plSave">حفظ</button>
+      <button class="act ghost grow" id="plEq">المُعادِل</button>
       <button class="act ghost grow" id="plClose">إغلاق</button>
     </div></div></div>`;
   const m = $('#plMedia');
   m.onerror = () => { $('#plMsg').textContent = 'المتصفح لا يشغّل هذه الصيغة (مثل MKV/AVI/FLV) — اضغط «حفظ» وافتحها بمشغّل جهازك.'; };
-  $('#plClose').onclick = () => { try { m.pause(); } catch {} closeModal(); };
+  eq.el = m; $('#plEq').onclick = eqOpen;
+  if (eq.st.on) eqAttach();
+  $('#plClose').onclick = () => { try { m.pause(); } catch {} eqTeardown(); closeModal(); };
   $('#plSave').onclick = () => { if (/\/file\/[0-9a-f]{16}$/.test(String(src))) saveByFileUrl(src, name || title, null); else { nativeDownload(src, name || title); toast('بدأ الحفظ'); } };
 }
 
@@ -2419,10 +2660,7 @@ async function showProbe(url, opt) {
       <label class="small">الصيغة<select id="pbF">${FMT}</select></label>
     </div>
     <div class="row" style="margin:10px 0 4px"><button class="act ghost grow" id="pbAll">تحديد/إلغاء الكل</button></div>
-    <div id="pbList">${ents.map((x, i) => `<label class="task" style="display:flex;gap:10px;align-items:center;cursor:pointer">
-      <input type="checkbox" data-i="${i}" ${pre ? 'checked' : ''} style="width:20px;height:20px;flex:none">
-      ${thumbImg(x.thumbnail, '64px', '44px')}
-      <span style="min-width:0;flex:1"><span class="tasktitle" style="display:block">${esc(x.title || x.url)}</span><span class="small">${esc([x.uploader, fmtDur(x.duration)].filter(Boolean).join(' · '))}</span></span></label>`).join('')}</div></div>
+    <div id="pbList">${ents.map((x, i) => snRow(x, i, pre)).join('')}</div></div>
     <div class="row" style="margin-top:12px"><button class="act btn-blue grow" id="pbGo">⬇ تحميل المحدد</button></div>`;
   $('#pbF').value = /^(auto|mp4|mkv|webm|mp3|m4a|opus|flac|wav)$/.test($('#format').value) ? $('#format').value : 'mp4';
   const cnt = () => { const n = $$('#pbList input:checked').length; $('#pbGo').textContent = '⬇ تحميل المحدد (' + n + ')'; };
@@ -2473,10 +2711,7 @@ async function advList(more) {
       box.innerHTML = `<div class="grid2" style="margin-bottom:8px">
           <label class="small">الصيغة<select id="advFmt"><option value="auto" selected>تلقائي (حسب نوع الملف)</option><option value="mp3">MP3 (صوت)</option><option value="m4a">M4A (صوت)</option><option value="mp4">MP4 (فيديو)</option></select></label>
           <div style="display:flex;align-items:end"><button class="act ghost" id="advAll" style="width:100%">تحديد/إلغاء الكل</button></div></div>
-        <div id="advPick">${ents.map((x, i) => `<label class="task" style="display:flex;gap:10px;align-items:center;cursor:pointer">
-          <input type="checkbox" data-i="${i}" style="width:20px;height:20px;flex:none">
-          ${thumbImg(x.thumbnail, '72px', '48px')}
-          <span style="min-width:0;flex:1"><span class="tasktitle" style="display:block;white-space:normal;line-height:1.5">${esc(x.title)}</span><span class="small">${esc([x.uploader, fmtDur(x.duration)].filter(Boolean).join(' · '))}</span></span></label>`).join('')}</div>
+        <div id="advPick">${ents.map((x, i) => snRow(x, i, false)).join('')}</div>
         <div class="row" style="margin-top:10px"><button class="act btn-blue grow" id="advDl">⬇ تحميل المحدد (0)</button></div>` + moreBtn;
       const cnt = () => { $('#advDl').textContent = '⬇ تحميل المحدد (' + $$('#advPick input:checked').length + ')'; };
       $('#advPick').addEventListener('change', cnt);

@@ -407,6 +407,7 @@ def build_opts(job, hook):
             opts["postprocessors"] = [pp]
     elif mode == "mute":
         opts["format"] = f"bv*{hf}[ext=mp4]/bv*{hf}/bv*/b"
+        opts["format_sort"] = list(COMPAT_SORT)
     elif ff:
         if fmt == "webm":
             opts["format"] = (f"bv*{hf}[ext=webm]+ba[ext=webm]/bv*{hf}+ba/b{hf}/b")
@@ -420,6 +421,7 @@ def build_opts(job, hook):
             opts["format"] = (f"bv*{hf}[ext=mp4]+ba[ext=m4a]/bv*{hf}+ba/b{hf}[ext=mp4]/b{hf}/b/ba")
             opts["merge_output_format"] = "mp4"
             opts["postprocessor_args"] = {"merger": ["-movflags", "+faststart"]}
+            opts["format_sort"] = list(COMPAT_SORT)
         elif fmt == "best":
             # الأصل بلا أي تحويل: أفضل فيديو + أفضل صوت بحاويته الطبيعية
             opts["format"] = f"bv*{hf}+ba/b{hf}/b"
@@ -431,6 +433,7 @@ def build_opts(job, hook):
             opts["format"] = (f"bv*{hf}[ext=mp4]+ba[ext=m4a]/bv*{hf}+ba/b{hf}[ext=mp4]/b{hf}/b")
             opts["merge_output_format"] = "mp4"
             opts["postprocessor_args"] = {"merger": ["-movflags", "+faststart"]}
+            opts["format_sort"] = list(COMPAT_SORT)
         stages = 2
     else:
         opts["format"] = f"b{hf}[ext=mp4]/b{hf}/b[ext=mp4]/b"
@@ -444,7 +447,7 @@ def build_opts(job, hook):
     # ── 8.9: Turbo — أجزاء متوازية أكثر ومخزن قراءة أكبر (يحافظ على الإيقاف المؤقت والتقدم) ──
     if str(p.get("turbo") or "1") == "1":
         opts["concurrent_fragment_downloads"] = 16
-        opts["buffersize"] = 65536
+        opts["buffersize"] = 262144
     if job.resumed:
         opts["overwrites"] = None  # يكمل الملف الجزئي بدل البدء من الصفر
     if ff and p.get("tags") and audio and fmt != "wav":
@@ -538,7 +541,7 @@ def _ent(e):
     is_list = bool(re.search(r"[?&]list=|/playlist\?|/sets/|/album/|music\.youtube\.com/browse/", u or "")) \
         and "watch?v=" not in (u or "")
     return {"id": e.get("id"), "title": (e.get("title") or "")[:200], "url": u, "is_list": is_list,
-            "duration": e.get("duration"), "thumbnail": th,
+            "duration": e.get("duration"), "views": e.get("view_count"), "thumbnail": th,
             "count": e.get("playlist_count") or e.get("n_entries"),
             "uploader": (e.get("uploader") or e.get("channel") or "")[:80]}
 
@@ -835,6 +838,87 @@ def collect_files(info, jobdir):
 VIDEO_EXTS = (".mp4", ".m4v", ".mov", ".webm", ".mkv")
 
 
+# 8.10 — توافق التشغيل: H.264 (8-bit yuv420p) + AAC/MP3 داخل mp4 يعمل في كل المعارض والمشغّلات.
+# يوتيوب يقدّم AV1/VP9/Opus بجودات أعلى؛ داخل mp4 تظهر في معرض سامسونج بصورة معطوبة ولا تُشغَّل.
+COMPAT_SORT = ("vcodec:h264", "acodec:aac", "res", "ext:mp4:m4a")
+COMPAT_V = {"h264"}
+COMPAT_PIX = {"yuv420p", "yuvj420p", ""}
+COMPAT_A = {"aac", "mp3"}
+
+
+def probe_streams(path):
+    """يُرجع [(type, codec, pix_fmt)] أو None عند غياب ffprobe/فشله."""
+    if not shutil.which("ffprobe"):
+        return None
+    try:
+        r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "stream=codec_type,codec_name,pix_fmt",
+                            "-of", "json", path], capture_output=True, text=True, timeout=45)
+        if r.returncode != 0:
+            return None
+        return [((x.get("codec_type") or ""), (x.get("codec_name") or ""), (x.get("pix_fmt") or ""))
+                for x in json.loads(r.stdout or "{}").get("streams", [])]
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def ensure_compat(job, path):
+    """إن لم يكن الملف H.264/AAC متوافقاً يحوّله إلى mp4 (نسخ المسار المتوافق بلا إعادة ترميز، وإعادة ترميز غير المتوافق فقط).
+    يُرجع مسار الملف النهائي (قد يتغيّر الامتياز إلى .mp4). لا يُفشل التحميل أبداً: عند أي خلل يبقى الأصل."""
+    try:
+        if not CFG["has_ffmpeg"] or not path.lower().endswith(VIDEO_EXTS):
+            return path
+        st = probe_streams(path)
+        if not st:
+            return path
+        v = [(c, px) for t, c, px in st if t == "video"]
+        a = [c for t, c, _ in st if t == "audio"]
+        v_ok = bool(v) and v[0][0] in COMPAT_V and v[0][1] in COMPAT_PIX
+        a_ok = (not a) or a[0] in COMPAT_A
+        if v_ok and a_ok and path.lower().endswith((".mp4", ".m4v")):
+            return path
+        if not v:
+            return path
+        base = os.path.splitext(path)[0]
+        out = base + ".compat.mp4"
+        cmd = ["ffmpeg", "-y", "-v", "error", "-i", path, "-map", "0:v:0", "-map", "0:a:0?"]
+        cmd += ["-c:v", "copy"] if v_ok else ["-c:v", "libx264", "-preset", "veryfast", "-crf", "21", "-pix_fmt", "yuv420p"]
+        cmd += ["-c:a", "copy"] if a_ok else ["-c:a", "aac", "-b:a", "192k"]
+        cmd += ["-movflags", "+faststart", out]
+        job.phase = "processing"
+        slog("تحويل للتوافق مع المعرض: video=%s%s audio=%s ← H.264/AAC mp4 (%s)" % (
+            v[0][0], "/" + v[0][1] if v[0][1] else "", a[0] if a else "—",
+            "نسخ الفيديو" if v_ok else "إعادة ترميز الفيديو"), "info", job)
+        pr = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+        while pr.poll() is None:
+            if job.cancel.is_set():
+                pr.kill()
+                try:
+                    os.remove(out)
+                except OSError:
+                    pass
+                raise Cancelled()
+            time.sleep(.5)
+        if pr.returncode != 0 or not os.path.isfile(out) or os.path.getsize(out) < 2048 or not media_ok(out):
+            slog("فشل التحويل، يبقى الملف الأصلي: " + ((pr.stderr.read() if pr.stderr else "") or "")[:300], "warn", job)
+            try:
+                os.remove(out)
+            except OSError:
+                pass
+            return path
+        final = base + ".mp4"
+        try:
+            os.remove(path)
+        except OSError:
+            pass
+        os.replace(out, final)
+        return final
+    except Cancelled:
+        raise
+    except Exception as ex:  # noqa: BLE001
+        slog("ensure_compat: " + repr(ex), "warn", job)
+        return path
+
+
 def media_ok(path, why=None):
     """يتأكد أن ملف الفيديو سليم وقابل للتشغيل (ffprobe، أو فحص ftyp/moov عند غيابه). why: قائمة تُملأ بالتفاصيل."""
     why = why if why is not None else []
@@ -991,6 +1075,9 @@ def run_job(job):
                     slog("فحص المحاولة الثانية: %s · %s" % ("سليم" if good2 else "تالف", " | ".join(why2)), "info" if good2 else "error", job)
                     if not good2:
                         raise RuntimeError("الملف الناتج تالف أو غير مكتمل (حاول مرة أخرى، أو حدّث yt-dlp: pip install -U yt-dlp).")
+            if len(files) == 1 and not (job.params.get("mode") in ("audio",) or str(job.params.get("format") or "mp4").lower() in AUDIO_FORMATS) \
+                    and str(job.params.get("format") or "mp4").lower() in ("mp4", "auto", "") and job.params.get("mode") != "mute":
+                final = ensure_compat(job, final)
             job.filepath = final
             job.filename = os.path.basename(final)
             job.size = os.path.getsize(final)
