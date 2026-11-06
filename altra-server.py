@@ -36,7 +36,7 @@ import zipfile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, quote, unquote, urlparse
 
-VERSION = "8.9.2"
+VERSION = "8.10.0"
 HERE = os.path.realpath(os.path.dirname(os.path.abspath(__file__)))
 
 DASHBOARD_HTML = r'''<!DOCTYPE html>
@@ -587,6 +587,20 @@ def _dedupe(rows, items):
     return out
 
 
+# 8.10: «أغاني فقط» لا تُظهر فيديوهات الألبومات الكاملة والمجمّعات الطويلة التي يعيدها بحث يوتيوب مع الأغاني
+_NOT_SONG = re.compile(r"full\s*album|complete\s*album|album\s*complet|álbum\s*completo|mega\s*mix|megamix|non[\s-]?stop"
+                       r"|compilation|greatest\s*hits|\b\d+\s*(?:hours?|hrs?)\b|ألبوم\s*كامل|الألبوم\s*كامل|كامل\s*الألبوم", re.I)
+
+
+def _song_ok(x):
+    if x.get("is_list"):
+        return False
+    d = x.get("duration")
+    if isinstance(d, (int, float)) and (d > 900 or d < 20):
+        return False
+    return not _NOT_SONG.search(x.get("title") or "")
+
+
 def probe_multi(query, sources, kinds, n):
     """بحث واحد يجمع عدة مواقع وأنواعاً: أغاني · ألبومات · أفلام/حلقات طويلة.
     كل مصدر يعمل في خيط مستقل بمهلة، وفشل أحدها لا يمنع ظهور نتائج الباقي."""
@@ -669,6 +683,8 @@ def probe_multi(query, sources, kinds, n):
         return sum(1 for t in toks if t in hay) / len(toks)
 
     items = _dedupe(items, True)
+    if K == {"songs"}:
+        items = [x for x in items if _song_ok(x)]
     only_lists = [x for x in lists if x["is_list"]] or lists
     lists = _dedupe(only_lists, False)
     items.sort(key=lambda x: -rel(x))     # ترتيب مستقر: الأقرب لكلمات البحث أولاً
@@ -1214,6 +1230,47 @@ def ensure_storage_access():
     print(" ⚠ لم يُمنح إذن التخزين بعد — حتى تمنحه تُحفظ الملفات في ~/altra-downloads (غير ظاهرة في الاستوديو).")
 
 
+def is_termux():
+    return os.environ.get("PREFIX", "").startswith("/data/data/com.termux")
+
+
+def storage_missing():
+    """8.10: صحيح عندما يعمل المساعد في Termux ويلزمه إذن التخزين ليحفظ مباشرة في الاستوديو."""
+    return bool(is_termux() and CFG["gallery"] and CFG["save"] != "off" and not detect_gallery_base())
+
+
+def request_storage_permission(open_settings=False):
+    """طلب إذن التخزين من التطبيق بضغطة واحدة.
+    الافتراضي: يطلق نافذة «سماح» الرسمية (termux-setup-storage) وينتظر قليلاً.
+    open_settings=True: يفتح صفحة إعدادات Termux (الأذونات ← التخزين) كحل بديل."""
+    out = {"ok": True, "granted": False, "dialog": False, "settings": False, "termux": is_termux()}
+    if detect_gallery_base():
+        out["granted"] = True
+        return out
+    if open_settings:
+        if shutil.which("am"):
+            try:
+                r = subprocess.run(["am", "start", "-a", "android.settings.APPLICATION_DETAILS_SETTINGS",
+                                    "-d", "package:com.termux"], capture_output=True, text=True, timeout=8)
+                out["settings"] = r.returncode == 0 and "Error" not in (r.stdout or "") + (r.stderr or "")
+            except Exception:  # noqa: BLE001
+                pass
+        return out
+    if shutil.which("termux-setup-storage"):
+        try:
+            subprocess.Popen(["termux-setup-storage"], stdin=subprocess.DEVNULL,
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            out["dialog"] = True
+        except Exception:  # noqa: BLE001
+            pass
+    for _ in range(12):
+        time.sleep(.5)
+        if detect_gallery_base():
+            out["granted"] = True
+            break
+    return out
+
+
 def media_scan(path):
     """يُعلم أندرويد بالملف الجديد ليظهر فوراً في الاستوديو/المعرض (يجرّب الطريقتين معاً)."""
     ok = False
@@ -1485,6 +1542,7 @@ class Handler(BaseHTTPRequestHandler):
                 "ffmpeg": CFG["has_ffmpeg"], "ytdlp_old": ytdlp_old(),
                 "cookies": bool(cookie_domains()),
                 "cookie_domains": cookie_domains(),
+                "termux": is_termux(), "need_storage": storage_missing(),
             })
         if path == "/api/log":
             q = parse_qs(urlparse(self.path).query)
@@ -1737,6 +1795,9 @@ class Handler(BaseHTTPRequestHandler):
             shutil.rmtree(CFG["cache"], ignore_errors=True)
             os.makedirs(CFG["cache"], exist_ok=True)
             return self.send_json({"ok": True})
+
+        if path == "/api/storage/grant":
+            return self.send_json(request_storage_permission(bool(data.get("settings"))))
 
         if path == "/api/cancel-all":
             count = 0

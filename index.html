@@ -187,8 +187,12 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* ── المعادل (EQ) ── */
-.eqbg{z-index:80}
-.eqm .eqhd h3{margin:0 0 4px;font-size:21px;font-weight:500}
+.eqbg{z-index:75;background:#0003;backdrop-filter:none}
+.eqm{max-height:72vh}
+.eqhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.eqm .eqhd h3{margin:0;font-size:21px;font-weight:500}
+.eqx{display:flex;align-items:center;gap:6px;border:0;background:#ffffff14;color:#eee;border-radius:99px;padding:9px 16px;font:inherit;font-size:14px;cursor:pointer}
+.eqx svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 .eqon{display:flex;align-items:center;justify-content:space-between;margin:6px 2px 12px;cursor:pointer;color:#eee;user-select:none}
 .sw{width:38px;height:14px;border-radius:9px;background:#555;position:relative;flex-shrink:0;transition:.2s;display:inline-block}
 .sw::after{content:"";position:absolute;top:-4px;right:-3px;width:22px;height:22px;border-radius:50%;background:#9e9e9e;transition:.2s;box-shadow:0 1px 3px #0008}
@@ -233,6 +237,19 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
 .sn-m{margin-top:3px;font-size:12.5px;color:var(--muted)}
 .sn-dl{position:absolute;left:2px;bottom:12px;width:30px;height:30px;margin:0;appearance:none;-webkit-appearance:none;border:0;border-radius:50%;background:transparent no-repeat center/24px url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e3e3e3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 4v11M7 11l5 5 5-5M5 20h14'/></svg>");cursor:pointer;transition:.15s}
 .sn-dl:checked{background-color:#3588fe;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><path d='M5 12.5l4.5 4.5L19 7.5'/></svg>")}
+
+/* ── مؤشر الصوت (يسار) والسطوع (يمين) بنمط VLC ── */
+.gh{position:fixed;top:max(56px,7%);z-index:90;display:none;flex-direction:column;align-items:center;gap:10px;color:#fff;font-size:15px;pointer-events:none;text-shadow:0 1px 5px #000}
+.gh.show{display:flex}#ghV{left:7%}#ghB{right:7%}
+.gh b{font-weight:500;font-size:17px}
+.gh .gbar{width:14px;height:104px;border-radius:7px;background:#ffffff33;position:relative;overflow:hidden;box-shadow:0 0 0 1px #0006}
+.gh .gbar i{position:absolute;left:0;right:0;bottom:0}
+.gh .gbar .lo{background:#fff}.gh .gbar .hi{background:#ff6600}
+.gh svg{width:26px;height:26px;fill:#fff}
+.gh em{font-style:normal;position:absolute;top:62px;white-space:nowrap;font-size:14px}
+#ghV em{left:28px}#ghB em{right:28px}
+.stb{position:fixed;inset-inline:12px;bottom:12px;z-index:60;background:#1f1f1f;border:1px solid var(--line);border-radius:18px;padding:12px 14px;display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.6;box-shadow:0 10px 30px #000a;max-width:560px;margin-inline:auto}
+.stb span{flex:1}.stb button{flex:none}.stb .stbx{background:none;border:0;color:var(--muted);font-size:20px;padding:0 4px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -260,7 +277,7 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
     <button class="menu-btn" id="menuBtn" aria-label="القائمة"><svg class="i " viewBox="0 0 24 24"><use href="#i-menu"/></svg></button>
     <div class="brand">
       <div class="logo"><b>ALTRA</b>-DAWNLOADER</div>
-      <div class="sub" id="subTitle">v8.9 · محمل مستقل</div>
+      <div class="sub" id="subTitle">v8.10 · محمل مستقل</div>
     </div>
     <span class="live">LIVE</span>
     <button class="icon-btn" id="consoleBtn" title="Console" style="position:relative" data-sheet-link="console"><svg class="i " viewBox="0 0 24 24"><use href="#i-term"/></svg><span class="err-dot"></span></button>
@@ -282,7 +299,7 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
   <!-- HOME -->
   <div id="sheet-home" class="sheet active">
     <section class="hero">
-      <div class="badge-pill"><span class="orb">A</span>نقدّم لكم ALTRA · الإصدار 8.9</div>
+      <div class="badge-pill"><span class="orb">A</span>نقدّم لكم ALTRA · الإصدار 8.10</div>
       <h1>حمّل أي شيء<br>مع <em>ALTRA</em></h1>
       <p>الصق الرابط وسيتولى المحمّل الباقي — فيديو وصوت من أكثر من ١٠٠٠ موقع، بأعلى جودة وبلا حسابات.</p>
     </section>
@@ -688,7 +705,7 @@ python altra-server.py</code><button class="act" data-copy="cmd3">نسخ</button
   <button class="ditem" data-sheet="about"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-info"/></svg></span><span class="lab">نبذة عن التطبيق</span></button>
   <button class="ditem" data-sheet="contact"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-mail"/></svg></span><span class="lab">التواصل مع المطور</span></button>
   <button class="ditem" data-sheet="console"><span class="ic"><svg class="i " viewBox="0 0 24 24"><use href="#i-term"/></svg></span><span class="lab">Console</span></button>
-  <div class="dfoot">ALTRA-DAWNLOADER v8.9<br>nidalwatfa99@gmail.com<br>WhatsApp 0096998854450</div>
+  <div class="dfoot">ALTRA-DAWNLOADER v8.10<br>nidalwatfa99@gmail.com<br>WhatsApp 0096998854450</div>
 </aside>
 
 <div id="toast" class="toast"></div>
@@ -946,6 +963,7 @@ async function fullDiag() {
   log('══ انتهى ══');
 }
 function renderHelperChip() {
+  try { updStorageBanner(); } catch {}
   let html, cls;
   if (helper.ok) {
     const i = helper.info || {};
@@ -1099,7 +1117,7 @@ function load() {
 function applyLang(lang) {
   document.documentElement.lang = lang;
   document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-  $('#subTitle').textContent = lang === 'ar' ? 'v8.9 · محمل مستقل' : 'v8.9 · Independent downloader';
+  $('#subTitle').textContent = lang === 'ar' ? 'v8.10 · محمل مستقل' : 'v8.9 · Independent downloader';
 }
 
 /* ── Navigation ── */
@@ -1886,15 +1904,50 @@ async function browserSave(url, name, size) {
   } catch (e) { log('SAVE browser fail ' + (e.message || e)); }
   return nativeDownload(url, name);
 }
+/* ── إذن التخزين بضغطة واحدة (8.10) ── */
+function updStorageBanner() {
+  let b = document.getElementById('stBanner');
+  const need = !!(helper.ok && helper.info && helper.info.need_storage) && !sessionStorage.getItem('altraStBanner');
+  if (!need) { if (b) b.remove(); return; }
+  if (b) return;
+  b = document.createElement('div'); b.className = 'stb'; b.id = 'stBanner';
+  b.innerHTML = '<span>📂 لحفظ التحميلات مباشرة في الاستوديو يلزم منح <b>Termux</b> إذن التخزين.</span><button class="act primary" id="stGrant" type="button">منح الإذن</button><button class="stbx" id="stBx" type="button" aria-label="إخفاء">×</button>';
+  document.body.appendChild(b);
+  $('#stGrant').onclick = () => grantStorage($('#stGrant'));
+  $('#stBx').onclick = () => { try { sessionStorage.setItem('altraStBanner', '1'); } catch {} b.remove(); };
+}
+async function grantStorage(btn) {
+  const base = helperBase(), label = btn ? btn.textContent : '';
+  const reset = () => { if (btn) { btn.disabled = false; btn.textContent = label; } };
+  if (btn) { btn.disabled = true; btn.textContent = 'بانتظار «سماح»…'; }
+  const call = async settings => { const r = await hfetch(base + '/api/storage/grant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(settings ? { settings: true } : {}) }); return r.json().catch(() => null); };
+  let d = null;
+  try { d = await call(false); } catch (e) { log('STORAGE grant fail ' + (e.message || e)); }
+  log('STORAGE grant ' + JSON.stringify(d || {}));
+  if (!d || d.error) { toast('حدّث المساعد (ملف altra-server.py الجديد) ليدعم هذا الزر'); reset(); return false; }
+  const done = () => { toast('✓ تم منح إذن التخزين — ستُحفظ التحميلات في الاستوديو مباشرة'); reset(); updStorageBanner(); };
+  if (d.granted) { await checkHelper(true); done(); return true; }
+  toast('اضغط «سماح» في النافذة التي ظهرت. إن لم تظهر: افتح Termux لحظة ثم ارجع واضغط الزر');
+  let opened = false;
+  for (let i = 0; i < 45; i++) {
+    await new Promise(r => setTimeout(r, 1500));
+    await checkHelper(true);
+    if (helper.info && !helper.info.need_storage) { done(); return true; }
+    if (i === 8 && !opened) { opened = true; try { const x = await call(true); if (x && x.settings) toast('فتحنا إعدادات Termux: الأذونات ← التخزين ← سماح'); } catch {} }
+  }
+  reset(); toast('لم يُمنح الإذن بعد — يمكنك المحاولة مرة أخرى'); return false;
+}
+
 function askStorage(url, name, t, msg) {
   $('#modalRoot').innerHTML = `<div class="modal-bg"><div class="modal"><h3>📂 يلزم إذن التخزين ليظهر في الاستوديو</h3>
     <div class="small" style="line-height:1.9;margin:8px 0 12px">${esc(msg || '')}<br>
-    ١) في Termux نفّذ: <code>termux-setup-storage</code> ثم اضغط «سماح».<br>
-    ٢) أو: إعدادات أندرويد ← التطبيقات ← Termux ← الأذونات ← التخزين ← سماح.<br>
-    ثم اضغط «إعادة المحاولة» — لا حاجة لإعادة تشغيل المساعد.</div>
-    <div class="row"><button class="act btn-blue grow" id="stRetry">🔁 إعادة المحاولة</button></div>
+    اضغط الزر التالي ثم «سماح» في النافذة التي ستظهر — لا حاجة لأي أوامر.<br>
+    <span style="color:var(--muted)">(بديل يدوي: إعدادات أندرويد ← التطبيقات ← Termux ← الأذونات ← التخزين ← سماح)</span></div>
+    <div class="row"><button class="act primary grow" id="stGrant2">📂 منح الإذن بضغطة واحدة</button></div>
+    <div class="row" style="margin-top:8px"><button class="act btn-blue grow" id="stRetry">🔁 إعادة المحاولة</button></div>
     <div class="row" style="margin-top:8px"><button class="act ghost grow" id="stBrowser">⬇ احفظ في التنزيلات (المتصفح)</button><button class="act ghost" id="stNo">إغلاق</button></div></div></div>`;
   $('#stNo').onclick = closeModal;
+  $('#stGrant2').onclick = async () => { const ok = await grantStorage($('#stGrant2')); if (ok) { closeModal(); saveByFileUrl(url, name, t); } };
   $('#stRetry').onclick = () => { closeModal(); saveByFileUrl(url, name, t); };
   $('#stBrowser').onclick = () => { closeModal(); browserSave(url, name, t && t.bytes); };
 }
@@ -2412,7 +2465,7 @@ const EQ_ICO = {
   pen: '<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>',
   undo: '<svg viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>'
 };
-const eq = { ctx: null, pre: null, f: [], el: null, editing: false, nameBak: '',
+const eq = { ctx: null, pre: null, vol: null, f: [], el: null, editing: false, nameBak: '', level: 1, bright: 1, boostFail: false, isVideo: true,
   st: { on: false, snap: true, cur: 'c1', seq: 2, list: [
     { id: 'c1', name: 'New equalizer',   pre: 5, b: [4, 7, -2, -9, -15, -17, -19, -18, -14, -8] },
     { id: 'c2', name: 'New equalizer 2', pre: 6, b: [10, 5, -3, -14, -15, -19, -17, -15, -7, -1] }
@@ -2425,12 +2478,13 @@ const eqSave = () => { try { localStorage.setItem('altra_eq_v1', JSON.stringify(
 const eqAll = () => EQ_PRE.concat(eq.st.list);
 const eqCur = () => eqAll().find(x => x.id === eq.st.cur) || EQ_PRE[0];
 
-function eqTeardown() { try { eq.ctx && eq.ctx.close(); } catch {} eq.ctx = null; eq.pre = null; eq.f = []; }
+function eqTeardown() { try { eq.ctx && eq.ctx.close(); } catch {} eq.ctx = null; eq.pre = null; eq.vol = null; eq.f = []; }
 function eqApply() {
   if (!eq.ctx) return;
   const c = eqCur(), t = eq.ctx.currentTime, on = eq.st.on;
   eq.pre.gain.setTargetAtTime(on ? Math.pow(10, c.pre / 20) : 1, t, .02);
   eq.f.forEach((f, i) => f.gain.setTargetAtTime(on ? c.b[i] : 0, t, .02));
+  if (eq.vol) eq.vol.gain.setTargetAtTime(eq.level > 1 ? eq.level : 1, t, .02);   // رفع الصوت حتى 200% كما في VLC
 }
 /* جاهزية المصدر: Web Audio يُخرج صمتاً لمصدر من نطاق آخر بلا CORS — نتحقق أولاً ولا نلمس المشغّل إن لم يصلح */
 async function eqPrep(m) {
@@ -2456,8 +2510,8 @@ async function eqAttach() {
     const ctx = new AC(), src = ctx.createMediaElementSource(m), pre = ctx.createGain();
     src.connect(pre); let prev = pre;
     const f = EQ_FRQ.map(fr => { const b = ctx.createBiquadFilter(); b.type = 'peaking'; b.frequency.value = fr; b.Q.value = 1.41; b.gain.value = 0; prev.connect(b); prev = b; return b; });
-    prev.connect(ctx.destination);
-    eq.ctx = ctx; eq.pre = pre; eq.f = f;
+    const vol = ctx.createGain(); prev.connect(vol); vol.connect(ctx.destination);
+    eq.ctx = ctx; eq.pre = pre; eq.f = f; eq.vol = vol;
     m.addEventListener('play', () => { if (ctx.state === 'suspended') ctx.resume().catch(() => {}); });
     ctx.resume().catch(() => {});
     eqApply(); return true;
@@ -2480,11 +2534,74 @@ function eqSlider(el, o) {
   el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
   return { set };
 }
+/* ── رفع الصوت حتى 200% + السطوع + لمسات الشاشة (يسار: الصوت · يمين: السطوع) ── */
+function gHud(kind) {
+  let el = document.getElementById(kind === 'v' ? 'ghV' : 'ghB');
+  if (!el) {
+    el = document.createElement('div'); el.className = 'gh'; el.id = kind === 'v' ? 'ghV' : 'ghB';
+    el.innerHTML = `<b></b><div class="gbar"><i class="lo"></i><i class="hi"></i></div>` + (kind === 'v'
+      ? '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0014 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg><em>الصَّوت</em>'
+      : '<svg viewBox="0 0 24 24"><path d="M12 7a5 5 0 100 10 5 5 0 000-10zM2 13h2a1 1 0 000-2H2a1 1 0 000 2zm18 0h2a1 1 0 000-2h-2a1 1 0 000 2zM11 2v2a1 1 0 002 0V2a1 1 0 00-2 0zm0 18v2a1 1 0 002 0v-2a1 1 0 00-2 0zM5.99 4.58a1 1 0 00-1.41 1.41l1.06 1.06a1 1 0 001.41-1.41L5.99 4.58zm12.37 12.37a1 1 0 00-1.41 1.41l1.06 1.06a1 1 0 001.41-1.41l-1.06-1.06zm1.06-10.96a1 1 0 00-1.41-1.41l-1.06 1.06a1 1 0 001.41 1.41l1.06-1.06zM7.05 18.36a1 1 0 00-1.41-1.41l-1.06 1.06a1 1 0 001.41 1.41l1.06-1.06z"/></svg><em>السطوع</em>');
+    document.body.appendChild(el);
+  }
+  return el;
+}
+function gShow(kind, level, max) {
+  const el = gHud(kind), pct = Math.round(level * 100) + '%';
+  el.querySelector('b').textContent = pct;
+  el.querySelector('.lo').style.height = (Math.min(level, 1) / max * 100) + '%';
+  const hi = el.querySelector('.hi'); hi.style.bottom = (1 / max * 100) + '%'; hi.style.height = (Math.max(0, level - 1) / max * 100) + '%';
+  el.classList.add('show'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 1000);
+}
+function plSetVol(v) {
+  v = Math.max(0, Math.min(2, v));
+  const m = eq.el; if (!m) return;
+  if (v > 1 && !eq.ctx && !eq.boostFail) {
+    eq.level = v; m.volume = 1;
+    eqAttach().then(ok => {
+      if (!ok) { eq.boostFail = true; eq.level = 1; toast('تعذّر رفع الصوت فوق 100% لهذا المصدر'); gShow('v', 1, 2); return; }
+      eqApply();
+    });
+  } else if (v > 1 && !eq.ctx) { v = 1; }
+  eq.level = v; m.volume = Math.min(1, v);
+  if (eq.ctx) eqApply();
+  gShow('v', v, 2);
+}
+function plSetBright(b) {
+  b = Math.max(.1, Math.min(1.5, b)); eq.bright = b;
+  if (eq.el && eq.isVideo) eq.el.style.filter = b === 1 ? '' : 'brightness(' + b + ')';
+  gShow('b', b, 1.5);
+}
+function eqGestures(el, o) {
+  let st = null;
+  el.addEventListener('touchstart', e => {
+    st = null; if (e.touches.length !== 1 || (o.bg && e.target !== el)) return;
+    const t = e.touches[0], r = el.getBoundingClientRect();
+    if (o.skipBottom && t.clientY > r.bottom - o.skipBottom) return;
+    st = { x: t.clientX, y: t.clientY, side: (t.clientX - r.left) < r.width / 2 ? 'v' : 'b', v0: eq.level, b0: eq.bright, h: Math.max(160, r.height), on: false };
+  }, { passive: true });
+  el.addEventListener('touchmove', e => {
+    if (!st) return;
+    const t = e.touches[0], dy = t.clientY - st.y, dx = t.clientX - st.x;
+    if (!st.on) {
+      if (Math.abs(dx) > 14 && Math.abs(dx) > Math.abs(dy)) { st = null; return; }   // سحب أفقي (تقديم/تأخير) لا نتدخل فيه
+      if (Math.abs(dy) < 12) return;
+      if (st.side === 'b' && !eq.isVideo) { st = null; return; }
+      st.on = true;
+    }
+    e.preventDefault();
+    const f = -dy / (st.h * .6);
+    if (st.side === 'v') plSetVol(st.v0 + f * 2); else plSetBright(st.b0 + f * 1.4);
+  }, { passive: false });
+  const end = e => { if (st && st.on && e.cancelable) e.preventDefault(); st = null; };
+  el.addEventListener('touchend', end, { passive: false }); el.addEventListener('touchcancel', end, { passive: false });
+}
+
 function eqOpen() {
   if (!eq.el || $('.eqbg')) return;
   const bg = document.createElement('div'); bg.className = 'modal-bg eqbg';
   bg.innerHTML = `<div class="modal eqm">
-    <div class="eqhd"><h3>المُعادِل</h3></div>
+    <div class="eqhd"><h3>المُعادِل</h3><button class="eqx" id="eqX" type="button" aria-label="رجوع"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>رجوع</button></div>
     <div class="eqon" id="eqOnL"><span>فعّل</span><i class="sw" id="eqOn"></i></div>
     <div class="eqchips" id="eqChips"></div>
     <div class="eqcard">
@@ -2494,7 +2611,17 @@ function eqOpen() {
       <div class="eqsnap" id="eqSnapL"><i class="sw" id="eqSnap"></i><span>أشرطة المفاجئة</span></div>
     </div></div>`;
   $('#modalRoot').appendChild(bg);
-  bg.addEventListener('click', e => { if (e.target === bg) bg.remove(); });
+  let pushed = false;
+  const onPop = () => { window.removeEventListener('popstate', onPop); pushed = false; closeEq(true); };
+  function closeEq(fromPop) {
+    if (!bg.isConnected) return;
+    bg.remove(); window.removeEventListener('popstate', onPop);
+    if (pushed && !fromPop) { pushed = false; try { history.back(); } catch {} }
+  }
+  try { history.pushState({ altraEq: 1 }, ''); pushed = true; window.addEventListener('popstate', onPop); } catch {}
+  bg.addEventListener('click', e => { if (e.target === bg) closeEq(); });
+  $('#eqX').onclick = () => closeEq();
+  eqGestures(bg, { bg: true });
   const fmt = v => (v > 0 ? '+' : '') + Math.round(v) + 'dB';
   const nextName = () => { const nm = new Set(eq.st.list.map(c => c.name)); for (let n = 1; ; n++) { const x = n === 1 ? 'New equalizer' : 'New equalizer ' + n; if (!nm.has(x)) return x; } };
   const swr = () => { $('#eqOn').classList.toggle('on', eq.st.on); $('#eqSnap').classList.toggle('on', eq.st.snap); };
@@ -2578,7 +2705,9 @@ function showPlayer(src, title, poster, name) {
     </div></div></div>`;
   const m = $('#plMedia');
   m.onerror = () => { $('#plMsg').textContent = 'المتصفح لا يشغّل هذه الصيغة (مثل MKV/AVI/FLV) — اضغط «حفظ» وافتحها بمشغّل جهازك.'; };
-  eq.el = m; $('#plEq').onclick = eqOpen;
+  eq.el = m; eq.isVideo = !isAudio; eq.level = 1; eq.bright = 1; eq.boostFail = false;
+  if (!isAudio) { m.style.touchAction = 'none'; eqGestures(m, { skipBottom: 64 }); }
+  $('#plEq').onclick = eqOpen;
   if (eq.st.on) eqAttach();
   $('#plClose').onclick = () => { try { m.pause(); } catch {} eqTeardown(); closeModal(); };
   $('#plSave').onclick = () => { if (/\/file\/[0-9a-f]{16}$/.test(String(src))) saveByFileUrl(src, name || title, null); else { nativeDownload(src, name || title); toast('بدأ الحفظ'); } };
@@ -2683,6 +2812,9 @@ async function advList(more) {
   if (validUrl(q)) { showProbe(q); return; }
   const src = $('#advSrc').value;
   if (['all', 'ytm', 'dm', 'bili', 'nico'].includes(src)) return advMulti(q, src, more === true);
+  // 8.10: «أغاني فقط / ألبومات فقط / أفلام» يجب أن تُحترم مع يوتيوب وساوندكلاود أيضاً
+  const advT = ($('#advType') && $('#advType').value) || 'all';
+  if (src !== 'ytpl' && advT !== 'all') { await checkHelper(false); if (helperMulti()) return advMulti(q, src, more === true); }
   advS.n = more === true ? Math.min(200, advS.n + 30) : 30;
   const box = $('#advResults');
   log('SEARCH start q=' + q + ' src=' + src + ' n=' + advS.n);

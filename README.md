@@ -7,7 +7,7 @@
 **محمّل وسائط مستقل وقابل للتثبيت · Independent, installable media downloader**
 
 [![Live App](https://img.shields.io/badge/Live%20App-افتح%20التطبيق-00d2ff?style=for-the-badge&logo=googlechrome&logoColor=white)](https://nidal-watfa99.github.io/)
-[![Version](https://img.shields.io/badge/version-8.6-00ff88?style=for-the-badge)](#)
+[![Version](https://img.shields.io/badge/version-8.10-00ff88?style=for-the-badge)](#)
 [![PWA](https://img.shields.io/badge/PWA-installable-5a0fc8?style=for-the-badge&logo=pwa&logoColor=white)](#-التثبيت)
 [![License: MIT](https://img.shields.io/badge/License-MIT-ff9f43?style=for-the-badge)](LICENSE)
 
@@ -295,7 +295,10 @@ Social platforms (YouTube, Instagram, TikTok…) require the included local help
 
 
 ## ما الجديد (8.10)
-- **المعادل (Equalizer)** داخل المشغّل المدمج: 10 نطاقات (31Hz–16kHz) + Preamp بمجال ±20dB، قوالب VLC الجاهزة، معادلان محفوظان («New equalizer» و«New equalizer 2»)، تعديل الاسم والحذف، ومفتاح «أشرطة المفاجئة». يُحفظ في المتصفح ويبدأ متوقفاً.
-- **توافق التشغيل في المعرض**: عند اختيار mp4/تلقائي يفضّل المساعد H.264 + AAC، وبعد التحميل يفحص الترميز بـ ffprobe ويحوّل تلقائياً أي AV1/VP9/Opus أو 10-bit إلى H.264/AAC (yuv420p) مع faststart. الفيديو المتوافق أصلاً لا يُعاد ترميزه. يتطلب ffmpeg: `pkg install ffmpeg`.
-- **قوائم التشغيل ونتائج البحث** بنمط Snaptube: مصغّرة، عنوان، القناة، المشاهدات · المدة، وأيقونة تنزيل/تحديد.
-- **السرعة**: مخزن قراءة أكبر مع الإبقاء على 16 قطعة متوازية و10 تنزيلات معاً.
+- **المعادل (Equalizer)** داخل المشغّل المدمج: 10 نطاقات (31Hz–16kHz) + Preamp ±20dB، قوالب VLC، معادلان محفوظان («New equalizer» و«New equalizer 2»)، تعديل الاسم والحذف، «أشرطة المفاجئة». يبدأ متوقفاً. زر **«رجوع»** وزر رجوع الهاتف يغلقانه.
+- **صوت حتى 200% كما في VLC** + **لمس الشاشة**: اسحب من الأسفل للأعلى على **النصف الأيسر** للفيديو (أو على المساحة الفارغة فوق المعادل) لرفع الصوت، وعلى **النصف الأيمن** للسطوع. السطوع هنا يخص صورة الفيديو داخل التطبيق (المتصفح لا يغيّر سطوع الجهاز).
+- **توافق التشغيل في المعرض**: يفضّل المساعد H.264 + AAC ويحوّل تلقائياً أي AV1/VP9/Opus أو 10-bit إلى H.264/AAC (yuv420p) مع faststart. يتطلب ffmpeg: `pkg install ffmpeg`.
+- **قوائم التشغيل ونتائج البحث** بنمط Snaptube (مصغّرة، عنوان، القناة، المشاهدات · المدة، أيقونة تنزيل/تحديد).
+- **«أغاني فقط»** تُحترم الآن مع كل المصادر، ولا تظهر فيها فيديوهات «Full Album» والمجمّعات الطويلة؛ و«ألبومات فقط» تعرض القوائم فقط.
+- **إذن التخزين بضغطة واحدة**: عند حاجة Termux للإذن يظهر بانر «منح الإذن» في التطبيق (يتطلب تحديث altra-server.py). بدونه يستمر الحفظ عبر المتصفح في مجلد التنزيلات.
+- **السرعة**: مخزن قراءة أكبر مع 16 قطعة متوازية و10 تنزيلات معاً.
