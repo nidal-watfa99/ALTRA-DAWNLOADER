@@ -33,6 +33,7 @@ import traceback
 import uuid
 import subprocess
 import zipfile
+import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, quote, unquote, urlparse
 
@@ -857,7 +858,7 @@ VIDEO_EXTS = (".mp4", ".m4v", ".mov", ".webm", ".mkv")
 # 8.10 — توافق التشغيل: H.264 (8-bit yuv420p) + AAC/MP3 داخل mp4 يعمل في كل المعارض والمشغّلات.
 # يوتيوب يقدّم AV1/VP9/Opus بجودات أعلى؛ داخل mp4 تظهر في معرض سامسونج بصورة معطوبة ولا تُشغَّل.
 COMPAT_SORT = ("vcodec:h264", "acodec:aac", "res", "ext:mp4:m4a")
-COMPAT_V = {"h264"}
+COMPAT_V = {"h264", "hevc"}
 COMPAT_PIX = {"yuv420p", "yuvj420p", ""}
 COMPAT_A = {"aac", "mp3"}
 
@@ -1895,6 +1896,69 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(body)
 
 
+# 8.10 — تحديث ذاتي: «altra» صار يحدّث ملف المساعد نفسه (وليس yt-dlp فقط)
+UPDATE_BASES = ("https://nidal-watfa99.github.io/ALTRA-DAWNLOADER", "https://nidal-watfa99.github.io",
+                "https://raw.githubusercontent.com/nidal-watfa99/ALTRA-DAWNLOADER/main",
+                "https://raw.githubusercontent.com/nidal-watfa99/nidal-watfa99.github.io/main")
+
+
+def _vt(v):
+    return tuple(int(x) for x in (re.findall(r"\d+", str(v)) + ["0", "0", "0"])[:3])
+
+
+def self_update():
+    """ينزّل altra-server.py وindex.html وsw.js الأحدث من المستودع، ويتحقق منها قبل الاستبدال.
+    يُرجع True إذا تغيّر altra-server.py (فيجب إعادة التشغيل)."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    server_changed = False
+    for fname in ("altra-server.py", "index.html", "sw.js"):
+        data = None
+        for b in UPDATE_BASES:
+            try:
+                req = urllib.request.Request("%s/%s?t=%d" % (b, fname, int(time.time())),
+                                             headers={"User-Agent": "altra-updater", "Cache-Control": "no-cache"})
+                with urllib.request.urlopen(req, timeout=15) as r:
+                    cand = r.read()
+            except Exception:  # noqa: BLE001
+                continue
+            if fname == "altra-server.py":
+                m = re.search(rb'^VERSION\s*=\s*"([^"]+)"', cand, re.M)
+                if not m or _vt(m.group(1).decode()) < _vt(VERSION):
+                    continue
+                try:
+                    compile(cand, fname, "exec")
+                except SyntaxError:
+                    continue
+            elif fname == "index.html" and b"<html" not in cand[:4000].lower():
+                continue
+            elif fname == "sw.js" and b"addEventListener" not in cand:
+                continue
+            data = cand
+            break
+        if data is None:
+            print("   (تعذّر تنزيل %s — يبقى الحالي)" % fname)
+            continue
+        path = os.path.join(here, fname)
+        try:
+            old = open(path, "rb").read()
+        except OSError:
+            old = b""
+        if old == data:
+            continue
+        try:
+            if fname == "altra-server.py" and old:
+                open(path + ".bak", "wb").write(old)
+            tmp = path + ".part"
+            open(tmp, "wb").write(data)
+            os.replace(tmp, path)
+            print("   ✓ حُدّث " + fname)
+            if fname == "altra-server.py":
+                server_changed = True
+        except OSError as ex:
+            print("   ✗ تعذّر كتابة %s: %s" % (fname, ex))
+    return server_changed
+
+
 def main():
     ap = argparse.ArgumentParser(description="ALTRA helper server")
     ap.add_argument("--host", default="127.0.0.1")
@@ -1911,6 +1975,13 @@ def main():
     ap.add_argument("--jobs", type=int, default=10, help="عدد التحميلات المتزامنة في المساعد")
     a = ap.parse_args()
     if a.update:
+        print("▶ تحديث ملفات ALTRA من المستودع …")
+        try:
+            if self_update():
+                print("▶ نسخة جديدة من المساعد — إعادة التشغيل …")
+                os.execv(sys.executable, [sys.executable, os.path.abspath(__file__)] + sys.argv[1:])
+        except Exception as ex:  # noqa: BLE001
+            print("   تحديث الملفات فشل (%s) — نتابع بالنسخة الحالية" % ex)
         print("▶ تحديث yt-dlp …")
         for pkg in ("yt-dlp[default]", "yt-dlp"):
             if subprocess.run([sys.executable, "-m", "pip", "install", "-U", "-q", pkg]).returncode == 0:

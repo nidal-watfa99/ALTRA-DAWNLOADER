@@ -248,7 +248,8 @@ button.ghost{background:transparent;box-shadow:inset 0 0 0 1px #3a3a3a}
 .gh svg{width:26px;height:26px;fill:#fff}
 .gh em{font-style:normal;position:absolute;top:62px;white-space:nowrap;font-size:14px}
 #ghV em{left:28px}#ghB em{right:28px}
-.stb{position:fixed;inset-inline:12px;bottom:12px;z-index:60;background:#1f1f1f;border:1px solid var(--line);border-radius:18px;padding:12px 14px;display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.6;box-shadow:0 10px 30px #000a;max-width:560px;margin-inline:auto}
+#bnrs{position:fixed;inset-inline:12px;bottom:12px;z-index:60;display:flex;flex-direction:column;gap:8px;max-width:560px;margin-inline:auto;pointer-events:none}
+.stb{pointer-events:auto;background:#1f1f1f;border:1px solid var(--line);border-radius:18px;padding:12px 14px;display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.6;box-shadow:0 10px 30px #000a}
 .stb span{flex:1}.stb button{flex:none}.stb .stbx{background:none;border:0;color:var(--muted);font-size:20px;padding:0 4px;cursor:pointer}
 </style>
 </head>
@@ -963,13 +964,14 @@ async function fullDiag() {
   log('══ انتهى ══');
 }
 function renderHelperChip() {
-  try { updStorageBanner(); } catch {}
+  try { updStorageBanner(); updUpdateBanner(); } catch {}
   let html, cls;
   if (helper.ok) {
     const i = helper.info || {};
     cls = 'chip ok';
     html = '<i class="sd"></i><span class="grow">المساعد المحلي متصل · كل المواقع مدعومة'
       + (i.ytdlp ? ' · yt-dlp ' + esc(i.ytdlp) : ' · <b>yt-dlp غير مثبّت</b>')
+      + (i.version ? ' · مساعد v' + esc(i.version) : '')
       + (i.ytdlp_old ? ' · ⚠ yt-dlp قديم، حدّثه' : '')
       + (i.ffmpeg ? '' : ' · بدون ffmpeg')
       + (i.cookies ? ' · 🔑 جلسات: ' + esc((i.cookie_domains || []).slice(0, 3).join('، ')) : '') + '</span>'
@@ -1904,6 +1906,32 @@ async function browserSave(url, name, size) {
   } catch (e) { log('SAVE browser fail ' + (e.message || e)); }
   return nativeDownload(url, name);
 }
+/* ── حاوية البانرات + تنبيه تحديث المساعد (8.10) ── */
+function bnrs() {
+  let c = document.getElementById('bnrs');
+  if (!c) { c = document.createElement('div'); c.id = 'bnrs'; document.body.appendChild(c); }
+  return c;
+}
+const verLT = (a, b) => { const x = String(a).split('.').map(n => +n || 0), y = String(b).split('.').map(n => +n || 0); for (let i = 0; i < 3; i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) < (y[i] || 0); } return false; };
+const HELPER_MIN = '8.10.0', HELPER_CMD = 'curl -fsSL https://nidal-watfa99.github.io/setup-termux.sh | bash';
+function updUpdateBanner() {
+  let b = document.getElementById('upBanner');
+  const v = helper.ok && helper.info && helper.info.version;
+  const need = !!(v && verLT(v, HELPER_MIN)) && !sessionStorage.getItem('altraUpBanner');
+  if (!need) { if (b) b.remove(); return; }
+  if (b) return;
+  b = document.createElement('div'); b.className = 'stb'; b.id = 'upBanner';
+  b.innerHTML = '<span>⬆️ المساعد في Termux نسخته <b dir="ltr">v' + esc(v) + '</b> قديمة، وإصلاحات الفيديو و«أغاني فقط» لا تعمل إلا مع <b dir="ltr">v8.10</b>. أوقف المساعد (Ctrl+C) ثم الصق الأمر في Termux مرة واحدة.</span><button class="act primary" id="upCopy" type="button">نسخ الأمر</button><button class="stbx" id="upX" type="button" aria-label="إخفاء">×</button>';
+  bnrs().prepend(b);
+  $('#upCopy').onclick = async () => {
+    let ok = false;
+    try { await navigator.clipboard.writeText(HELPER_CMD); ok = true; } catch {}
+    if (!ok) { try { const t = document.createElement('textarea'); t.value = HELPER_CMD; document.body.appendChild(t); t.select(); ok = document.execCommand('copy'); t.remove(); } catch {} }
+    toast(ok ? 'تم النسخ — الصقه في Termux' : HELPER_CMD);
+  };
+  $('#upX').onclick = () => { try { sessionStorage.setItem('altraUpBanner', '1'); } catch {} b.remove(); };
+}
+
 /* ── إذن التخزين بضغطة واحدة (8.10) ── */
 function updStorageBanner() {
   let b = document.getElementById('stBanner');
@@ -1912,7 +1940,7 @@ function updStorageBanner() {
   if (b) return;
   b = document.createElement('div'); b.className = 'stb'; b.id = 'stBanner';
   b.innerHTML = '<span>📂 لحفظ التحميلات مباشرة في الاستوديو يلزم منح <b>Termux</b> إذن التخزين.</span><button class="act primary" id="stGrant" type="button">منح الإذن</button><button class="stbx" id="stBx" type="button" aria-label="إخفاء">×</button>';
-  document.body.appendChild(b);
+  bnrs().appendChild(b);
   $('#stGrant').onclick = () => grantStorage($('#stGrant'));
   $('#stBx').onclick = () => { try { sessionStorage.setItem('altraStBanner', '1'); } catch {} b.remove(); };
 }
@@ -2208,10 +2236,14 @@ function helperMulti() {
   return v[0] > 8 || (v[0] === 8 && (v[1] || 0) >= 9);
 }
 const advM = { n: 50 };
+const advKinds = type => type === 'songs' ? ['songs'] : type === 'albums' ? ['albums'] : type === 'movies' ? ['movies', 'long'] : ['songs', 'albums'];
+const NOT_SONG = /full\s*album|complete\s*album|album\s*complet|álbum\s*completo|mega\s*mix|megamix|non[\s-]?stop|compilation|greatest\s*hits|\b\d+\s*(?:hours?|hrs?)\b|ألبوم\s*كامل|الألبوم\s*كامل|كامل\s*الألبوم/i;
+const songOkC = x => !x.is_list && !(typeof x.duration === 'number' && (x.duration > 900 || x.duration < 20)) && !NOT_SONG.test(x.title || '');
 async function advMulti(q, src, more) {
   advM.n = more ? Math.min(200, advM.n + 50) : 50;
   const type = ($('#advType') && $('#advType').value) || 'all';
-  const kinds = type === 'songs' ? ['songs'] : type === 'albums' ? ['albums'] : type === 'movies' ? ['movies', 'long'] : ['songs', 'albums'];
+  const kinds = advKinds(type);
+  advM.last = null;
   const box = $('#advResults');
   log('SEARCH multi q=' + q + ' src=' + src + ' type=' + type + ' n=' + advM.n);
   toast('جاري البحث…');
@@ -2234,6 +2266,7 @@ async function advMulti(q, src, more) {
     const d = await r.json().catch(() => ({}));
     log('SEARCH multi status=' + r.status + ' items=' + ((d.items || []).length) + ' lists=' + ((d.lists || []).length) + ((d.errors || []).length ? ' errors=' + d.errors.map(e => e.site + ':' + e.error).join(' | ') : ''));
     if (!r.ok) throw new Error(d.error || ('HTTP ' + r.status));
+    advM.last = { d, q, kinds };
     renderMulti(d, q, type);
   } catch (e) {
     box.innerHTML = '<div class="empty">فشل البحث: ' + esc(e.message || e) + '<div class="small" style="margin-top:8px">إن تكرر الفشل: افتح ⌘ Console ← «📋 نسخ السجل»، وحدّث yt-dlp (<code>altra</code> في Termux يحدّثه تلقائياً).</div></div>';
@@ -2241,7 +2274,9 @@ async function advMulti(q, src, more) {
 }
 function renderMulti(d, q, type) {
   const box = $('#advResults');
-  const items = (d.items || []).slice(0, 400), lists = d.lists || [], errs = d.errors || [];
+  let items = (d.items || []).slice(0, 400), lists = d.lists || [];
+  const errs = d.errors || [];
+  if (type === 'songs') { items = items.filter(songOkC); lists = []; } else if (type === 'albums') { items = []; }
   const errHtml = errs.length ? '<div class="small" style="margin-top:10px;line-height:1.7;opacity:.8">تعذّر الاتصال ببعض المصادر: ' + errs.map(e => esc(e.site)).filter((v, i, a) => a.indexOf(v) === i).join('، ') + '</div>' : '';
   if (!items.length && !lists.length) { box.innerHTML = '<div class="empty">لا نتائج لـ «' + esc(q) + '». جرّب تهجئة أخرى أو مصدراً آخر.' + errHtml + '</div>'; return; }
   const badge = s => s ? `<span class="tag" style="color:var(--muted)">${esc(s)}</span>` : '';
@@ -3078,6 +3113,12 @@ $('#qtRetry').onclick = retryFailed;
 $('#qtClear').onclick = clearFinished;
 $('#qtShare').onclick = shareAll;
 $('#advList').onclick = () => advList();
+// 8.10: تغيير «نوع النتائج» يُطبَّق فوراً: فلترة من النتائج الحالية إن كانت كافية، وإلا يُعاد البحث تلقائياً
+$('#advType').addEventListener('change', () => {
+  const type = $('#advType').value, last = advM.last;
+  if (!last || !$('#advResults').children.length) return;
+  if (advKinds(type).every(k => last.kinds.includes(k))) renderMulti(last.d, last.q, type); else advList();
+});
 $('#advSend').onclick = () => advList();
 $('#libRefresh').onclick = renderLibrary;
 $('#libSearch').addEventListener('input', drawLibrary);
