@@ -1448,7 +1448,20 @@ async function fetchToDisk(task, signal) {
 }
 
 /* ── Queue engine ── */
+/* مفتاح موحّد للرابط (لمنع تكرار التحميل): نفس الرابط بلا # وبلا / أخيرة */
+function urlKey(u) {
+  try { const x = new URL(cleanUrl(u)); return x.host + x.pathname.replace(/\/+$/, '') + x.search; }
+  catch { return String(u || '').trim(); }
+}
+const TASK_ACTIVE = ['queued', 'processing', 'downloading'];
 function addUrls(urls, o) {
+  // لا نبدأ نفس الرابط مرتين: لا نكرره داخل الدفعة ولا إن كانت له مهمة جارية بالفعل
+  const seen = new Set(state.tasks.filter(x => TASK_ACTIVE.includes(x.status)).map(x => urlKey(x.source)));
+  const fresh = [];
+  for (const v of urls) { const k = urlKey(v); if (seen.has(k)) continue; seen.add(k); fresh.push(v); }
+  if (!fresh.length) { if (urls.length) toast('هذا الرابط قيد التحميل بالفعل'); return; }
+  if (fresh.length < urls.length) log('DUP skipped ' + (urls.length - fresh.length));
+  urls = fresh;
   for (const v of urls) {
     state.tasks.push({
       id: uid(), source: v, title: v,
@@ -2500,7 +2513,7 @@ const EQ_ICO = {
   pen: '<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>',
   undo: '<svg viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>'
 };
-const eq = { ctx: null, pre: null, vol: null, f: [], el: null, editing: false, nameBak: '', level: 1, bright: 1, boostFail: false, isVideo: true,
+const eq = { ctx: null, pre: null, vol: null, lim: null, f: [], el: null, editing: false, nameBak: '', level: 1, bright: 1, boostFail: false, isVideo: true,
   st: { on: false, snap: true, cur: 'c1', seq: 2, list: [
     { id: 'c1', name: 'New equalizer',   pre: 5, b: [4, 7, -2, -9, -15, -17, -19, -18, -14, -8] },
     { id: 'c2', name: 'New equalizer 2', pre: 6, b: [10, 5, -3, -14, -15, -19, -17, -15, -7, -1] }
@@ -2513,13 +2526,20 @@ const eqSave = () => { try { localStorage.setItem('altra_eq_v1', JSON.stringify(
 const eqAll = () => EQ_PRE.concat(eq.st.list);
 const eqCur = () => eqAll().find(x => x.id === eq.st.cur) || EQ_PRE[0];
 
-function eqTeardown() { try { eq.ctx && eq.ctx.close(); } catch {} eq.ctx = null; eq.pre = null; eq.vol = null; eq.f = []; }
+function eqTeardown() { try { eq.ctx && eq.ctx.close(); } catch {} eq.ctx = null; eq.pre = null; eq.vol = null; eq.lim = null; eq.f = []; }
 function eqApply() {
   if (!eq.ctx) return;
   const c = eqCur(), t = eq.ctx.currentTime, on = eq.st.on;
   eq.pre.gain.setTargetAtTime(on ? Math.pow(10, c.pre / 20) : 1, t, .02);
   eq.f.forEach((f, i) => f.gain.setTargetAtTime(on ? c.b[i] : 0, t, .02));
   if (eq.vol) eq.vol.gain.setTargetAtTime(eq.level > 1 ? eq.level : 1, t, .02);   // رفع الصوت حتى 200% كما في VLC
+  /* محدِّد القمم: عند أي تضخيم (معادل مفعّل أو صوت فوق 100%) يمنع القطع الحاد الذي يجعل الصوت مشوَّهاً بدل أن يكون أعلى؛
+     بلا تضخيم يُعطَّل تماماً (نسبة 1) فيبقى الصوت كما هو */
+  if (eq.lim) {
+    const boost = eq.level > 1 || (on && (c.pre > 0 || c.b.some(v => v > 0)));
+    eq.lim.threshold.setTargetAtTime(boost ? -4 : 0, t, .02);
+    eq.lim.ratio.setTargetAtTime(boost ? 20 : 1, t, .02);
+  }
 }
 /* جاهزية المصدر: Web Audio يُخرج صمتاً لمصدر من نطاق آخر بلا CORS — نتحقق أولاً ولا نلمس المشغّل إن لم يصلح */
 async function eqPrep(m) {
@@ -2545,8 +2565,15 @@ async function eqAttach() {
     const ctx = new AC(), src = ctx.createMediaElementSource(m), pre = ctx.createGain();
     src.connect(pre); let prev = pre;
     const f = EQ_FRQ.map(fr => { const b = ctx.createBiquadFilter(); b.type = 'peaking'; b.frequency.value = fr; b.Q.value = 1.41; b.gain.value = 0; prev.connect(b); prev = b; return b; });
-    const vol = ctx.createGain(); prev.connect(vol); vol.connect(ctx.destination);
-    eq.ctx = ctx; eq.pre = pre; eq.f = f; eq.vol = vol;
+    const vol = ctx.createGain(); prev.connect(vol);
+    const lim = ctx.createDynamicsCompressor();
+    lim.knee.value = 0; lim.attack.value = .001; lim.release.value = .1; lim.threshold.value = 0; lim.ratio.value = 1;
+    /* قصّ ناعم أخير: ما زاد عن 0.85 يُلَيَّن بدل القطع الحاد (شفاف تماماً تحت هذا المستوى) */
+    const sh = ctx.createWaveShaper(), cv = new Float32Array(4097);
+    for (let i = 0; i < cv.length; i++) { const x = i / 2048 - 1, a = Math.abs(x); cv[i] = a <= .85 ? x : Math.sign(x) * (.85 + .15 * Math.tanh((a - .85) / .15)); }
+    sh.curve = cv;
+    vol.connect(lim); lim.connect(sh); sh.connect(ctx.destination);
+    eq.ctx = ctx; eq.pre = pre; eq.f = f; eq.vol = vol; eq.lim = lim;
     m.addEventListener('play', () => { if (ctx.state === 'suspended') ctx.resume().catch(() => {}); });
     ctx.resume().catch(() => {});
     eqApply(); return true;
@@ -2613,7 +2640,7 @@ function eqGestures(el, o) {
     st = null; if (e.touches.length !== 1 || (o.bg && e.target !== el)) return;
     const t = e.touches[0], r = el.getBoundingClientRect();
     if (o.skipBottom && t.clientY > r.bottom - o.skipBottom) return;
-    st = { x: t.clientX, y: t.clientY, side: (t.clientX - r.left) < r.width / 2 ? 'v' : 'b', v0: eq.level, b0: eq.bright, h: Math.max(160, r.height), on: false };
+    st = { x: t.clientX, y: t.clientY, side: (o.volOnly || (t.clientX - r.left) < r.width / 2) ? 'v' : 'b', v0: eq.level, b0: eq.bright, h: Math.max(160, r.height), on: false };
   }, { passive: true });
   el.addEventListener('touchmove', e => {
     if (!st) return;
@@ -2742,6 +2769,7 @@ function showPlayer(src, title, poster, name) {
   m.onerror = () => { $('#plMsg').textContent = 'المتصفح لا يشغّل هذه الصيغة (مثل MKV/AVI/FLV) — اضغط «حفظ» وافتحها بمشغّل جهازك.'; };
   eq.el = m; eq.isVideo = !isAudio; eq.level = 1; eq.bright = 1; eq.boostFail = false;
   if (!isAudio) { m.style.touchAction = 'none'; eqGestures(m, { skipBottom: 64 }); }
+  else { const bgEl = m.closest('.modal-bg'); if (bgEl) eqGestures(bgEl, { bg: true, volOnly: true }); }   // الصوتيات: اسحب على الخلفية لرفع الصوت حتى 200%
   $('#plEq').onclick = eqOpen;
   if (eq.st.on) eqAttach();
   $('#plClose').onclick = () => { try { m.pause(); } catch {} eqTeardown(); closeModal(); };
@@ -3186,15 +3214,24 @@ renderHelperChip();
 initHelper();
 handleLaunchParams();
 if (new URLSearchParams(location.search).get('action') === 'new') $('#url').focus();
-let _lastClip = '';
+/* آخر نص حافظة عولج: يُحفظ بين مرات فتح التطبيق، فلا يعيد التقاط نفس الرابط كل مرة */
+let _lastClip = '', _clipBusy = false;
+try { _lastClip = localStorage.getItem('altra_lastclip') || ''; } catch {}
 async function clipCheck() {
+  if (_clipBusy) return;            // focus + visibilitychange يطلقان معاً: نمنع التشغيل المتزامن
+  _clipBusy = true;
   try {
     if (document.visibilityState !== 'visible' || !navigator.clipboard || !navigator.clipboard.readText) return;
     const t = (await navigator.clipboard.readText() || '').trim();
     if (!t || t === _lastClip) return;
     const u = extractUrls(t);
     if (!u.length || $('#url').value.includes(u[0])) return;
-    _lastClip = t;
+    _lastClip = t; try { localStorage.setItem('altra_lastclip', t); } catch {}
+    // رابط له مهمة سابقة في هذه الجلسة (جارية أو مكتملة): لا نعيده تلقائياً
+    const known = new Set(state.tasks.filter(x => x.status !== 'error').map(x => urlKey(x.source)));
+    const nu = u.filter(x => !known.has(urlKey(x)));
+    if (!nu.length) return;
+    u.length = 0; u.push(...nu);
     let auto = true; try { auto = localStorage.getItem('altra_autoclip') !== '0'; } catch {}
     if (auto) {
       const okU = [], heldU = [];
@@ -3209,7 +3246,7 @@ async function clipCheck() {
     }
     $('#url').value = ($('#url').value ? $('#url').value + '\n' : '') + u.join('\n');
     toast('تم التقاط رابط من الحافظة، اضغط تحميل');
-  } catch {}
+  } catch {} finally { _clipBusy = false; }
 }
 window.altraAutoClip = on => { try { localStorage.setItem('altra_autoclip', on ? '1' : '0'); } catch {} toast(on ? 'التحميل التلقائي من الحافظة: مفعّل' : 'التحميل التلقائي من الحافظة: متوقف'); };
 document.addEventListener('visibilitychange', clipCheck);

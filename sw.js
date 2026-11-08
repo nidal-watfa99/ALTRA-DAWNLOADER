@@ -1,4 +1,4 @@
-const CACHE = 'altra-v8-17';
+const CACHE = 'altra-v8-18';
 const ASSETS = [
   './',
   './index.html',
